@@ -84,43 +84,63 @@ function ServicesSection() {
       title: 'Book Appointments',
       description: 'Easily schedule maintenance or performance testing sessions for your motorcycle.',
       image: '/images/dealer.jpg', // placeholder path
+      icon: (
+        <svg className="w-12 h-12 text-primary/80" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>
+      ),
     },
     {
       title: 'Job Tracking',
       description: "Track the status of your motorcycle's work and access service history and invoices.",
       image: '/images/dealer.jpg', // placeholder path
+      icon: (
+        <svg className="w-12 h-12 text-primary/80" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" /><path strokeLinecap="round" strokeLinejoin="round" d="M16 3v4M8 3v4m-5 4h18" /></svg>
+      ),
     },
     {
       title: 'Inventory Management',
       description: 'Manage spare parts, suppliers, and mechanics with ease from your dashboard.',
       image: '/images/dealer.jpg', // placeholder path
+      icon: (
+        <svg className="w-12 h-12 text-primary/80" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h18v6H3V3zm0 6v12h18V9" /></svg>
+      ),
     },
   ];
 
   return (
-    <section id="services" className="py-32 bg-background flex flex-col items-center">
-      <h2 className="text-5xl font-extrabold mb-12 text-center">Our Services</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl w-full px-6">
+    <section id="services" className="py-40 bg-background flex flex-col items-center min-h-screen">
+      <div className="mb-16 mt-8 flex flex-col items-center">
+        <h2 className="text-6xl font-extrabold mb-6 text-center tracking-tight">Our Services</h2>
+        <p className="text-2xl text-muted-foreground max-w-2xl text-center mb-8">
+          Discover how our platform streamlines your motorcycle workshop experience. From easy appointment booking to real-time job tracking and inventory management, we provide everything you need for a modern, efficient garage. [Add your own subtitle here!]
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-[1600px] w-full px-8">
         {services.map((service, idx) => (
           <Card
             key={service.title}
-            className="group relative overflow-hidden shadow-2xl hover:shadow-3xl transition-shadow border-0 bg-muted/60 hover:bg-muted/80 min-h-[480px] flex flex-col"
-            style={{ minHeight: 480 }}
+            className="group relative overflow-hidden shadow-2xl hover:shadow-3xl transition-all border-0 bg-muted/60 hover:bg-muted/80 min-h-[600px] flex flex-col transform-gpu hover:scale-105 hover:-translate-y-2 duration-300 ring-0 hover:ring-8 hover:ring-primary/30"
+            style={{ minHeight: 600 }}
           >
-            <div className="relative h-64 w-full overflow-hidden">
+            <div className="relative h-80 w-full overflow-hidden">
               <img
                 src={service.image}
                 alt={service.title}
-                className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover scale-100 group-hover:scale-110 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-90" />
+              {/* Fancy floating icon overlay */}
+              <div className="absolute top-6 right-6 z-20 opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500 drop-shadow-xl">
+                {service.icon}
+              </div>
+              {/* Subtle pattern overlay */}
+              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:32px_32px]" />
             </div>
-            <CardHeader className="z-10 relative mt-4">
-              <CardTitle className="text-3xl text-white drop-shadow-lg group-hover:text-primary transition-colors">
+            <CardHeader className="z-10 relative mt-8">
+              <CardTitle className="text-4xl text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] group-hover:text-primary transition-colors font-extrabold tracking-tight">
                 {service.title}
               </CardTitle>
             </CardHeader>
-            <CardContent className="z-10 relative text-lg text-white/90 group-hover:text-white flex-1 flex items-center">
+            <CardContent className="z-10 relative text-2xl text-white/90 group-hover:text-white flex-1 flex items-center font-medium">
               {service.description}
             </CardContent>
           </Card>
