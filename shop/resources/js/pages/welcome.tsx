@@ -52,18 +52,18 @@ function LandingNavbar() {
         <div className="flex items-center gap-2">
           {/* Placeholder for logo */}
           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-lg text-gray-700">M</div>
-          <span className="ml-2 font-semibold text-lg text-gray-900">[Shop Name]</span>
+          <span className="ml-2 font-semibold text-lg text-white-900">[Shop Name]</span>
         </div>
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <NavigationMenuLink href="#services" className="px-4 py-2 text-gray-700 hover:text-black">Services</NavigationMenuLink>
+              <NavigationMenuLink href="#services" className="px-4 py-2 text-white-700 hover:text-black">Services</NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink href="#contacts" className="px-4 py-2 text-gray-700 hover:text-black">Contacts</NavigationMenuLink>
+              <NavigationMenuLink href="#contacts" className="px-4 py-2 text-white-700 hover:text-black">Contacts</NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink href={route('login')} className="px-4 py-2 text-gray-700 hover:text-black">Login</NavigationMenuLink>
+              <NavigationMenuLink href={route('login')} className="px-4 py-2 text-white-700 hover:text-black">Login</NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Button asChild size="sm" className="ml-2">
@@ -78,34 +78,53 @@ function LandingNavbar() {
 }
 
 function ServicesSection() {
+  // Example service data, replace image paths with your own
+  const services = [
+    {
+      title: 'Book Appointments',
+      description: 'Easily schedule maintenance or performance testing sessions for your motorcycle.',
+      image: '/images/dealer.jpg', // placeholder path
+    },
+    {
+      title: 'Job Tracking',
+      description: "Track the status of your motorcycle's work and access service history and invoices.",
+      image: '/images/dealer.jpg', // placeholder path
+    },
+    {
+      title: 'Inventory Management',
+      description: 'Manage spare parts, suppliers, and mechanics with ease from your dashboard.',
+      image: '/images/dealer.jpg', // placeholder path
+    },
+  ];
+
   return (
-    <section id="services" className="py-24 bg-background flex flex-col items-center">
-      <h2 className="text-4xl font-bold mb-8 text-center">Our Services</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full px-4">
-        <Card className="hover:shadow-xl transition-shadow">
-          <CardHeader>
-            <CardTitle>Book Appointments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            Easily schedule maintenance or performance testing sessions for your motorcycle.
-          </CardContent>
-        </Card>
-        <Card className="hover:shadow-xl transition-shadow">
-          <CardHeader>
-            <CardTitle>Job Tracking</CardTitle>
-          </CardHeader>
-          <CardContent>
-            Track the status of your motorcycle's work and access service history and invoices.
-          </CardContent>
-        </Card>
-        <Card className="hover:shadow-xl transition-shadow">
-          <CardHeader>
-            <CardTitle>Inventory Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            Manage spare parts, suppliers, and mechanics with ease from your dashboard.
-          </CardContent>
-        </Card>
+    <section id="services" className="py-32 bg-background flex flex-col items-center">
+      <h2 className="text-5xl font-extrabold mb-12 text-center">Our Services</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-7xl w-full px-6">
+        {services.map((service, idx) => (
+          <Card
+            key={service.title}
+            className="group relative overflow-hidden shadow-2xl hover:shadow-3xl transition-shadow border-0 bg-muted/60 hover:bg-muted/80 min-h-[480px] flex flex-col"
+            style={{ minHeight: 480 }}
+          >
+            <div className="relative h-64 w-full overflow-hidden">
+              <img
+                src={service.image}
+                alt={service.title}
+                className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80" />
+            </div>
+            <CardHeader className="z-10 relative mt-4">
+              <CardTitle className="text-3xl text-white drop-shadow-lg group-hover:text-primary transition-colors">
+                {service.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="z-10 relative text-lg text-white/90 group-hover:text-white flex-1 flex items-center">
+              {service.description}
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </section>
   );
