@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu';
+import { FaFacebookF, FaInstagram } from 'react-icons/fa';
 
 // Placeholder video background component
 function VideoHero() {
@@ -177,6 +178,61 @@ function ContactsSection() {
   );
 }
 
+function LandingFooter() {
+  return (
+    <footer className="bg-black text-white pt-16 pb-6 px-4 mt-24">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:justify-between md:items-start gap-12">
+        {/* Logo and Socials */}
+        <div className="flex-1 flex flex-col items-center md:items-start">
+          <div className="mb-2">
+            {/* Placeholder logo */}
+            <div className="text-3xl font-extrabold tracking-widest">[LOGO]</div>
+            <div className="text-sm tracking-widest mt-1">EXCLUSIVE SERVICES</div>
+          </div>
+          <div className="flex gap-6 mt-4 mb-2">
+            <a href="#" className="hover:text-primary transition-colors"><FaFacebookF size={24} /></a>
+            <a href="#" className="hover:text-primary transition-colors"><FaInstagram size={24} /></a>
+          </div>
+        </div>
+        {/* Menu */}
+        <div className="flex-1 flex flex-col items-center md:items-start">
+          <div className="font-bold text-lg mb-2">Menu</div>
+          <ul className="space-y-1 text-base">
+            <li><a href="#" className="hover:text-primary transition-colors">Home</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors">Our Location</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors">Claims Management</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors">Rent Service</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors">Contacts</a></li>
+          </ul>
+        </div>
+        {/* Services */}
+        <div className="flex-1 flex flex-col items-center md:items-start">
+          <div className="font-bold text-lg mb-2">Services</div>
+          <ul className="space-y-1 text-base">
+            <li><a href="#" className="hover:text-primary transition-colors">Body Shop</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors">Workshop</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors">Tire Service</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors">Car Rental</a></li>
+          </ul>
+        </div>
+        {/* Contacts */}
+        <div className="flex-1 flex flex-col items-center md:items-start">
+          <div className="font-bold text-lg mb-2">Contacts</div>
+          <ul className="space-y-1 text-base">
+            <li>Tel: 0123 456789</li>
+            <li>Whatsapp: 123 45 67 890</li>
+            <li>Email: info@placeholder.com</li>
+            <li>Address: 123 Placeholder St, City</li>
+          </ul>
+        </div>
+      </div>
+      <div className="border-t border-white/20 mt-10 pt-4 text-center text-sm text-white/70">
+        © Copyright [Your Company] | P.IVA 00000000000 |
+      </div>
+    </footer>
+  );
+}
+
 export default function Welcome() {
   return (
     <>
@@ -189,6 +245,7 @@ export default function Welcome() {
           <Separator className="w-1/2 my-12" />
         </div>
         <ContactsSection />
+        <LandingFooter />
       </main>
     </>
   );
