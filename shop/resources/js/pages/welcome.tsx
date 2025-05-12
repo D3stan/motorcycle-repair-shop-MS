@@ -46,27 +46,31 @@ function LandingNavbar() {
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+  const navBg = scrolled ? 'bg-white/90 shadow-md backdrop-blur' : 'bg-transparent';
+  const textColor = scrolled ? 'text-gray-900' : 'text-white';
+  const hoverColor = scrolled ? 'hover:text-primary' : 'hover:text-primary-100';
+
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all ${scrolled ? 'bg-white/90 shadow-md backdrop-blur' : 'bg-transparent'} `}>
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all ${navBg}`}>
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {/* Placeholder for logo */}
-          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-lg text-gray-700">M</div>
-          <span className="ml-2 font-semibold text-lg text-white-900">[Shop Name]</span>
+          <div className={`w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-lg ${textColor}`}>M</div>
+          <span className={`ml-2 font-semibold text-lg ${textColor}`}>[Shop Name]</span>
         </div>
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <NavigationMenuLink href="#services" className="px-4 py-2 text-white-700 hover:text-black">Services</NavigationMenuLink>
+              <NavigationMenuLink href="#services" className={`px-4 py-2 ${textColor} ${hoverColor} transition-colors`}>Services</NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink href="#contacts" className="px-4 py-2 text-white-700 hover:text-black">Contacts</NavigationMenuLink>
+              <NavigationMenuLink href="#contacts" className={`px-4 py-2 ${textColor} ${hoverColor} transition-colors`}>Contacts</NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <NavigationMenuLink href={route('login')} className="px-4 py-2 text-white-700 hover:text-black">Login</NavigationMenuLink>
+              <NavigationMenuLink href={route('login')} className={`px-4 py-2 ${textColor} ${hoverColor} transition-colors`}>Login</NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Button asChild size="sm" className="ml-2">
+              <Button asChild size="sm" className={`ml-2 ${scrolled ? '' : 'bg-white/20 text-white border-white/30 hover:bg-white/40 hover:text-black'}`}>
                 <Link href={route('register')}>Register</Link>
               </Button>
             </NavigationMenuItem>
