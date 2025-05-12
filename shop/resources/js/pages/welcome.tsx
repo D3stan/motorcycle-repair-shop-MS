@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from '@/components/ui/navigation-menu';
 import { FaFacebookF, FaInstagram } from 'react-icons/fa';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu as MenuIcon, X as CloseIcon } from 'lucide-react';
 
 // Placeholder video background component
 function VideoHero() {
@@ -42,6 +44,7 @@ function VideoHero() {
 // Transparent, sticky navbar that becomes solid on scroll
 function LandingNavbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll);
@@ -59,6 +62,7 @@ function LandingNavbar() {
           <div className={`w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-lg ${textColor}`}>M</div>
           <span className={`ml-2 font-semibold text-lg ${textColor}`}>[Shop Name]</span>
         </div>
+        {/* Desktop nav */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -77,6 +81,32 @@ function LandingNavbar() {
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
+        {/* Mobile nav */}
+        <div className="md:hidden">
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <button aria-label="Open menu" className="text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                <MenuIcon size={32} className={textColor}/>
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-background text-foreground flex flex-col p-0">
+              <div className="flex items-center justify-between px-6 py-4 border-b">
+                <span className="font-bold text-xl">[Shop Name]</span>
+                <button onClick={() => setOpen(false)} aria-label="Close menu" className="text-foreground">
+                  <CloseIcon size={28} />
+                </button>
+              </div>
+              <nav className="flex flex-col gap-2 px-6 py-8 text-lg">
+                <a href="#services" onClick={() => setOpen(false)} className="py-3 px-2 rounded hover:bg-accent transition-colors">Services</a>
+                <a href="#contacts" onClick={() => setOpen(false)} className="py-3 px-2 rounded hover:bg-accent transition-colors">Contacts</a>
+                <a href={route('login')} onClick={() => setOpen(false)} className="py-3 px-2 rounded hover:bg-accent transition-colors">Login</a>
+                <Button asChild className="mt-4 w-full">
+                  <Link href={route('register')}>Register</Link>
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </nav>
   );
