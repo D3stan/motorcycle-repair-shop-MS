@@ -17,7 +17,8 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'min:1', 'max:255', 'regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/'],
+            'last_name' => ['required', 'string', 'min:1', 'max:255', 'regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/'],
 
             'email' => [
                 'required',
@@ -27,6 +28,28 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+        ];
+    }
+
+    /**
+     * Get custom attributes for validator errors.
+     */
+    public function attributes(): array
+    {
+        return [
+            'first_name' => 'first name',
+            'last_name' => 'last name',
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'first_name.regex' => 'First name can only contain letters, spaces, hyphens, and apostrophes.',
+            'last_name.regex' => 'Last name can only contain letters, spaces, hyphens, and apostrophes.',
         ];
     }
 }
