@@ -63,13 +63,10 @@ function LandingNavbar() {
           <span className={`ml-2 font-semibold text-lg ${textColor}`}>[Shop Name]</span>
         </div>
         {/* Desktop nav */}
-        <NavigationMenu className="hidden md:flex">
+        <NavigationMenu className="hidden md:block">
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuLink href="#services" className={`px-4 py-2 ${textColor} ${hoverColor} transition-colors`}>Services</NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink href="#contacts" className={`px-4 py-2 ${textColor} ${hoverColor} transition-colors`}>Contacts</NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink href={route('login')} className={`px-4 py-2 ${textColor} ${hoverColor} transition-colors`}>Login</NavigationMenuLink>
@@ -98,7 +95,6 @@ function LandingNavbar() {
               </div>
               <nav className="flex flex-col gap-2 px-6 py-8 text-lg">
                 <a href="#services" onClick={() => setOpen(false)} className="py-3 px-2 rounded hover:bg-accent transition-colors">Services</a>
-                <a href="#contacts" onClick={() => setOpen(false)} className="py-3 px-2 rounded hover:bg-accent transition-colors">Contacts</a>
                 <a href={route('login')} onClick={() => setOpen(false)} className="py-3 px-2 rounded hover:bg-accent transition-colors">Login</a>
                 <Button asChild className="mt-4 w-full">
                   <Link href={route('register')}>Register</Link>
@@ -185,29 +181,6 @@ function ServicesSection() {
   );
 }
 
-function ContactsSection() {
-  return (
-    <section id="contacts" className="py-24 bg-muted flex flex-col items-center">
-      <h2 className="text-4xl font-bold mb-8 text-center">Contact Us</h2>
-      <div className="w-full max-w-2xl px-4">
-        <Card className="p-8">
-          <CardHeader>
-            <CardTitle>Ready to join?</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form className="flex flex-col gap-4">
-              <Input type="text" placeholder="Your Name" required />
-              <Input type="email" placeholder="Your Email" required />
-              <Input type="text" placeholder="Phone (optional)" />
-              <Button type="submit" className="w-full">Register Now</Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
-}
-
 function LandingFooter() {
   return (
     <footer className="bg-black text-white pt-16 pb-6 px-4 mt-24">
@@ -271,10 +244,6 @@ export default function Welcome() {
       <main className="flex flex-col">
         <VideoHero />
         <ServicesSection />
-        <div className="flex justify-center">
-          <Separator className="w-1/2 my-12" />
-        </div>
-        <ContactsSection />
         <LandingFooter />
       </main>
     </>
