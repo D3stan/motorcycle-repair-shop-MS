@@ -54,11 +54,9 @@ class WorkSession extends Model
     public function mechanics(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'mechanic_sessions')
-            ->wherePivot('user_id', function ($query) {
-                $query->whereHas('users', function ($q) {
-                    $q->where('type', 'mechanic');
-                });
-            });
+            ->withPivot('role')
+            ->withTimestamps()
+            ->where('users.type', 'mechanic');
     }
 
     /**

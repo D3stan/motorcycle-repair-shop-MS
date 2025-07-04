@@ -17,65 +17,38 @@ class GarageController extends Controller
     {
         $user = $request->user();
 
-        // TODO: Uncomment when database tables are created
-
-        // Get user's motorcycles
-        // $motorcycles = $user->motorcycles()
-        //     ->orderBy('created_at', 'desc')
-        //     ->get()
-        //     ->map(function ($motorcycle) {
-        //         return [
-        //             'id' => $motorcycle->id,
-        //             'brand' => $motorcycle->brand,
-        //             'model' => $motorcycle->model,
-        //             'year' => $motorcycle->year,
-        //             'plate' => $motorcycle->plate,
-        //             'vin' => $motorcycle->vin,
-        //             'color' => $motorcycle->color,
-        //             'engine_size' => $motorcycle->engine_size,
-        //         ];
-        //     });
-
-        // Placeholder data for demo
-        $motorcycles = collect([
-            [
-                'id' => 1,
-                'brand' => 'Ducati',
-                'model' => 'Monster 821',
-                'year' => 2020,
-                'plate' => 'AB123CD',
-                'vin' => 'ZDMH5BR00LB123456',
-                'color' => 'Red',
-                'engine_size' => 821,
-            ],
-            [
-                'id' => 2,
-                'brand' => 'Yamaha',
-                'model' => 'MT-07',
-                'year' => 2021,
-                'plate' => 'EF456GH',
-                'vin' => 'JYARN23E0LA123456',
-                'color' => 'Blue',
-                'engine_size' => 689,
-            ],
-        ]);
+        // Get user's motorcycles with their model information
+        $motorcycles = $user->motorcycles()
+            ->with('motorcycleModel')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($motorcycle) {
+                return [
+                    'id' => $motorcycle->id,
+                    'brand' => $motorcycle->motorcycleModel->brand,
+                    'model' => $motorcycle->motorcycleModel->name,
+                    'year' => $motorcycle->registration_year,
+                    'plate' => $motorcycle->license_plate,
+                    'vin' => $motorcycle->vin,
+                    'engine_size' => $motorcycle->motorcycleModel->engine_size,
+                    'notes' => $motorcycle->notes,
+                ];
+            });
 
         // Get pending services count for all user's motorcycles
-        // $pendingServicesCount = $user->workOrders()
-        //     ->whereIn('status', ['pending', 'in_progress'])
-        //     ->count();
-        $pendingServicesCount = 2;
+        $pendingServicesCount = $user->workOrders()
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->count();
 
         // Get last service date
-        // $lastService = $user->workOrders()
-        //     ->where('status', 'completed')
-        //     ->orderBy('completed_at', 'desc')
-        //     ->first();
+        $lastService = $user->workOrders()
+            ->where('status', 'completed')
+            ->orderBy('completed_at', 'desc')
+            ->first();
 
-        // $lastServiceDate = $lastService ? 
-        //     now()->diffInDays($lastService->completed_at) . ' days ago' : 
-        //     'No services yet';
-        $lastServiceDate = '15 days ago';
+        $lastServiceDate = $lastService ? 
+            now()->diffInDays($lastService->completed_at) . ' days ago' : 
+            'No services yet';
 
         return Inertia::render('garage', [
             'motorcycles' => $motorcycles,
@@ -89,21 +62,17 @@ class GarageController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO: Uncomment when database tables are created
-        
-        // $validated = $request->validate([
-        //     'brand' => 'required|string|max:255',
-        //     'model' => 'required|string|max:255',
-        //     'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-        //     'plate' => 'required|string|max:20|unique:motorcycles,plate',
-        //     'vin' => 'required|string|max:17|unique:motorcycles,vin',
-        //     'color' => 'nullable|string|max:50',
-        //     'engine_size' => 'nullable|integer|min:50|max:3000',
-        // ]);
+        $validated = $request->validate([
+            'motorcycle_model_id' => 'required|exists:motorcycle_models,id',
+            'license_plate' => 'required|string|max:20|unique:motorcycles,license_plate',
+            'registration_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'vin' => 'required|string|max:17|unique:motorcycles,vin',
+            'notes' => 'nullable|string|max:1000',
+        ]);
 
-        // $motorcycle = $request->user()->motorcycles()->create($validated);
+        $motorcycle = $request->user()->motorcycles()->create($validated);
 
-        return redirect()->route('garage')->with('success', 'Motorcycle functionality disabled - database tables not created yet.');
+        return redirect()->route('garage')->with('success', 'Motorcycle added successfully!');
     }
 
     /**
@@ -111,26 +80,22 @@ class GarageController extends Controller
      */
     public function update(Request $request, Motorcycle $motorcycle)
     {
-        // TODO: Uncomment when database tables are created
-        
         // Ensure the motorcycle belongs to the authenticated user
-        // if ($motorcycle->user_id !== $request->user()->id) {
-        //     abort(403, 'Unauthorized action.');
-        // }
+        if ($motorcycle->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
 
-        // $validated = $request->validate([
-        //     'brand' => 'required|string|max:255',
-        //     'model' => 'required|string|max:255',
-        //     'year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-        //     'plate' => 'required|string|max:20|unique:motorcycles,plate,' . $motorcycle->id,
-        //     'vin' => 'required|string|max:17|unique:motorcycles,vin,' . $motorcycle->id,
-        //     'color' => 'nullable|string|max:50',
-        //     'engine_size' => 'nullable|integer|min:50|max:3000',
-        // ]);
+        $validated = $request->validate([
+            'motorcycle_model_id' => 'required|exists:motorcycle_models,id',
+            'license_plate' => 'required|string|max:20|unique:motorcycles,license_plate,' . $motorcycle->id,
+            'registration_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'vin' => 'required|string|max:17|unique:motorcycles,vin,' . $motorcycle->id,
+            'notes' => 'nullable|string|max:1000',
+        ]);
 
-        // $motorcycle->update($validated);
+        $motorcycle->update($validated);
 
-        return redirect()->route('garage')->with('success', 'Motorcycle functionality disabled - database tables not created yet.');
+        return redirect()->route('garage')->with('success', 'Motorcycle updated successfully!');
     }
 
     /**
@@ -138,25 +103,23 @@ class GarageController extends Controller
      */
     public function destroy(Request $request, Motorcycle $motorcycle)
     {
-        // TODO: Uncomment when database tables are created
-        
         // Ensure the motorcycle belongs to the authenticated user
-        // if ($motorcycle->user_id !== $request->user()->id) {
-        //     abort(403, 'Unauthorized action.');
-        // }
+        if ($motorcycle->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
 
         // Check if motorcycle has active work orders
-        // $activeWorkOrders = $motorcycle->workOrders()
-        //     ->whereIn('status', ['pending', 'in_progress'])
-        //     ->count();
+        $activeWorkOrders = $motorcycle->workOrders()
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->count();
 
-        // if ($activeWorkOrders > 0) {
-        //     return redirect()->route('garage')->with('error', 'Cannot delete motorcycle with active work orders.');
-        // }
+        if ($activeWorkOrders > 0) {
+            return redirect()->route('garage')->with('error', 'Cannot delete motorcycle with active work orders.');
+        }
 
-        // $motorcycle->delete();
+        $motorcycle->delete();
 
-        return redirect()->route('garage')->with('success', 'Motorcycle functionality disabled - database tables not created yet.');
+        return redirect()->route('garage')->with('success', 'Motorcycle deleted successfully!');
     }
 
     /**
@@ -164,58 +127,37 @@ class GarageController extends Controller
      */
     public function history(Request $request, Motorcycle $motorcycle)
     {
-        // TODO: Uncomment when database tables are created
-        
         // Ensure the motorcycle belongs to the authenticated user
-        // if ($motorcycle->user_id !== $request->user()->id) {
-        //     abort(403, 'Unauthorized action.');
-        // }
+        if ($motorcycle->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
 
-        // $serviceHistory = $motorcycle->workOrders()
-        //     ->with('invoice')
-        //     ->orderBy('completed_at', 'desc')
-        //     ->get()
-        //     ->map(function ($workOrder) {
-        //         return [
-        //             'id' => $workOrder->id,
-        //             'description' => $workOrder->description,
-        //             'status' => $workOrder->status,
-        //             'started_at' => $workOrder->started_at?->format('Y-m-d'),
-        //             'completed_at' => $workOrder->completed_at?->format('Y-m-d'),
-        //             'total_cost' => $workOrder->total_cost,
-        //             'invoice_number' => $workOrder->invoice?->invoice_number,
-        //         ];
-        //     });
+        // Load the motorcycle model relationship
+        $motorcycle->load('motorcycleModel');
 
-        // Placeholder data for demo
-        $serviceHistory = collect([
-            [
-                'id' => 1,
-                'description' => 'Oil change and filter replacement',
-                'status' => 'completed',
-                'started_at' => '2024-01-05',
-                'completed_at' => '2024-01-05',
-                'total_cost' => 85.00,
-                'invoice_number' => 'INV-2024-001',
-            ],
-            [
-                'id' => 2,
-                'description' => 'Brake pad replacement',
-                'status' => 'completed',
-                'started_at' => '2023-12-15',
-                'completed_at' => '2023-12-15',
-                'total_cost' => 150.00,
-                'invoice_number' => 'INV-2023-089',
-            ],
-        ]);
+        $serviceHistory = $motorcycle->workOrders()
+            ->with('invoice')
+            ->orderBy('completed_at', 'desc')
+            ->get()
+            ->map(function ($workOrder) {
+                return [
+                    'id' => $workOrder->id,
+                    'description' => $workOrder->description,
+                    'status' => $workOrder->status,
+                    'started_at' => $workOrder->started_at?->format('Y-m-d'),
+                    'completed_at' => $workOrder->completed_at?->format('Y-m-d'),
+                    'total_cost' => $workOrder->total_cost,
+                    'invoice_number' => $workOrder->invoice?->invoice_number,
+                ];
+            });
 
         return Inertia::render('garage/history', [
             'motorcycle' => [
-                'id' => 1,
-                'brand' => 'Ducati',
-                'model' => 'Monster 821',
-                'year' => 2020,
-                'plate' => 'AB123CD',
+                'id' => $motorcycle->id,
+                'brand' => $motorcycle->motorcycleModel->brand,
+                'model' => $motorcycle->motorcycleModel->name,
+                'year' => $motorcycle->registration_year,
+                'plate' => $motorcycle->license_plate,
             ],
             'serviceHistory' => $serviceHistory,
         ]);

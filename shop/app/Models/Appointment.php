@@ -34,7 +34,6 @@ class Appointment extends Model
     {
         return [
             'appointment_date' => 'date',
-            'appointment_time' => 'datetime:H:i',
         ];
     }
 

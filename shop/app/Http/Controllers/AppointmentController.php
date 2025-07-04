@@ -16,76 +16,28 @@ class AppointmentController extends Controller
     {
         $user = $request->user();
 
-        // TODO: Uncomment when database tables are created
-
-        // Get user's appointments
-        // $appointments = $user->appointments()
-        //     ->with('motorcycle')
-        //     ->orderBy('appointment_date', 'desc')
-        //     ->orderBy('appointment_time', 'desc')
-        //     ->get()
-        //     ->map(function ($appointment) {
-        //         return [
-        //             'id' => $appointment->id,
-        //             'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-        //             'appointment_time' => $appointment->appointment_time->format('H:i'),
-        //             'type' => ucfirst(str_replace('_', ' ', $appointment->type)),
-        //             'status' => $appointment->status,
-        //             'motorcycle' => [
-        //                 'id' => $appointment->motorcycle->id,
-        //                 'brand' => $appointment->motorcycle->brand,
-        //                 'model' => $appointment->motorcycle->model,
-        //                 'plate' => $appointment->motorcycle->plate,
-        //             ],
-        //             'notes' => $appointment->notes,
-        //         ];
-        //     });
-
-        // Placeholder data for demo
-        $appointments = collect([
-            [
-                'id' => 1,
-                'appointment_date' => '2024-01-15',
-                'appointment_time' => '10:00',
-                'type' => 'Maintenance',
-                'status' => 'confirmed',
-                'motorcycle' => [
-                    'id' => 1,
-                    'brand' => 'Ducati',
-                    'model' => 'Monster 821',
-                    'plate' => 'AB123CD',
-                ],
-                'notes' => 'Oil change and general inspection needed',
-            ],
-            [
-                'id' => 2,
-                'appointment_date' => '2024-01-20',
-                'appointment_time' => '14:30',
-                'type' => 'Dyno Testing',
-                'status' => 'pending',
-                'motorcycle' => [
-                    'id' => 2,
-                    'brand' => 'Yamaha',
-                    'model' => 'MT-07',
-                    'plate' => 'EF456GH',
-                ],
-                'notes' => 'Performance tuning session',
-            ],
-            [
-                'id' => 3,
-                'appointment_date' => '2024-01-08',
-                'appointment_time' => '09:00',
-                'type' => 'Maintenance',
-                'status' => 'completed',
-                'motorcycle' => [
-                    'id' => 1,
-                    'brand' => 'Ducati',
-                    'model' => 'Monster 821',
-                    'plate' => 'AB123CD',
-                ],
-                'notes' => 'Brake system check',
-            ],
-        ]);
+        // Get user's appointments with motorcycle information
+        $appointments = $user->appointments()
+            ->with(['motorcycle', 'motorcycle.motorcycleModel'])
+            ->orderBy('appointment_date', 'desc')
+            ->orderBy('appointment_time', 'desc')
+            ->get()
+            ->map(function ($appointment) {
+                return [
+                    'id' => $appointment->id,
+                    'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
+                    'appointment_time' => $appointment->appointment_time->format('H:i'),
+                    'type' => ucfirst(str_replace('_', ' ', $appointment->type)),
+                    'status' => $appointment->status,
+                    'motorcycle' => [
+                        'id' => $appointment->motorcycle->id,
+                        'brand' => $appointment->motorcycle->motorcycleModel->brand,
+                        'model' => $appointment->motorcycle->motorcycleModel->name,
+                        'plate' => $appointment->motorcycle->license_plate,
+                    ],
+                    'notes' => $appointment->notes,
+                ];
+            });
 
         // Separate upcoming and past appointments
         $upcomingAppointments = $appointments->filter(function ($appointment) {
@@ -97,28 +49,16 @@ class AppointmentController extends Controller
         });
 
         // Get user's motorcycles for booking form
-        // $motorcycles = $user->motorcycles()
-        //     ->orderBy('brand')
-        //     ->orderBy('model')
-        //     ->get()
-        //     ->map(function ($motorcycle) {
-        //         return [
-        //             'id' => $motorcycle->id,
-        //             'label' => $motorcycle->brand . ' ' . $motorcycle->model . ' (' . $motorcycle->plate . ')',
-        //         ];
-        //     });
-
-        // Placeholder motorcycles for booking form
-        $motorcycles = collect([
-            [
-                'id' => 1,
-                'label' => 'Ducati Monster 821 (AB123CD)',
-            ],
-            [
-                'id' => 2,
-                'label' => 'Yamaha MT-07 (EF456GH)',
-            ],
-        ]);
+        $motorcycles = $user->motorcycles()
+            ->with('motorcycleModel')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($motorcycle) {
+                return [
+                    'id' => $motorcycle->id,
+                    'label' => $motorcycle->motorcycleModel->brand . ' ' . $motorcycle->motorcycleModel->name . ' (' . $motorcycle->license_plate . ')',
+                ];
+            });
 
         return Inertia::render('appointments', [
             'upcomingAppointments' => $upcomingAppointments->values()->all(),
@@ -132,29 +72,27 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO: Uncomment when database tables are created
-        
-        // $validated = $request->validate([
-        //     'motorcycle_id' => 'required|exists:motorcycles,id',
-        //     'appointment_date' => 'required|date|after:today',
-        //     'appointment_time' => 'required|date_format:H:i',
-        //     'type' => 'required|in:maintenance,dyno_testing',
-        //     'notes' => 'nullable|string|max:1000',
-        // ]);
+        $validated = $request->validate([
+            'motorcycle_id' => 'required|exists:motorcycles,id',
+            'appointment_date' => 'required|date|after:today',
+            'appointment_time' => 'required|date_format:H:i',
+            'type' => 'required|in:maintenance,dyno_testing',
+            'notes' => 'nullable|string|max:1000',
+        ]);
 
         // Ensure the motorcycle belongs to the authenticated user
-        // $motorcycle = $request->user()->motorcycles()->findOrFail($validated['motorcycle_id']);
+        $motorcycle = $request->user()->motorcycles()->findOrFail($validated['motorcycle_id']);
 
-        // $appointment = $request->user()->appointments()->create([
-        //     'motorcycle_id' => $validated['motorcycle_id'],
-        //     'appointment_date' => $validated['appointment_date'],
-        //     'appointment_time' => $validated['appointment_time'],
-        //     'type' => $validated['type'],
-        //     'status' => 'pending',
-        //     'notes' => $validated['notes'],
-        // ]);
+        $appointment = $request->user()->appointments()->create([
+            'motorcycle_id' => $validated['motorcycle_id'],
+            'appointment_date' => $validated['appointment_date'],
+            'appointment_time' => $validated['appointment_time'],
+            'type' => $validated['type'],
+            'status' => 'pending',
+            'notes' => $validated['notes'],
+        ]);
 
-        return redirect()->route('appointments')->with('success', 'Appointment functionality disabled - database tables not created yet.');
+        return redirect()->route('appointments')->with('success', 'Appointment booked successfully!');
     }
 
     /**
@@ -162,28 +100,26 @@ class AppointmentController extends Controller
      */
     public function update(Request $request, Appointment $appointment)
     {
-        // TODO: Uncomment when database tables are created
-        
         // Ensure the appointment belongs to the authenticated user
-        // if ($appointment->user_id !== $request->user()->id) {
-        //     abort(403, 'Unauthorized action.');
-        // }
+        if ($appointment->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
 
         // Only allow updates if appointment is not completed
-        // if ($appointment->status === 'completed') {
-        //     return redirect()->route('appointments')->with('error', 'Cannot modify completed appointments.');
-        // }
+        if ($appointment->status === 'completed') {
+            return redirect()->route('appointments')->with('error', 'Cannot modify completed appointments.');
+        }
 
-        // $validated = $request->validate([
-        //     'appointment_date' => 'required|date|after:today',
-        //     'appointment_time' => 'required|date_format:H:i',
-        //     'type' => 'required|in:maintenance,dyno_testing',
-        //     'notes' => 'nullable|string|max:1000',
-        // ]);
+        $validated = $request->validate([
+            'appointment_date' => 'required|date|after:today',
+            'appointment_time' => 'required|date_format:H:i',
+            'type' => 'required|in:maintenance,dyno_testing',
+            'notes' => 'nullable|string|max:1000',
+        ]);
 
-        // $appointment->update($validated);
+        $appointment->update($validated);
 
-        return redirect()->route('appointments')->with('success', 'Appointment functionality disabled - database tables not created yet.');
+        return redirect()->route('appointments')->with('success', 'Appointment updated successfully!');
     }
 
     /**
@@ -191,21 +127,19 @@ class AppointmentController extends Controller
      */
     public function destroy(Request $request, Appointment $appointment)
     {
-        // TODO: Uncomment when database tables are created
-        
         // Ensure the appointment belongs to the authenticated user
-        // if ($appointment->user_id !== $request->user()->id) {
-        //     abort(403, 'Unauthorized action.');
-        // }
+        if ($appointment->user_id !== $request->user()->id) {
+            abort(403, 'Unauthorized action.');
+        }
 
         // Only allow cancellation if appointment is not completed
-        // if ($appointment->status === 'completed') {
-        //     return redirect()->route('appointments')->with('error', 'Cannot cancel completed appointments.');
-        // }
+        if ($appointment->status === 'completed') {
+            return redirect()->route('appointments')->with('error', 'Cannot cancel completed appointments.');
+        }
 
         // Update status to cancelled instead of deleting
-        // $appointment->update(['status' => 'cancelled']);
+        $appointment->update(['status' => 'cancelled']);
 
-        return redirect()->route('appointments')->with('success', 'Appointment functionality disabled - database tables not created yet.');
+        return redirect()->route('appointments')->with('success', 'Appointment cancelled successfully!');
     }
 } 
