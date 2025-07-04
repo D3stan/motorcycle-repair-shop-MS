@@ -146,7 +146,7 @@ class GarageController extends Controller
                     'status' => $workOrder->status,
                     'started_at' => $workOrder->started_at?->format('Y-m-d'),
                     'completed_at' => $workOrder->completed_at?->format('Y-m-d'),
-                    'total_cost' => $workOrder->total_cost,
+                    'total_cost' => $workOrder->total_cost ? (float) $workOrder->total_cost : 0.0,
                     'invoice_number' => $workOrder->invoice?->invoice_number,
                 ];
             });

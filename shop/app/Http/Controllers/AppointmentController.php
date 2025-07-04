@@ -26,7 +26,7 @@ class AppointmentController extends Controller
                 return [
                     'id' => $appointment->id,
                     'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                    'appointment_time' => $appointment->appointment_time->format('H:i'),
+                    'appointment_time' => substr($appointment->appointment_time, 0, 5), // Extract HH:MM from time string
                     'type' => ucfirst(str_replace('_', ' ', $appointment->type)),
                     'status' => $appointment->status,
                     'motorcycle' => [
