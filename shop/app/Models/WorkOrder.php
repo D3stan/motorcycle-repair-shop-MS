@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class WorkOrder extends Model
@@ -76,5 +77,25 @@ class WorkOrder extends Model
     public function invoice(): HasOne
     {
         return $this->hasOne(Invoice::class);
+    }
+
+    /**
+     * Get the mechanics assigned to this work order.
+     */
+    public function mechanics(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'mechanic_work_orders')
+            ->withPivot('assigned_at', 'started_at', 'completed_at', 'notes')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the parts used in this work order.
+     */
+    public function parts(): BelongsToMany
+    {
+        return $this->belongsToMany(Part::class, 'work_order_parts')
+            ->withPivot('quantity', 'unit_price', 'total_price')
+            ->withTimestamps();
     }
 } 

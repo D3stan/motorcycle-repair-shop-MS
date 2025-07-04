@@ -14,16 +14,15 @@ return new class extends Migration
         Schema::create('motorcycles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('brand');
-            $table->string('model');
-            $table->integer('year');
-            $table->string('plate')->unique();
-            $table->string('vin')->unique();
-            $table->string('color')->nullable();
-            $table->integer('engine_size')->nullable();
+            $table->foreignId('motorcycle_model_id')->constrained()->onDelete('cascade');
+            $table->string('license_plate')->unique(); // Targa
+            $table->integer('registration_year'); // AnnoImmatricolazione
+            $table->string('vin')->unique(); // NumTelaio (VIN/chassis number)
+            $table->text('notes')->nullable(); // Note
             $table->timestamps();
 
             $table->index(['user_id', 'created_at']);
+            $table->index('motorcycle_model_id');
         });
     }
 

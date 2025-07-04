@@ -18,13 +18,11 @@ class Motorcycle extends Model
      */
     protected $fillable = [
         'user_id',
-        'brand',
-        'model',
-        'year',
-        'plate',
+        'motorcycle_model_id',
+        'license_plate',
+        'registration_year',
         'vin',
-        'color',
-        'engine_size',
+        'notes',
     ];
 
     /**
@@ -35,8 +33,7 @@ class Motorcycle extends Model
     protected function casts(): array
     {
         return [
-            'year' => 'integer',
-            'engine_size' => 'integer',
+            'registration_year' => 'integer',
         ];
     }
 
@@ -46,6 +43,14 @@ class Motorcycle extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the motorcycle model.
+     */
+    public function motorcycleModel(): BelongsTo
+    {
+        return $this->belongsTo(MotorcycleModel::class);
     }
 
     /**
