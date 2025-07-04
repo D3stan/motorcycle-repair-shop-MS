@@ -17,7 +17,7 @@ class WorkSessionFactory extends Factory
      */
     public function definition(): array
     {
-        $startTime = fake()->dateTimeBetween('-6 months', 'now');
+        $startTime = fake()->dateTimeBetween('-6 months', '-1 day');
         $hoursWorked = fake()->randomFloat(2, 0.5, 8);
         $endTime = (clone $startTime)->modify("+{$hoursWorked} hours");
 
@@ -39,7 +39,7 @@ class WorkSessionFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'end_time' => null,
-            'start_time' => fake()->dateTimeBetween('-8 hours', 'now'),
+            'start_time' => fake()->dateTimeBetween('-8 hours', '-1 hour'),
         ]);
     }
 } 

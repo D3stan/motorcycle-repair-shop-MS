@@ -18,7 +18,7 @@ class AppointmentFactory extends Factory
      */
     public function definition(): array
     {
-        $appointmentDate = fake()->dateTimeBetween('-2 months', '+2 months');
+        $appointmentDate = fake()->dateTimeBetween('-6 months', '-1 day');
         
         return [
             'user_id' => User::factory()->customer(),

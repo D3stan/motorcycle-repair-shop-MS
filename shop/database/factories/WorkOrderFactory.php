@@ -34,7 +34,7 @@ class WorkOrderFactory extends Factory
             'Cooling system flush and refill'
         ];
 
-        $startDate = fake()->dateTimeBetween('-6 months', 'now');
+        $startDate = fake()->dateTimeBetween('-6 months', '-1 week');
         $status = fake()->randomElement(['pending', 'in_progress', 'completed', 'cancelled']);
         $laborCost = fake()->randomFloat(2, 50, 300);
         $partsCost = fake()->randomFloat(2, 0, 500);
@@ -46,7 +46,7 @@ class WorkOrderFactory extends Factory
             'description' => fake()->randomElement($descriptions),
             'status' => $status,
             'started_at' => in_array($status, ['in_progress', 'completed']) ? $startDate : null,
-            'completed_at' => $status === 'completed' ? fake()->dateTimeBetween($startDate, 'now') : null,
+            'completed_at' => $status === 'completed' ? fake()->dateTimeBetween($startDate, '-1 day') : null,
             'labor_cost' => $laborCost,
             'parts_cost' => $partsCost,
             'total_cost' => $laborCost + $partsCost,
@@ -73,7 +73,7 @@ class WorkOrderFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'in_progress',
-            'started_at' => fake()->dateTimeBetween('-1 week', 'now'),
+            'started_at' => fake()->dateTimeBetween('-2 weeks', '-1 day'),
             'completed_at' => null,
         ]);
     }
@@ -85,8 +85,8 @@ class WorkOrderFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'completed',
-            'started_at' => fake()->dateTimeBetween('-6 months', '-1 day'),
-            'completed_at' => fake()->dateTimeBetween($attributes['started_at'] ?? '-6 months', 'now'),
+            'started_at' => fake()->dateTimeBetween('-6 months', '-2 days'),
+            'completed_at' => fake()->dateTimeBetween($attributes['started_at'] ?? '-6 months', '-1 day'),
         ]);
     }
 } 

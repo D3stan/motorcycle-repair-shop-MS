@@ -18,7 +18,7 @@ class InvoiceFactory extends Factory
      */
     public function definition(): array
     {
-        $issueDate = fake()->dateTimeBetween('-6 months', 'now');
+        $issueDate = fake()->dateTimeBetween('-6 months', '-1 day');
         $dueDate = (clone $issueDate)->modify('+30 days');
         $subtotal = fake()->randomFloat(2, 100, 1000);
         $taxRate = 0.22; // 22% VAT (Italian standard)
@@ -26,7 +26,7 @@ class InvoiceFactory extends Factory
         $totalAmount = $subtotal + $taxAmount;
         
         $status = fake()->randomElement(['pending', 'paid', 'overdue', 'cancelled']);
-        $paidAt = $status === 'paid' ? fake()->dateTimeBetween($issueDate, 'now') : null;
+        $paidAt = $status === 'paid' ? fake()->dateTimeBetween($issueDate, '-1 day') : null;
 
         return [
             'user_id' => User::factory()->customer(),
@@ -49,7 +49,7 @@ class InvoiceFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'status' => 'paid',
-            'paid_at' => fake()->dateTimeBetween($attributes['issue_date'] ?? '-6 months', 'now'),
+            'paid_at' => fake()->dateTimeBetween($attributes['issue_date'] ?? '-6 months', '-1 day'),
         ]);
     }
 
