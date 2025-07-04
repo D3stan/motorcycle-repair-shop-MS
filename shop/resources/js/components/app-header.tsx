@@ -24,6 +24,14 @@ const mainNavItems: NavItem[] = [
         title: 'My Garage',
         href: '/garage',
     },
+    {
+        title: 'Appointments',
+        href: '/appointments',
+    },
+    {
+        title: 'Work Orders',
+        href: '/work-orders',
+    },
 ];
 
 const rightNavItems: NavItem[] = [
