@@ -59,7 +59,7 @@ function LandingNavbar() {
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           {/* Placeholder for logo */}
-          <div className={`w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-lg ${textColor}`}>M</div>
+          <div className={`w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center font-bold text-lg text-black`}>M</div>
           <span className={`ml-2 font-semibold text-lg ${textColor}`}>[Shop Name]</span>
         </div>
         {/* Desktop nav */}
