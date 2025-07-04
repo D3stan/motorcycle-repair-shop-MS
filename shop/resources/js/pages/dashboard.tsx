@@ -1,7 +1,8 @@
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -10,24 +11,143 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Dashboard() {
+interface DashboardProps {
+    upcomingAppointments: Array<{
+        id: number;
+        date: string;
+        time: string;
+        type: string;
+        motorcycle: string;
+        status: string;
+    }>;
+    activeWorkOrdersCount: number;
+    outstandingBalance: number;
+    pendingInvoicesCount: number;
+    recentActivity: Array<{
+        id: number;
+        action: string;
+        description: string;
+        date: string;
+        amount: string | null;
+    }>;
+}
+
+export default function Dashboard({ 
+    upcomingAppointments,
+    activeWorkOrdersCount,
+    outstandingBalance,
+    pendingInvoicesCount,
+    recentActivity
+}: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                {/* Quick Stats Cards */}
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
+                    {/* Current Appointments Status */}
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Upcoming Appointments</CardTitle>
+                            <CardDescription>Your scheduled visits</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold mb-2">{upcomingAppointments.length}</div>
+                            {upcomingAppointments.length > 0 && (
+                                <div className="text-sm text-muted-foreground">
+                                    Next: {upcomingAppointments[0].date} at {upcomingAppointments[0].time}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Active Work Orders */}
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Active Work Orders</CardTitle>
+                            <CardDescription>Services in progress</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold mb-2">{activeWorkOrdersCount}</div>
+                            <div className="text-sm text-muted-foreground">
+                                {activeWorkOrdersCount > 0 ? 'Services in progress' : 'No active services'}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Total Outstanding */}
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">Outstanding Balance</CardTitle>
+                            <CardDescription>Current total costs</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold mb-2">
+                                €{Number(outstandingBalance).toFixed(2)}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                                {pendingInvoicesCount > 0 ? `${pendingInvoicesCount} pending invoices` : 'All invoices paid'}
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
-                <div className="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border md:min-h-min">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+                {/* Main Content Area */}
+                <div className="grid gap-4 lg:grid-cols-3">
+                    {/* Recent Activity */}
+                    <div className="lg:col-span-2">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Recent Activity</CardTitle>
+                                <CardDescription>Your latest service history and transactions</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {recentActivity.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {recentActivity.map((activity) => (
+                                            <div key={activity.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
+                                                <div className="space-y-1">
+                                                    <p className="text-sm font-medium">{activity.action}</p>
+                                                    <p className="text-xs text-muted-foreground">{activity.description}</p>
+                                                    <p className="text-xs text-muted-foreground">{activity.date}</p>
+                                                </div>
+                                                {activity.amount && (
+                                                    <div className="text-sm font-medium">{activity.amount}</div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-6 text-muted-foreground">
+                                        <p>No recent activity</p>
+                                        <p className="text-sm">Start by booking an appointment or adding a motorcycle to your garage.</p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Quick Actions</CardTitle>
+                            <CardDescription>Common tasks and shortcuts</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <Button asChild className="w-full justify-start">
+                                <Link href="/appointments">Book Appointment</Link>
+                            </Button>
+                            <Button asChild variant="outline" className="w-full justify-start">
+                                <Link href="/garage">Manage Motorcycles</Link>
+                            </Button>
+                            <Button asChild variant="outline" className="w-full justify-start">
+                                <Link href="/work-orders">View Work Orders</Link>
+                            </Button>
+                            <Button asChild variant="outline" className="w-full justify-start">
+                                <Link href="/invoices">Download Invoices</Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </AppLayout>
