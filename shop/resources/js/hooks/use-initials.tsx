@@ -1,7 +1,12 @@
 import { useCallback } from 'react';
 
 export function useInitials() {
-    return useCallback((fullName: string): string => {
+    return useCallback((fullName: string | null | undefined): string => {
+        // Handle null, undefined, or empty string cases
+        if (!fullName || typeof fullName !== 'string') {
+            return '';
+        }
+        
         const names = fullName.trim().split(' ');
 
         if (names.length === 0) return '';

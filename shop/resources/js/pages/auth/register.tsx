@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -10,22 +10,109 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
 
 type RegisterForm = {
-    name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     password: string;
     password_confirmation: string;
 };
 
+function parseName(fullName: string): { first_name: string; last_name: string } {
+    const trimmedName = fullName.trim();
+    if (!trimmedName) return { first_name: '', last_name: '' };
+    
+    const nameParts = trimmedName.split(/\s+/);
+    
+    if (nameParts.length === 1) {
+        return { first_name: nameParts[0], last_name: '' };
+    }
+    
+    // First part is first name, everything else is last name
+    const first_name = nameParts[0];
+    const last_name = nameParts.slice(1).join(' ');
+    
+    return { first_name, last_name };
+}
+
+function validateName(fullName: string): string | null {
+    const trimmedName = fullName.trim();
+    
+    if (!trimmedName) {
+        return 'Name is required';
+    }
+    
+    if (trimmedName.length < 2) {
+        return 'Name must be at least 2 characters long';
+    }
+    
+    // Check for at least one space (indicating first and last name)
+    if (!trimmedName.includes(' ')) {
+        return 'Please enter both first and last name (e.g., "John Doe")';
+    }
+    
+    const { first_name, last_name } = parseName(trimmedName);
+    
+    if (!first_name || !last_name) {
+        return 'Please enter both first and last name';
+    }
+    
+    if (first_name.length < 1 || last_name.length < 1) {
+        return 'Both first and last name must be at least 1 character long';
+    }
+    
+    // Basic character validation (letters, spaces, hyphens, apostrophes)
+    const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+    if (!nameRegex.test(trimmedName)) {
+        return 'Name can only contain letters, spaces, hyphens, and apostrophes';
+    }
+    
+    return null;
+}
+
 export default function Register() {
+    const [fullNameInput, setFullNameInput] = useState('');
+    const [nameError, setNameError] = useState<string | null>(null);
+    
     const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
         password: '',
         password_confirmation: '',
     });
 
+    const handleNameChange = (value: string) => {
+        setFullNameInput(value);
+        
+        // Clear previous error
+        setNameError(null);
+        
+        // Parse and validate the name
+        const validationError = validateName(value);
+        if (validationError) {
+            setNameError(validationError);
+            return;
+        }
+        
+        // If valid, parse and set the data
+        const { first_name, last_name } = parseName(value);
+        setData((prevData) => ({
+            ...prevData,
+            first_name,
+            last_name
+        }));
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+        
+        // Final validation before submission
+        const validationError = validateName(fullNameInput);
+        if (validationError) {
+            setNameError(validationError);
+            return;
+        }
+        
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -37,7 +124,7 @@ export default function Register() {
             <form className="flex flex-col gap-6" onSubmit={submit}>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">Full Name</Label>
                         <Input
                             id="name"
                             type="text"
@@ -45,12 +132,17 @@ export default function Register() {
                             autoFocus
                             tabIndex={1}
                             autoComplete="name"
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
+                            value={fullNameInput}
+                            onChange={(e) => handleNameChange(e.target.value)}
                             disabled={processing}
-                            placeholder="Full name"
+                            placeholder="e.g., Amoni Vivo"
                         />
-                        <InputError message={errors.name} className="mt-2" />
+                        <InputError message={nameError || errors.first_name || errors.last_name} className="mt-2" />
+                        {fullNameInput && !nameError && data.first_name && data.last_name && (
+                            <div className="text-sm text-muted-foreground">
+                                First name: {data.first_name}, Last name: {data.last_name}
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid gap-2">
@@ -101,7 +193,7 @@ export default function Register() {
                         <InputError message={errors.password_confirmation} />
                     </div>
 
-                    <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
+                    <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing || !!nameError}>
                         {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
                         Create account
                     </Button>
