@@ -30,7 +30,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('work-orders/{workOrder}', [WorkOrderController::class, 'show'])->name('work-orders.show');
     
     Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices');
-    Route::get('invoices/{invoice}/download', [InvoiceController::class, 'download'])->name('invoices.download');
+    Route::get('invoices/{invoiceId}/download', [InvoiceController::class, 'download'])->name('invoices.download');
 });
 
 require __DIR__.'/settings.php';

@@ -272,9 +272,9 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
                                         <p><strong>Total:</strong> {formatCurrency(workOrder.invoice.total_amount)}</p>
                                     </div>
                                     <Button asChild variant="outline" size="sm" className="w-full">
-                                        <Link href={`/invoices/${workOrder.invoice.id}/download`}>
+                                        <a href={`/invoices/${workOrder.invoice.id}/download`} target="_blank" rel="noopener noreferrer">
                                             Download Invoice
-                                        </Link>
+                                        </a>
                                     </Button>
                                 </CardContent>
                             </Card>

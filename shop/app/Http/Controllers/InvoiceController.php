@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -66,13 +67,18 @@ class InvoiceController extends Controller
     /**
      * Download invoice as PDF.
      */
-    public function download(Request $request, Invoice $invoice): Response
+    public function download(Request $request, $invoiceId): StreamedResponse
     {
         $user = $request->user();
 
-        // Ensure the invoice belongs to the authenticated user
-        if ($invoice->user_id !== $user->id) {
-            abort(403, 'Unauthorized action.');
+        // Find the invoice manually to avoid route model binding issues
+        $invoice = Invoice::where('id', $invoiceId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        // Check if invoice exists and belongs to user
+        if (!$invoice) {
+            abort(404, 'Invoice not found or access denied.');
         }
 
         // Load relationships for the PDF
@@ -91,7 +97,26 @@ class InvoiceController extends Controller
             'parts' => $invoice->workOrder->parts,
         ]);
 
-        // Return PDF download
-        return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
+        // Set PDF options for better output
+        $pdf->setPaper('A4', 'portrait');
+        $pdf->setOptions([
+            'dpi' => 150,
+            'defaultFont' => 'DejaVu Sans',
+            'isRemoteEnabled' => false,
+            'chroot' => public_path(),
+        ]);
+
+        // Generate filename
+        $filename = "invoice-{$invoice->invoice_number}.pdf";
+        
+        // Force download using the download method with proper headers
+        return response()->streamDownload(function() use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 } 

@@ -198,10 +198,10 @@ export default function Invoices({ invoices, summary }: InvoicesProps) {
                                                         size="sm"
                                                         className="flex items-center gap-2"
                                                     >
-                                                        <Link href={`/invoices/${invoice.id}/download`}>
+                                                        <a href={`/invoices/${invoice.id}/download`} target="_blank" rel="noopener noreferrer">
                                                             <Download className="h-4 w-4" />
                                                             Download PDF
-                                                        </Link>
+                                                        </a>
                                                     </Button>
                                                 </div>
 
