@@ -35,3 +35,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+// Admin routes with prefix
+Route::prefix('admin')->name('admin.')->group(function () {
+    require __DIR__.'/admin.php';
+});
+
+// Mechanic routes with prefix
+Route::prefix('mechanic')->name('mechanic.')->group(function () {
+    require __DIR__.'/mechanic.php';
+});
