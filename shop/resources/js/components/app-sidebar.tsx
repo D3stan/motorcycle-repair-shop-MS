@@ -23,6 +23,10 @@ const mainNavItems: NavItem[] = [
         title: 'Work Orders',
         href: '/work-orders',
     },
+    {
+        title: 'Invoices',
+        href: '/invoices',
+    },
 ];
 
 const footerNavItems: NavItem[] = [];
