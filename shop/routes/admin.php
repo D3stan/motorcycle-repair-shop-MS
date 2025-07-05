@@ -3,6 +3,8 @@
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\MotorcycleModelController;
+use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\WorkOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -14,16 +16,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Motorcycle Model Management
     Route::resource('motorcycles', MotorcycleModelController::class);
     
+    // Staff Management
+    Route::resource('staff', StaffController::class);
+    
+    // Work Orders Management
+    Route::resource('work-orders', WorkOrderController::class);
+    Route::post('work-orders/{workOrder}/assign-mechanics', [WorkOrderController::class, 'assignMechanics'])->name('work-orders.assign-mechanics');
+    Route::patch('work-orders/{workOrder}/status', [WorkOrderController::class, 'updateStatus'])->name('work-orders.update-status');
+    
     // Legacy user management (keeping for compatibility)
     Route::resource('users', UserController::class);
-    
-    Route::get('staff', function () {
-        return response()->json(['message' => 'Staff Management - To be implemented']);
-    })->name('staff');
-    
-    Route::get('work-orders', function () {
-        return response()->json(['message' => 'Admin Work Orders - To be implemented']);
-    })->name('work-orders');
     
     Route::get('inventory', function () {
         return response()->json(['message' => 'Inventory Management - To be implemented']);

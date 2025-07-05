@@ -175,7 +175,7 @@ export default function AdminDashboard({
                                 <Link href="/admin/customers">Manage Customers</Link>
                             </Button>
                             <Button asChild variant="outline" className="w-full justify-start">
-                                <Link href="/admin/mechanics">Manage Staff</Link>
+                                <Link href="/admin/staff">Manage Staff</Link>
                             </Button>
                             <Button asChild variant="outline" className="w-full justify-start">
                                 <Link href="/admin/inventory">Inventory</Link>

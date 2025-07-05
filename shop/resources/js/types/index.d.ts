@@ -122,3 +122,153 @@ export interface MotorcycleOwner {
     owner: string;
     owner_email: string;
 }
+
+// Admin Staff Management interfaces
+export interface AdminStaff {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+    tax_code?: string;
+    assigned_work_orders_count: number;
+    active_work_orders_count: number;
+    created_at: string;
+}
+
+export interface AdminStaffDetails {
+    id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+    tax_code?: string;
+    created_at: string;
+}
+
+export interface AdminStaffStatistics {
+    total_work_orders: number;
+    completed_work_orders: number;
+    active_work_orders: number;
+    completion_rate: number;
+}
+
+// Admin Work Order interfaces
+export interface AdminWorkOrder {
+    id: number;
+    description: string;
+    status: string;
+    started_at?: string;
+    completed_at?: string;
+    total_cost: number;
+    labor_cost: number;
+    parts_cost: number;
+    customer: string;
+    customer_email: string;
+    motorcycle: string;
+    motorcycle_plate: string;
+    mechanics: AdminWorkOrderMechanic[];
+    appointment_id?: number;
+    created_at: string;
+    assigned_at?: string;
+    pivot_started_at?: string;
+    pivot_completed_at?: string;
+    pivot_notes?: string;
+}
+
+export interface AdminWorkOrderMechanic {
+    id: number;
+    name: string;
+    assigned_at?: string;
+    started_at?: string;
+    completed_at?: string;
+}
+
+export interface AdminWorkOrderDetails {
+    id: number;
+    description: string;
+    status: string;
+    started_at?: string;
+    completed_at?: string;
+    total_cost: number;
+    labor_cost: number;
+    parts_cost: number;
+    notes?: string;
+    created_at: string;
+}
+
+export interface AdminWorkOrderCustomer {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+}
+
+export interface AdminWorkOrderMotorcycle {
+    id: number;
+    brand: string;
+    model: string;
+    year: number;
+    plate: string;
+    vin: string;
+}
+
+export interface AdminWorkOrderPart {
+    id: number;
+    name: string;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+}
+
+export interface AdminWorkOrderAppointment {
+    id: number;
+    date: string;
+    time: string;
+    type: string;
+}
+
+export interface AdminWorkOrderInvoice {
+    id: number;
+    invoice_number: string;
+    status: string;
+    total_amount: number;
+}
+
+export interface AdminWorkOrderStatistics {
+    total: number;
+    pending: number;
+    in_progress: number;
+    completed: number;
+    cancelled: number;
+}
+
+// Form interfaces for creating/editing
+export interface CustomerOption {
+    id: number;
+    name: string;
+    email: string;
+    motorcycles: MotorcycleOption[];
+}
+
+export interface MotorcycleOption {
+    id: number;
+    name: string;
+    plate: string;
+    year: number;
+}
+
+export interface MechanicOption {
+    id: number;
+    name: string;
+    email: string;
+}
+
+export interface AppointmentOption {
+    id: number;
+    customer: string;
+    motorcycle: string;
+    date: string;
+    time: string;
+    type: string;
+}
