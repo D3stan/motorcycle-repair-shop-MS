@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -96,7 +96,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
     };
 
     const handleViewHistory = (motorcycleId: number) => {
-        window.location.href = `/garage/${motorcycleId}/history`;
+        router.visit(`/garage/${motorcycleId}/history`);
     };
 
     const handleAddSubmit = (e: React.FormEvent) => {
