@@ -25,6 +25,7 @@ class GarageController extends Controller
             ->map(function ($motorcycle) {
                 return [
                     'id' => $motorcycle->id,
+                    'motorcycle_model_id' => $motorcycle->motorcycle_model_id,
                     'brand' => $motorcycle->motorcycleModel->brand,
                     'model' => $motorcycle->motorcycleModel->name,
                     'year' => $motorcycle->registration_year,
@@ -32,6 +33,20 @@ class GarageController extends Controller
                     'vin' => $motorcycle->vin,
                     'engine_size' => $motorcycle->motorcycleModel->engine_size,
                     'notes' => $motorcycle->notes,
+                ];
+            });
+
+        // Get all motorcycle models for the forms
+        $motorcycleModels = \App\Models\MotorcycleModel::orderBy('brand')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($model) {
+                return [
+                    'id' => $model->id,
+                    'brand' => $model->brand,
+                    'name' => $model->name,
+                    'engine_size' => $model->engine_size,
+                    'display_name' => $model->brand . ' ' . $model->name . ' (' . $model->engine_size . 'cc)',
                 ];
             });
 
@@ -52,6 +67,7 @@ class GarageController extends Controller
 
         return Inertia::render('garage', [
             'motorcycles' => $motorcycles,
+            'motorcycleModels' => $motorcycleModels,
             'pendingServicesCount' => $pendingServicesCount,
             'lastServiceDate' => $lastServiceDate,
         ]);
