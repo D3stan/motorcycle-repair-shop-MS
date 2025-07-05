@@ -74,6 +74,16 @@ class DatabaseSeeder extends Seeder
         $motorcycles->take(30)->each(function ($motorcycle) use (&$appointments) {
             $motorcycleAppointments = Appointment::factory()
                 ->count(rand(1, 4))
+                ->state(function () {
+                    // Ensure most appointments are in the past
+                    $appointmentDate = fake()->dateTimeBetween('-4 months', '-1 day');
+                    $status = fake()->randomElement(['completed', 'completed', 'completed', 'cancelled', 'pending']); // Bias toward completed
+                    
+                    return [
+                        'appointment_date' => $appointmentDate->format('Y-m-d'),
+                        'status' => $status,
+                    ];
+                })
                 ->create([
                     'user_id' => $motorcycle->user_id,
                     'motorcycle_id' => $motorcycle->id,
@@ -86,6 +96,17 @@ class DatabaseSeeder extends Seeder
         $motorcycles->take(25)->each(function ($motorcycle) use ($appointments, &$workOrders) {
             $motorcycleWorkOrders = WorkOrder::factory()
                 ->count(rand(1, 3))
+                ->state(function () {
+                    // Ensure completed work orders have dates in the past
+                    $startDate = fake()->dateTimeBetween('-6 months', '-1 week');
+                    $status = fake()->randomElement(['pending', 'in_progress', 'completed', 'cancelled']);
+                    
+                    return [
+                        'started_at' => in_array($status, ['in_progress', 'completed']) ? $startDate : null,
+                        'completed_at' => $status === 'completed' ? fake()->dateTimeBetween($startDate, '-1 day') : null,
+                        'status' => $status,
+                    ];
+                })
                 ->create([
                     'user_id' => $motorcycle->user_id,
                     'motorcycle_id' => $motorcycle->id,
@@ -95,15 +116,42 @@ class DatabaseSeeder extends Seeder
         });
 
         // Create work sessions
-        $workSessions = WorkSession::factory()->count(40)->create();
+        $workSessions = WorkSession::factory()
+            ->count(40)
+            ->state(function () {
+                // Ensure all work sessions are in the past
+                $startTime = fake()->dateTimeBetween('-6 months', '-1 day');
+                $hoursWorked = fake()->randomFloat(2, 0.5, 8);
+                $endTime = (clone $startTime)->modify("+{$hoursWorked} hours");
+                
+                return [
+                    'start_time' => $startTime,
+                    'end_time' => fake()->boolean(90) ? $endTime : null, // 90% completed sessions
+                ];
+            })
+            ->create();
 
         // Create invoices for completed work orders
         $completedWorkOrders = $workOrders->where('status', 'completed');
         $completedWorkOrders->each(function ($workOrder) {
-            Invoice::factory()->create([
-                'user_id' => $workOrder->user_id,
-                'work_order_id' => $workOrder->id,
-            ]);
+            Invoice::factory()
+                ->state(function () use ($workOrder) {
+                    // Ensure invoice dates are in the past, after work completion
+                    $issueDate = fake()->dateTimeBetween($workOrder->completed_at ?? '-6 months', '-1 day');
+                    $dueDate = (clone $issueDate)->modify('+30 days');
+                    $status = fake()->randomElement(['paid', 'paid', 'pending', 'overdue']); // Bias toward paid
+                    
+                    return [
+                        'issue_date' => $issueDate->format('Y-m-d'),
+                        'due_date' => $dueDate->format('Y-m-d'),
+                        'status' => $status,
+                        'paid_at' => $status === 'paid' ? fake()->dateTimeBetween($issueDate, '-1 day') : null,
+                    ];
+                })
+                ->create([
+                    'user_id' => $workOrder->user_id,
+                    'work_order_id' => $workOrder->id,
+                ]);
         });
 
         // Create relationships

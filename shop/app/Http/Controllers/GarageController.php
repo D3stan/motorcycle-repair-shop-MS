@@ -47,7 +47,7 @@ class GarageController extends Controller
             ->first();
 
         $lastServiceDate = $lastService ? 
-            now()->diffInDays($lastService->completed_at) . ' days ago' : 
+            floor($lastService->completed_at->diffInDays(now())) . ' days ago' : 
             'No services yet';
 
         return Inertia::render('garage', [
