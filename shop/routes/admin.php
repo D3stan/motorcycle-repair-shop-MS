@@ -1,19 +1,21 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\MotorcycleModelController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Admin role check middleware would go here in a full implementation
     
     // Customer Management
-    Route::get('customers', [UserController::class, 'index'])->name('customers');
-    Route::resource('users', UserController::class);
+    Route::resource('customers', CustomerController::class);
     
-    // Placeholder routes for navigation - these would be implemented with proper controllers
-    Route::get('motorcycles', function () {
-        return response()->json(['message' => 'Motorcycle Management - To be implemented']);
-    })->name('motorcycles');
+    // Motorcycle Model Management
+    Route::resource('motorcycles', MotorcycleModelController::class);
+    
+    // Legacy user management (keeping for compatibility)
+    Route::resource('users', UserController::class);
     
     Route::get('staff', function () {
         return response()->json(['message' => 'Staff Management - To be implemented']);
