@@ -134,24 +134,20 @@ class DatabaseSeeder extends Seeder
         // Create invoices for completed work orders
         $completedWorkOrders = $workOrders->where('status', 'completed');
         $completedWorkOrders->each(function ($workOrder) {
+            // Ensure invoice dates are in the past, after work completion
+            $issueDate = fake()->dateTimeBetween($workOrder->completed_at ?? '-6 months', '-1 day');
+            $dueDate = (clone $issueDate)->modify('+30 days');
+            $status = fake()->randomElement(['paid', 'paid', 'pending', 'overdue']); // Bias toward paid
+            
             Invoice::factory()
-                ->state(function () use ($workOrder) {
-                    // Ensure invoice dates are in the past, after work completion
-                    $issueDate = fake()->dateTimeBetween($workOrder->completed_at ?? '-6 months', '-1 day');
-                    $dueDate = (clone $issueDate)->modify('+30 days');
-                    $status = fake()->randomElement(['paid', 'paid', 'pending', 'overdue']); // Bias toward paid
-                    
-                    return [
-                        'issue_date' => $issueDate->format('Y-m-d'),
-                        'due_date' => $dueDate->format('Y-m-d'),
-                        'status' => $status,
-                        'paid_at' => $status === 'paid' ? fake()->dateTimeBetween($issueDate, '-1 day') : null,
-                    ];
-                })
-                ->create([
-                    'user_id' => $workOrder->user_id,
-                    'work_order_id' => $workOrder->id,
-                ]);
+                ->forWorkOrder($workOrder)
+                ->state([
+                    'issue_date' => $issueDate->format('Y-m-d'),
+                    'due_date' => $dueDate->format('Y-m-d'),
+                    'status' => $status,
+                    'paid_at' => $status === 'paid' ? fake()->dateTimeBetween($issueDate, '-1 day') : null,
+                ])
+                ->create();
         });
 
         // Create relationships
@@ -159,12 +155,15 @@ class DatabaseSeeder extends Seeder
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
+        $invoiceCount = Invoice::count();
+        
         $this->command->info('Database seeded successfully!');
         $this->command->info('Admin user created: admin@shop.com (password: password)');
         $this->command->info("Created {$customers->count()} customers, {$mechanics->count()} mechanics");
         $this->command->info("Created {$motorcycles->count()} motorcycles from {$motorcycleModels->count()} models");
         $this->command->info("Created {$parts->count()} parts from {$suppliers->count()} suppliers");
         $this->command->info("Created {$workOrders->count()} work orders and {$appointments->count()} appointments");
+        $this->command->info("Created {$invoiceCount} invoices for completed work orders");
     }
 
     private function createStatuses(): void
