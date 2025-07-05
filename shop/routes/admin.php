@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\MotorcycleModelController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\WorkOrderController;
+use App\Http\Controllers\Admin\InventoryController;
+use App\Http\Controllers\Admin\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -24,16 +26,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('work-orders/{workOrder}/assign-mechanics', [WorkOrderController::class, 'assignMechanics'])->name('work-orders.assign-mechanics');
     Route::patch('work-orders/{workOrder}/status', [WorkOrderController::class, 'updateStatus'])->name('work-orders.update-status');
     
+    // Inventory Management
+    Route::resource('inventory', InventoryController::class);
+    
+    // Supplier Management
+    Route::resource('suppliers', SupplierController::class);
+    
     // Legacy user management (keeping for compatibility)
     Route::resource('users', UserController::class);
-    
-    Route::get('inventory', function () {
-        return response()->json(['message' => 'Inventory Management - To be implemented']);
-    })->name('inventory');
-    
-    Route::get('suppliers', function () {
-        return response()->json(['message' => 'Supplier Management - To be implemented']);
-    })->name('suppliers');
     
     Route::get('financial', function () {
         return response()->json(['message' => 'Financial Management - To be implemented']);

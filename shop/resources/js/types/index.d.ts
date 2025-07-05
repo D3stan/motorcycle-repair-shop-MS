@@ -272,3 +272,73 @@ export interface AppointmentOption {
     time: string;
     type: string;
 }
+
+// Admin Inventory Management interfaces
+export interface AdminPart {
+    id: number;
+    part_code: string;
+    brand: string;
+    name: string;
+    description?: string;
+    supplier_price: number;
+    selling_price: number;
+    category: string;
+    stock_quantity: number;
+    minimum_stock: number;
+    supplier_id: number;
+    supplier_name: string;
+    is_low_stock: boolean;
+    created_at: string;
+}
+
+export interface AdminPartDetails {
+    id: number;
+    part_code: string;
+    brand: string;
+    name: string;
+    description?: string;
+    supplier_price: number;
+    selling_price: number;
+    category: string;
+    stock_quantity: number;
+    minimum_stock: number;
+    supplier_id: number;
+    supplier_name: string;
+    is_low_stock: boolean;
+    created_at: string;
+}
+
+export interface AdminSupplier {
+    id: number;
+    supplier_code: string;
+    name: string;
+    phone: string;
+    email: string;
+    address?: string;
+    city?: string;
+    postal_code?: string;
+    country: string;
+    notes?: string;
+    parts_count: number;
+    created_at: string;
+}
+
+export interface AdminSupplierDetails {
+    id: number;
+    supplier_code: string;
+    name: string;
+    phone: string;
+    email: string;
+    address?: string;
+    city?: string;
+    postal_code?: string;
+    country: string;
+    notes?: string;
+    created_at: string;
+}
+
+export interface SupplierOption {
+    id: number;
+    name: string;
+    supplier_code: string;
+}
