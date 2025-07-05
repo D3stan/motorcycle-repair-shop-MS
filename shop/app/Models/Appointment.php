@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Appointment extends Model
 {
@@ -51,5 +52,13 @@ class Appointment extends Model
     public function motorcycle(): BelongsTo
     {
         return $this->belongsTo(Motorcycle::class);
+    }
+
+    /**
+     * Get the work orders created from this appointment.
+     */
+    public function workOrders(): HasMany
+    {
+        return $this->hasMany(WorkOrder::class);
     }
 } 

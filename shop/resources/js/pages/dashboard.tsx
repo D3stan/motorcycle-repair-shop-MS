@@ -12,6 +12,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface DashboardProps {
+    userType?: string;
     upcomingAppointments: Array<{
         id: number;
         date: string;
@@ -30,21 +31,24 @@ interface DashboardProps {
         date: string;
         amount: string | null;
     }>;
+    motorcyclesCount?: number;
 }
 
 export default function Dashboard({ 
+    userType = 'customer',
     upcomingAppointments,
     activeWorkOrdersCount,
     outstandingBalance,
     pendingInvoicesCount,
-    recentActivity
+    recentActivity,
+    motorcyclesCount = 0
 }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Quick Stats Cards */}
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                <div className="grid auto-rows-min gap-4 md:grid-cols-4">
                     {/* Current Appointments Status */}
                     <Card>
                         <CardHeader className="pb-2">
@@ -87,6 +91,20 @@ export default function Dashboard({
                             </div>
                             <div className="text-sm text-muted-foreground">
                                 {pendingInvoicesCount > 0 ? `${pendingInvoicesCount} pending invoices` : 'All invoices paid'}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* My Motorcycles */}
+                    <Card>
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-base">My Motorcycles</CardTitle>
+                            <CardDescription>Registered vehicles</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold mb-2">{motorcyclesCount}</div>
+                            <div className="text-sm text-muted-foreground">
+                                {motorcyclesCount === 0 ? 'No motorcycles added' : `${motorcyclesCount} registered`}
                             </div>
                         </CardContent>
                     </Card>
