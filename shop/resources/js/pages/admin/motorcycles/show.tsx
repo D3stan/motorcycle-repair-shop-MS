@@ -90,7 +90,7 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                             </div>
                             <div className="space-y-2">
                                 <div className="text-sm font-medium">Model Code</div>
-                                <code className="bg-gray-100 px-2 py-1 rounded text-sm">
+                                <code className="bg-gray-100 px-2 py-1 rounded text-sm text-black">
                                     {motorcycleModel.model_code}
                                 </code>
                             </div>
@@ -185,7 +185,7 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                                                 </td>
                                                 <td className="p-2">{motorcycle.registration_year}</td>
                                                 <td className="p-2">
-                                                    <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                                                    <code className="bg-gray-100 px-2 py-1 rounded text-xs text-black">
                                                         {motorcycle.vin}
                                                     </code>
                                                 </td>

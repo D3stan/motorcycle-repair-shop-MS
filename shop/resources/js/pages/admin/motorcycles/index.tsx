@@ -152,7 +152,7 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
                                                 </div>
                                             </td>
                                             <td className="p-2">
-                                                <code className="bg-gray-100 px-2 py-1 rounded text-sm">
+                                                <code className="bg-gray-100 px-2 py-1 rounded text-sm text-black">
                                                     {model.model_code}
                                                 </code>
                                             </td>
