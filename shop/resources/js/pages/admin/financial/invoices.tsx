@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { FileText, Eye, DollarSign, Clock, AlertTriangle, CheckCircle, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -60,6 +60,23 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
     const [status, setStatus] = useState(filters.status && filters.status !== '' ? filters.status : 'all');
     const [dateFrom, setDateFrom] = useState(filters.date_from || '');
     const [dateTo, setDateTo] = useState(filters.date_to || '');
+    const [initialLoad, setInitialLoad] = useState(true);
+
+    // Auto-apply filters when status changes
+    useEffect(() => {
+        if (!initialLoad) {
+            router.get('/admin/financial/invoices', {
+                search,
+                status: status === 'all' ? '' : status,
+                date_from: dateFrom,
+                date_to: dateTo,
+            }, {
+                preserveState: true,
+            });
+        } else {
+            setInitialLoad(false);
+        }
+    }, [status]);
 
     const handleSearch = () => {
         router.get('/admin/financial/invoices', {
@@ -151,6 +168,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                         <SelectItem value="all">All statuses</SelectItem>
                                         <SelectItem value="paid">Paid</SelectItem>
                                         <SelectItem value="pending">Pending</SelectItem>
+                                        <SelectItem value="overdue">Overdue</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

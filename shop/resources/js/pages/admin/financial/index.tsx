@@ -263,7 +263,7 @@ export default function FinancialIndex({
                                 </Link>
                             </Button>
                             <Button asChild variant="outline" className="justify-start">
-                                <Link href="/admin/financial/invoices?status=pending&date_to=" 
+                                <Link href="/admin/financial/invoices?status=overdue" 
                                       replace={false}>
                                     <AlertTriangle className="h-4 w-4 mr-2" />
                                     Overdue Invoices

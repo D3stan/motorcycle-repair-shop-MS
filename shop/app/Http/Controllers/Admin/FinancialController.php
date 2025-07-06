@@ -86,7 +86,7 @@ class FinancialController extends Controller
                     'total_amount' => (float) $invoice->total_amount,
                     'status' => $invoice->status,
                     'paid_at' => $invoice->paid_at?->format('Y-m-d'),
-                    'is_overdue' => $invoice->status === 'pending' && $invoice->due_date < now(),
+                    'is_overdue' => $invoice->status === 'overdue' && $invoice->due_date < now(),
                 ];
             });
             
@@ -136,7 +136,13 @@ class FinancialController extends Controller
         
         // Apply filters
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            if ($request->status === 'overdue') {
+                $query->where('status', 'pending')
+                      ->where('due_date', '<', now());
+            } else {
+                $query->where('status', $request->status)
+                      ->where('due_date', '>', now());
+            }
         }
         
         if ($request->filled('search')) {
