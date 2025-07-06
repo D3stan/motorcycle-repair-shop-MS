@@ -219,20 +219,24 @@ export default function ScheduleIndex({
                                     </div>
                                     <div className="space-y-1">
                                         {day.appointments.slice(0, 2).map((appointment) => (
-                                            <div 
+                                            <Link
                                                 key={appointment.id} 
-                                                className="text-xs p-1 bg-blue-50 rounded border-l-2 border-blue-500"
+                                                href={`/admin/schedule/appointments/${appointment.id}`}
+                                                className="block text-xs p-1 bg-blue-50 hover:bg-blue-100 rounded border-l-2 border-blue-500 transition-colors cursor-pointer"
                                             >
-                                                <div className="font-medium">{appointment.time}</div>
-                                                <div className="text-muted-foreground truncate">
+                                                <div className="font-medium text-blue-900">{appointment.time}</div>
+                                                <div className="text-blue-700 truncate">
                                                     {appointment.customer}
                                                 </div>
-                                            </div>
+                                            </Link>
                                         ))}
                                         {day.appointments.length > 2 && (
-                                            <div className="text-xs text-muted-foreground">
+                                            <Link
+                                                href={`/admin/schedule/appointments?date_from=${day.date}&date_to=${day.date}`}
+                                                className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                            >
                                                 +{day.appointments.length - 2} more
-                                            </div>
+                                            </Link>
                                         )}
                                         {day.appointments.length === 0 && (
                                             <div className="text-xs text-muted-foreground">

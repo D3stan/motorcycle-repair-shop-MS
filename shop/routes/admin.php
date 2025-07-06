@@ -55,6 +55,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/appointments/{appointment}/edit', [ScheduleController::class, 'edit'])->name('appointments.edit');
         Route::put('/appointments/{appointment}', [ScheduleController::class, 'update'])->name('appointments.update');
         Route::delete('/appointments/{appointment}', [ScheduleController::class, 'destroy'])->name('appointments.destroy');
-        Route::post('/appointments/{appointment}/create-work-order', [ScheduleController::class, 'createWorkOrder'])->name('appointments.create-work-order');
+
     });
 });

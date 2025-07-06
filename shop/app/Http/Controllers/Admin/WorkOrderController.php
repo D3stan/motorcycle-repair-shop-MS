@@ -76,7 +76,7 @@ class WorkOrderController extends Controller
     /**
      * Show the form for creating a new work order.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $customers = User::where('type', 'customer')
             ->with('motorcycles.motorcycleModel')
@@ -124,10 +124,29 @@ class WorkOrderController extends Controller
                 ];
             });
 
+        // Pre-fill data if coming from appointment
+        $prefilledData = null;
+        if ($request->has('appointment_id')) {
+            $appointment = Appointment::with(['user', 'motorcycle.motorcycleModel'])
+                ->find($request->appointment_id);
+            
+            if ($appointment) {
+                $prefilledData = [
+                    'appointment_id' => $appointment->id,
+                    'user_id' => $appointment->user_id,
+                    'motorcycle_id' => $appointment->motorcycle_id,
+                    'description' => 'Work order for ' . ucfirst(str_replace('_', ' ', $appointment->type)) . ' appointment scheduled on ' . $appointment->appointment_date->format('M j, Y'),
+                    'customer_name' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
+                    'motorcycle_name' => $appointment->motorcycle->motorcycleModel->brand . ' ' . $appointment->motorcycle->motorcycleModel->name . ' (' . $appointment->motorcycle->license_plate . ')',
+                ];
+            }
+        }
+
         return Inertia::render('admin/work-orders/create', [
             'customers' => $customers,
             'mechanics' => $mechanics,
             'appointments' => $appointments,
+            'prefilledData' => $prefilledData,
         ]);
     }
 

@@ -194,7 +194,16 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                                 <label className="text-sm font-medium">Status</label>
                                 <select
                                     value={selectedStatus}
-                                    onChange={(e) => setSelectedStatus(e.target.value)}
+                                    onChange={(e) => {
+                                        setSelectedStatus(e.target.value);
+                                        router.get('/admin/schedule/appointments', {
+                                            search: searchQuery || undefined,
+                                            status: e.target.value || undefined,
+                                            type: selectedType || undefined,
+                                            date_from: dateFrom || undefined,
+                                            date_to: dateTo || undefined,
+                                        });
+                                    }}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 >
                                     <option value="">All Statuses</option>
@@ -210,7 +219,16 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                                 <label className="text-sm font-medium">Type</label>
                                 <select
                                     value={selectedType}
-                                    onChange={(e) => setSelectedType(e.target.value)}
+                                    onChange={(e) => {
+                                        setSelectedType(e.target.value);
+                                        router.get('/admin/schedule/appointments', {
+                                            search: searchQuery || undefined,
+                                            status: selectedStatus || undefined,
+                                            type: e.target.value || undefined,
+                                            date_from: dateFrom || undefined,
+                                            date_to: dateTo || undefined,
+                                        });
+                                    }}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 >
                                     <option value="">All Types</option>
@@ -258,16 +276,16 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                             <div>
                                 <CardTitle>Appointments</CardTitle>
                                 <CardDescription>
-                                    {appointments.meta?.total || 0} appointments found
+                                    {appointments.data.length} appointments found
                                 </CardDescription>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
                         {appointments.data.length > 0 ? (
-                            <div className="space-y-4">
-                                {appointments.data.map((appointment) => (
-                                    <div key={appointment.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                                                    <div className="space-y-4">
+                            {appointments.data.map((appointment) => (
+                                <div key={appointment.id} className="border rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all duration-200">
                                         <div className="flex items-center justify-between">
                                             <div className="flex-1 space-y-2">
                                                 <div className="flex items-center gap-4">
@@ -285,7 +303,7 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                                                     </div>
                                                 </div>
                                                 
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-600">
                                                     <div className="flex items-center gap-2">
                                                         <Calendar className="h-4 w-4" />
                                                         {formatDate(appointment.appointment_date)} at {appointment.appointment_time}
@@ -301,8 +319,8 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                                                 </div>
 
                                                 {appointment.notes && (
-                                                    <div className="text-sm text-muted-foreground">
-                                                        <span className="font-medium">Notes:</span> {appointment.notes}
+                                                    <div className="text-sm text-gray-700">
+                                                        <span className="font-medium text-gray-600">Notes:</span> {appointment.notes}
                                                     </div>
                                                 )}
                                             </div>

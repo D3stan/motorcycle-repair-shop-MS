@@ -174,11 +174,11 @@ export default function AppointmentCreate({ customers }: Props) {
 
                                 {selectedCustomer && (
                                     <div className="bg-gray-50 p-3 rounded-md">
-                                        <p className="text-sm font-medium">Customer Details:</p>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-sm font-medium text-gray-900">Customer Details:</p>
+                                        <p className="text-sm text-gray-700">
                                             {selectedCustomer.name} - {selectedCustomer.email}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-sm text-gray-600">
                                             {selectedCustomer.motorcycles.length} motorcycle(s) available
                                         </p>
                                     </div>

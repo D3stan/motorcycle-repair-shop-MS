@@ -98,7 +98,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
     };
 
     const handleCreateWorkOrder = () => {
-        router.post(`/admin/schedule/appointments/${appointment.id}/create-work-order`);
+        router.get(`/admin/work-orders/create?appointment_id=${appointment.id}&user_id=${customer.id}&motorcycle_id=${motorcycle.id}`);
     };
 
     const getStatusBadge = (status: string) => {
@@ -357,7 +357,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                             {workOrders.length > 0 ? (
                                 <div className="space-y-4">
                                     {workOrders.map((workOrder) => (
-                                        <div key={workOrder.id} className="border rounded-lg p-4">
+                                        <div key={workOrder.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                                             <div className="flex items-center justify-between mb-2">
                                                 <h4 className="font-medium">Work Order #{workOrder.id}</h4>
                                                 <Badge variant="outline">{workOrder.status}</Badge>
