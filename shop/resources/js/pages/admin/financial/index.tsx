@@ -66,9 +66,6 @@ export default function FinancialIndex({
                         <Button asChild>
                             <Link href="/admin/financial/invoices">View All Invoices</Link>
                         </Button>
-                        <Button asChild variant="outline">
-                            <Link href="/admin/financial/reports">Financial Reports</Link>
-                        </Button>
                     </div>
                 </div>
 
@@ -258,7 +255,7 @@ export default function FinancialIndex({
                         <CardDescription>Financial management shortcuts</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid gap-2 md:grid-cols-4">
+                        <div className="grid gap-2 md:grid-cols-3">
                             <Button asChild variant="outline" className="justify-start">
                                 <Link href="/admin/financial/invoices?status=pending">
                                     <Clock className="h-4 w-4 mr-2" />
@@ -276,12 +273,6 @@ export default function FinancialIndex({
                                 <Link href="/admin/work-orders/create">
                                     <FileText className="h-4 w-4 mr-2" />
                                     Create Work Order
-                                </Link>
-                            </Button>
-                            <Button asChild variant="outline" className="justify-start">
-                                <Link href="/admin/financial/reports">
-                                    <TrendingUp className="h-4 w-4 mr-2" />
-                                    Generate Report
                                 </Link>
                             </Button>
                         </div>

@@ -43,7 +43,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/invoices', [FinancialController::class, 'invoices'])->name('invoices');
         Route::get('/invoices/{invoice}', [FinancialController::class, 'showInvoice'])->name('invoices.show');
         Route::patch('/invoices/{invoice}/mark-as-paid', [FinancialController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
-        Route::get('/reports', [FinancialController::class, 'reports'])->name('reports');
     });
     
     // Schedule Management
