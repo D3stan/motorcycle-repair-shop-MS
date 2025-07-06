@@ -1,0 +1,63 @@
+# Development files
+.env.example
+.env.local
+.env.development
+.env.testing
+
+# Development dependencies
+node_modules/
+vendor/
+
+# Laravel specific
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/public/*
+bootstrap/cache/*
+
+# Testing
+tests/
+.phpunit.result.cache
+phpunit.xml
+
+# Development tools
+.eslintrc.js
+.eslintrc.json
+eslint.config.js
+.prettierrc
+.prettierignore
+prettier.config.js
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (optional - remove if you want docs deployed)
+README.md
+DEPLOYMENT.md
+RAILWAY_DEPLOY.md
+
+# Deployment scripts
+deploy-prep.sh
+deploy-prep.bat
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# NPM/Composer caches
+.npm/
+.composer/
+
+# Temporary files
+tmp/
+temp/ 

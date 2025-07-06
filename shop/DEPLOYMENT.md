@@ -60,7 +60,9 @@ Copy the generated key for later use.
 2. Sign up with GitHub
 3. Click "New Project" → "Deploy from GitHub repo"
 4. Select your motorcycle repair shop repository
-5. Railway will auto-detect Laravel and start building
+5. Railway will auto-detect Laravel and use the included `railway.toml` configuration
+
+> 📖 **For detailed Railway deployment instructions, see [RAILWAY_DEPLOY.md](RAILWAY_DEPLOY.md)**
 
 ### Step 4: Configure Environment Variables
 
