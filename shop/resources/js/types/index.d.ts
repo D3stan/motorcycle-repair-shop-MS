@@ -342,3 +342,161 @@ export interface SupplierOption {
     name: string;
     supplier_code: string;
 }
+
+// Admin Financial Management interfaces
+export interface AdminFinancialAnalytics {
+    current_month_revenue: number;
+    previous_month_revenue: number;
+    revenue_growth: number;
+    monthly_revenue: MonthlyRevenue[];
+}
+
+export interface MonthlyRevenue {
+    month: string;
+    revenue: number;
+}
+
+export interface AdminInvoiceStatistics {
+    total_invoices: number;
+    paid_invoices: number;
+    pending_invoices: number;
+    overdue_invoices: number;
+    outstanding_payments: number;
+}
+
+export interface AdminInvoice {
+    id: number;
+    invoice_number: string;
+    customer: string;
+    customer_email: string;
+    motorcycle: string;
+    issue_date: string;
+    due_date: string;
+    subtotal: number;
+    tax_amount: number;
+    total_amount: number;
+    status: string;
+    paid_at?: string;
+    is_overdue: boolean;
+    created_at: string;
+}
+
+export interface AdminInvoiceDetails {
+    id: number;
+    invoice_number: string;
+    issue_date: string;
+    due_date: string;
+    subtotal: number;
+    tax_amount: number;
+    total_amount: number;
+    status: string;
+    paid_at?: string;
+    created_at: string;
+}
+
+export interface AdminTopCustomer {
+    id: number;
+    name: string;
+    email: string;
+    total_revenue: number;
+}
+
+export interface AdminFinancialReport {
+    date_from: string;
+    date_to: string;
+    total_revenue: number;
+    total_invoices: number;
+    paid_invoices: number;
+    average_invoice_amount: number;
+}
+
+export interface AdminFinancialMonthlyBreakdown {
+    month: string;
+    revenue: number;
+    invoices_count: number;
+}
+
+export interface AdminTopCustomerRevenue {
+    customer: string;
+    revenue: number;
+}
+
+// Admin Schedule Management interfaces
+export interface AdminScheduleStatistics {
+    today_appointments: number;
+    pending_appointments: number;
+    confirmed_appointments: number;
+    completed_appointments: number;
+}
+
+export interface AdminWeeklySchedule {
+    date: string;
+    day_name: string;
+    day_number: string;
+    appointments: AdminDayAppointment[];
+    appointment_count: number;
+}
+
+export interface AdminDayAppointment {
+    id: number;
+    time: string;
+    type: string;
+    status: string;
+    customer: string;
+    motorcycle: string;
+    plate: string;
+}
+
+export interface AdminAppointment {
+    id: number;
+    appointment_date: string;
+    appointment_time: string;
+    type: string;
+    status: string;
+    customer: string;
+    customer_email: string;
+    customer_phone?: string;
+    motorcycle: string;
+    notes?: string;
+    created_at: string;
+    has_work_order: boolean;
+}
+
+export interface AdminAppointmentDetails {
+    id: number;
+    appointment_date: string;
+    appointment_time: string;
+    type: string;
+    status: string;
+    notes?: string;
+    created_at: string;
+}
+
+export interface AdminAppointmentCustomer {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+    tax_code?: string;
+}
+
+export interface AdminAppointmentMotorcycle {
+    id: number;
+    brand: string;
+    model: string;
+    year: number;
+    plate: string;
+    vin: string;
+    engine_size: number;
+}
+
+export interface AdminUpcomingAppointment {
+    id: number;
+    appointment_date: string;
+    appointment_time: string;
+    type: string;
+    status: string;
+    customer: string;
+    motorcycle: string;
+    plate: string;
+}

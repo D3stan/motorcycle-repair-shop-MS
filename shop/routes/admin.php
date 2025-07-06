@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\WorkOrderController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\FinancialController;
+use App\Http\Controllers\Admin\ScheduleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -35,11 +37,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Legacy user management (keeping for compatibility)
     Route::resource('users', UserController::class);
     
-    Route::get('financial', function () {
-        return response()->json(['message' => 'Financial Management - To be implemented']);
-    })->name('financial');
+    // Financial Management
+    Route::prefix('financial')->name('financial.')->group(function () {
+        Route::get('/', [FinancialController::class, 'index'])->name('index');
+        Route::get('/invoices', [FinancialController::class, 'invoices'])->name('invoices');
+        Route::get('/invoices/{invoice}', [FinancialController::class, 'showInvoice'])->name('invoices.show');
+        Route::patch('/invoices/{invoice}/mark-as-paid', [FinancialController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+        Route::get('/reports', [FinancialController::class, 'reports'])->name('reports');
+    });
     
-    Route::get('schedule', function () {
-        return response()->json(['message' => 'Schedule Management - To be implemented']);
-    })->name('schedule');
+    // Schedule Management
+    Route::prefix('schedule')->name('schedule.')->group(function () {
+        Route::get('/', [ScheduleController::class, 'index'])->name('index');
+        Route::get('/appointments', [ScheduleController::class, 'appointments'])->name('appointments');
+        Route::get('/appointments/create', [ScheduleController::class, 'create'])->name('appointments.create');
+        Route::post('/appointments', [ScheduleController::class, 'store'])->name('appointments.store');
+        Route::get('/appointments/{appointment}', [ScheduleController::class, 'show'])->name('show');
+        Route::get('/appointments/{appointment}/edit', [ScheduleController::class, 'edit'])->name('appointments.edit');
+        Route::put('/appointments/{appointment}', [ScheduleController::class, 'update'])->name('appointments.update');
+        Route::delete('/appointments/{appointment}', [ScheduleController::class, 'destroy'])->name('appointments.destroy');
+        Route::post('/appointments/{appointment}/create-work-order', [ScheduleController::class, 'createWorkOrder'])->name('appointments.create-work-order');
+    });
 });
