@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+import BookAppointmentModal from '@/components/book-appointment-modal';
+import EditAppointmentModal from '@/components/edit-appointment-modal';
+import CancelAppointmentModal from '@/components/cancel-appointment-modal';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -55,19 +59,29 @@ const getStatusColor = (status: string) => {
 };
 
 export default function Appointments({ upcomingAppointments, pastAppointments, motorcycles }: AppointmentsProps) {
+    const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+
     const handleBookAppointment = () => {
-        // TODO: Implement booking modal/form
-        console.log('Book appointment functionality to be implemented');
+        setIsBookModalOpen(true);
     };
 
     const handleEditAppointment = (appointmentId: number) => {
-        // TODO: Implement edit appointment functionality
-        console.log(`Edit appointment ${appointmentId} functionality to be implemented`);
+        const appointment = upcomingAppointments.find(apt => apt.id === appointmentId);
+        if (appointment) {
+            setSelectedAppointment(appointment);
+            setIsEditModalOpen(true);
+        }
     };
 
     const handleCancelAppointment = (appointmentId: number) => {
-        // TODO: Implement cancel appointment functionality
-        console.log(`Cancel appointment ${appointmentId} functionality to be implemented`);
+        const appointment = upcomingAppointments.find(apt => apt.id === appointmentId);
+        if (appointment) {
+            setSelectedAppointment(appointment);
+            setIsCancelModalOpen(true);
+        }
     };
 
     return (
@@ -101,7 +115,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                             </span>
                                         </CardTitle>
                                         <CardDescription>
-                                            {appointment.appointment_date} at {appointment.appointment_time} • {appointment.type}
+                                            {appointment.appointment_date} at {appointment.appointment_time} • {appointment.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
@@ -161,7 +175,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-1">
                                                 <p className="font-medium">
-                                                    {appointment.motorcycle.brand} {appointment.motorcycle.model} • {appointment.type}
+                                                    {appointment.motorcycle.brand} {appointment.motorcycle.model} • {appointment.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                                                 </p>
                                                 <p className="text-sm text-muted-foreground">
                                                     {appointment.appointment_date} at {appointment.appointment_time}
@@ -225,6 +239,26 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                         </CardContent>
                     </Card>
                 </div>
+
+                {/* Modal Components */}
+                <BookAppointmentModal 
+                    open={isBookModalOpen} 
+                    onOpenChange={setIsBookModalOpen}
+                    motorcycles={motorcycles}
+                />
+                
+                <EditAppointmentModal 
+                    open={isEditModalOpen} 
+                    onOpenChange={setIsEditModalOpen}
+                    appointment={selectedAppointment}
+                    motorcycles={motorcycles}
+                />
+                
+                <CancelAppointmentModal 
+                    open={isCancelModalOpen} 
+                    onOpenChange={setIsCancelModalOpen}
+                    appointment={selectedAppointment}
+                />
             </div>
         </AppLayout>
     );
