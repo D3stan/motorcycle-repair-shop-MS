@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
+import { getNavigationItems } from '@/lib/navigation';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -15,24 +16,7 @@ import { BookOpen, Folder, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'My Garage',
-        href: '/garage',
-    },
-    {
-        title: 'Appointments',
-        href: '/appointments',
-    },
-    {
-        title: 'Work Orders',
-        href: '/work-orders',
-    },
-];
+
 
 const rightNavItems: NavItem[] = [
     {
@@ -57,6 +41,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+    const mainNavItems = getNavigationItems(auth.user);
     return (
         <>
             <div className="border-sidebar-border/80 border-b">

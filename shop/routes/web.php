@@ -3,6 +3,7 @@
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GarageController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\WorkOrderController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,7 +28,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('work-orders', [WorkOrderController::class, 'index'])->name('work-orders');
     Route::get('work-orders/{workOrder}', [WorkOrderController::class, 'show'])->name('work-orders.show');
+    
+    Route::get('invoices', [InvoiceController::class, 'index'])->name('invoices');
+    Route::get('invoices/{invoiceId}/download', [InvoiceController::class, 'download'])->name('invoices.download');
 });
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+
+// Admin routes with prefix
+Route::prefix('admin')->name('admin.')->group(function () {
+    require __DIR__.'/admin.php';
+});
+
+// Mechanic routes with prefix
+Route::prefix('mechanic')->name('mechanic.')->group(function () {
+    require __DIR__.'/mechanic.php';
+});
