@@ -212,17 +212,6 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                     )}
                                 </div>
 
-                                {selectedCustomer && (
-                                    <div className="bg-gray-50 p-3 rounded-md">
-                                        <p className="text-sm font-medium text-gray-900">Customer Details:</p>
-                                        <p className="text-sm text-gray-700">
-                                            {selectedCustomer.name} - {selectedCustomer.email}
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                            {selectedCustomer.motorcycles.length} motorcycle(s) available
-                                        </p>
-                                    </div>
-                                )}
                             </CardContent>
                         </Card>
 
@@ -314,16 +303,6 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                     </div>
                                 </div>
 
-                                <div className="bg-blue-50 p-3 rounded-md">
-                                    <h4 className="text-sm font-medium mb-2">Status Information:</h4>
-                                    <ul className="text-xs text-muted-foreground space-y-1">
-                                        <li><strong>Pending:</strong> Waiting for confirmation</li>
-                                        <li><strong>Confirmed:</strong> Ready to proceed</li>
-                                        <li><strong>In Progress:</strong> Currently being worked on</li>
-                                        <li><strong>Completed:</strong> Service completed</li>
-                                        <li><strong>Cancelled:</strong> Appointment cancelled</li>
-                                    </ul>
-                                </div>
                             </CardContent>
                         </Card>
                     </div>

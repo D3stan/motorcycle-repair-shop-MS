@@ -251,14 +251,6 @@ export default function AppointmentCreate({ customers }: Props) {
                                     )}
                                 </div>
 
-                                <div className="bg-blue-50 p-3 rounded-md">
-                                    <h4 className="text-sm font-medium mb-2">Appointment Types:</h4>
-                                    <ul className="text-xs text-muted-foreground space-y-1">
-                                        <li><strong>Maintenance:</strong> Regular service, repairs, part replacement</li>
-                                        <li><strong>Dyno Testing:</strong> Performance testing and tuning</li>
-                                        <li><strong>Inspection:</strong> Safety check, diagnostics</li>
-                                    </ul>
-                                </div>
                             </CardContent>
                         </Card>
                     </div>

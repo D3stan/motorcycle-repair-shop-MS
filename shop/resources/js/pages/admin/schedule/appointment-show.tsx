@@ -224,7 +224,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                             {appointment.notes && (
                                 <div>
                                     <label className="text-sm font-medium text-muted-foreground">Notes</label>
-                                    <p className="mt-1 p-3 bg-gray-50 rounded-md text-sm">{appointment.notes}</p>
+                                    <p className="mt-1 rounded-md text-sm">{appointment.notes}</p>
                                 </div>
                             )}
 
