@@ -3,7 +3,7 @@
     ##! .project
     ###! A.A. .academicyear
 
-.var {height} {65}
+.var {height} {55}
 
 .foreach {.docauthors}
     name info:
@@ -13,10 +13,12 @@
 
 .foreach {.docauthors}
     name info:
-    .row gap:{1cm} alignment:{end}
+    .row alignment:{end}
         **.name**
 
+    .row alignment:{end}
         .get {email} from:{.info}
+    .row alignment:{end}
         .get {matricula} from:{.info}
 
 <<<
