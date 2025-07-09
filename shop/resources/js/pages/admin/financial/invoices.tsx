@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { FileText, Eye, DollarSign, Clock, AlertTriangle, CheckCircle, Search } from 'lucide-react';
+import { FileText, Eye, DollarSign, Clock, AlertTriangle, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -97,14 +97,10 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
         router.get('/admin/financial/invoices');
     };
 
-    const markAsPaid = (invoiceId: number) => {
-        if (confirm('Are you sure you want to mark this invoice as paid?')) {
-            router.patch(`/admin/financial/invoices/${invoiceId}/mark-as-paid`);
-        }
-    };
+
 
     const getStatusBadge = (invoice: Invoice) => {
-        if (invoice.is_overdue) {
+        if (invoice.is_overdue || invoice.status === 'overdue') {
             return <Badge variant="destructive">Overdue</Badge>;
         }
         
@@ -265,16 +261,6 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                                {invoice.status === 'pending' && (
-                                                    <Button 
-                                                        variant="outline" 
-                                                        size="sm"
-                                                        onClick={() => markAsPaid(invoice.id)}
-                                                    >
-                                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                                        Mark Paid
-                                                    </Button>
-                                                )}
                                             </div>
                                         </div>
                                     </div>

@@ -31,7 +31,7 @@ export default function FinancialIndex({
     topCustomers 
 }: Props) {
     const getStatusBadge = (status: string, isOverdue: boolean = false) => {
-        if (isOverdue) {
+        if (isOverdue || status === 'overdue') {
             return <Badge variant="destructive">Overdue</Badge>;
         }
         

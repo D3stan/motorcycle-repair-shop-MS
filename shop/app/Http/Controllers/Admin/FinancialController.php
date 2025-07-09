@@ -86,7 +86,7 @@ class FinancialController extends Controller
                     'total_amount' => (float) $invoice->total_amount,
                     'status' => $invoice->status,
                     'paid_at' => $invoice->paid_at?->format('Y-m-d'),
-                    'is_overdue' => $invoice->status === 'overdue' && $invoice->due_date < now(),
+                    'is_overdue' => $invoice->status === 'pending' && $invoice->due_date < now(),
                 ];
             });
             
@@ -256,6 +256,11 @@ class FinancialController extends Controller
     {
         if ($invoice->status === 'paid') {
             return back()->with('error', 'Invoice is already marked as paid.');
+        }
+        
+        // Allow marking as paid for both pending and overdue invoices
+        if (!in_array($invoice->status, ['pending', 'overdue'])) {
+            return back()->with('error', 'Only pending or overdue invoices can be marked as paid.');
         }
         
         $invoice->update([
