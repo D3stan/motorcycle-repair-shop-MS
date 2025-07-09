@@ -1,2 +1,2 @@
-# motorcycle-repair-shop-MS
-management system for dummy motorcycle repair shop
+# Motorcycle Repair Shop
+Management system for dummy motorcycle repair shop.
