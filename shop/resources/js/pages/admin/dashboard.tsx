@@ -100,12 +100,12 @@ export default function AdminDashboard({
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Pending Appointments</CardTitle>
-                            <CardDescription>Awaiting scheduling</CardDescription>
+                            <CardDescription>Awaiting confirmation</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold mb-2">{pendingAppointmentsCount}</div>
                             <div className="text-sm text-muted-foreground">
-                                Need scheduling
+                                Need confirmation
                             </div>
                         </CardContent>
                     </Card>
