@@ -26,17 +26,17 @@ I clienti possono prenotare appuntamenti presso l'officina specificando una data
 richiesto. Gli appuntamenti possono riguardare interventi di manutenzione ordinaria o straordinaria oppure sessioni di prova
 al banco dinamometrico per la valutazione e l'ottimizzazione delle prestazioni del motore.
 
-Ogni intervento di manutenzione viene caratterizzato da una data di inizio, una data di fine prevista, i chilometri della
-motocicletta al momento dell'intervento, il tipo di intervento (manutenzione ordinaria, riparazione, modifica), la causa che ha
+Ogni intervento di manutenzione viene caratterizzato da una data di inizio, una data di fine, i chilometri della
+motocicletta al momento dell'intervento, il tipo di intervento, la causa che ha
 reso necessario l'intervento, le ore totali impiegate e eventuali note tecniche. Ogni intervento ha uno stato che ne descrive
-l'avanzamento (in attesa, in corso, sospeso, completato).  
+l'avanzamento.
 Gli interventi vengono svolti da uno o più meccanici dell'officina. Del personale si memorizzano nome, cognome, codice fiscale,
 numero di telefono e email. Il personale è classificato per tipologia (meccanico, amministratore).  
 Le sessioni al banco prova sono caratterizzate da una data di inizio, la durata in ore della sessione e note relative ai risultati
 ottenuti. Anche le sessioni possono essere svolte da uno o più meccanici e riguardano una specifica motocicletta.
 
 Per gli interventi di manutenzione è necessario utilizzare ricambi che vengono prelevati dal magazzino dell'officina.
-Ogni ricambio è caratterizzato da marca, nome, descrizione, codice identificativo e prezzo di acquisto dal fornitore.
+Ogni ricambio è caratterizzato da marca, nome, descrizione, codice identificativo, prezzo di acquisto dal fornitore.
 I ricambi sono forniti da diversi fornitori, ognuno identificato da un codice, nome, numero di telefono ed email.  
 Ogni ricambio è compatibile con uno o più modelli di motocicletta e viene conservato in magazzino fino al momento dell'utilizzo.
 Del magazzino si tiene traccia dei ricambi presenti e delle relative quantità.
@@ -48,6 +48,33 @@ codice identificativo, l'importo totale, la data di emissione ed eventuali note.
 ad una sessione al banco prova, o ad entrambi se eseguiti contestualmente.  
 I clienti possono consultare in tempo reale lo stato di avanzamento dei lavori sulle proprie motociclette e visualizzare lo storico
 completo degli interventi effettuati con i relativi dettagli tecnici e costi sostenuti.
+
+
+
+Il titolare di un'officina desidera snellire la gestione quotidiana della propria attività. Racconta che, al momento,
+tutte le informazioni su clientela, motociclette, appuntamenti e ricambi vengono annotate su fogli di calcolo e agende cartacee,
+con il rischio costante di errori, sovrapposizioni o semplici dimenticanze.
+Egli spiega che i clienti, prima di tutto, devono potersi registrare online inserendo i propri dati anagrafici e di contatto.
+Una volta registrato, il cliente ha la possibilità di aggiungere le sue moto a un “garage virtuale”, specificando targa, marca,
+modello e qualche nota personale. In questo modo lo staff può visualizzare lo storico della moto per aiutare con diagnosi di problemi futuri.  
+
+Il passo successivo riguarda la prenotazione degli appuntamenti. Il titolare sottolinea l’esigenza di un calendario che mostri
+le fasce orarie libere per interventi di manutenzione ordinaria o per prove al banco.
+Infatti il cliente deve poter disdire in autonomia. Al momento della richiesta, il sistema deve salvare l'appuntamento in
+uno stato di “attesa di conferma” che l’officina potrà poi convertire in “confermato” oppure rifiutare, tenendo conto della
+disponibilità dei meccanici e della complessità del lavoro.  
+Durante il lavoro sulla moto, il proprietario vuole registrare uno o più meccanici assegnati, annotare ogni fase dell’intervento
+e i ricambi utilizzati. Serve aggiornare lo stato in tempo reale per permettere ai clienti di rimanere aggiornati senza disturbare l'officina.
+Terminato l’intervento, il sistema deve permettere di generare una fattura intestata al cliente, includendo manodopera ed eventuali ricambi utilizzati.
+
+Un’altra criticità evidenziata riguarda il magazzino: ricambi di varia natura, ciascuno con disponibilità, codice fornitore e categoria.
+Occorre un modulo di inventario con soglie di riordino e storico degli acquisti presso fornitori diversi. Il titolare desidera inoltre
+mettere in relazione ogni ricambio con i modelli di moto compatibili, così da evitare errori di montaggio.  
+Sul fronte amministrativo, l’officina impiega alcuni meccanici e un addetto alla reception che deve poter gestire assunzioni, turni
+e assegnazioni ai lavori. Per questo si richiede una sezione dedicata allo staff, con ruoli differenziati (meccanico, amministratore)
+e permessi di accesso mirati: ad esempio, solo l’amministratore emette fatture, mentre i meccanici aggiornano lo stato dei lavori a loro assegnati.  
+Infine, il titolare vorrebbe un cruscotto riepilogativo che mostri a colpo d’occhio appuntamenti imminenti, lavori in corso,
+ricavi mensili e ricambi sotto scorta minima. 
 
 ## Rilevamento delle ambiguità e correzioni proposte
 
