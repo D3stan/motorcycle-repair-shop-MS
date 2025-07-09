@@ -135,7 +135,7 @@ export default function Register() {
                             value={fullNameInput}
                             onChange={(e) => handleNameChange(e.target.value)}
                             disabled={processing}
-                            placeholder="e.g., Amoni Vivo"
+                            placeholder="e.g. Amoni Vivo"
                         />
                         <InputError message={nameError || errors.first_name || errors.last_name} className="mt-2" />
                         {fullNameInput && !nameError && data.first_name && data.last_name && (

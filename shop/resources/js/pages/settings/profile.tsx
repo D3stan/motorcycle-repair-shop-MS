@@ -151,7 +151,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                 onChange={(e) => handleNameChange(e.target.value)}
                                 required
                                 autoComplete="name"
-                                placeholder="e.g., Amoni Vivo"
+                                placeholder="e.g. Amoni Vivo"
                             />
 
                             <InputError className="mt-2" message={nameError || errors.first_name || errors.last_name} />

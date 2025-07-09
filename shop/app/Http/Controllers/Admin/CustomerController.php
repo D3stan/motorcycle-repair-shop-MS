@@ -2,50 +2,30 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UserUpdateRequest;
+use App\Http\Resources\Admin\CustomerResource;
 use App\Models\User;
-use App\Models\Appointment;
-use App\Models\WorkOrder;
-use App\Models\Invoice;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class CustomerController extends Controller
+class CustomerController extends BaseAdminController
 {
     /**
      * Display a listing of customers.
      */
     public function index(): Response
     {
-        $customers = User::where('type', 'customer')
-            ->withCount(['motorcycles', 'appointments', 'workOrders', 'invoices'])
-            ->with(['invoices' => function($query) {
+        $customers = $this->getUsersWithCounts(
+            'customer',
+            ['motorcycles', 'appointments', 'workOrders', 'invoices'],
+            ['invoices' => function($query) {
                 $query->where('status', 'pending');
-            }])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-
-        $customersData = $customers->through(function ($customer) {
-            return [
-                'id' => $customer->id,
-                'first_name' => $customer->first_name,
-                'last_name' => $customer->last_name,
-                'email' => $customer->email,
-                'phone' => $customer->phone,
-                'tax_code' => $customer->tax_code,
-                'motorcycles_count' => $customer->motorcycles_count,
-                'appointments_count' => $customer->appointments_count,
-                'work_orders_count' => $customer->work_orders_count,
-                'invoices_count' => $customer->invoices_count,
-                'pending_invoices_count' => $customer->invoices->count(),
-                'created_at' => $customer->created_at->format('Y-m-d'),
-            ];
-        });
+            }]
+        );
 
         return Inertia::render('admin/customers/index', [
-            'customers' => $customersData,
+            'customers' => CustomerResource::collection($customers),
         ]);
     }
 
@@ -54,10 +34,7 @@ class CustomerController extends Controller
      */
     public function show(User $customer): Response
     {
-        // Ensure we're viewing a customer
-        if ($customer->type !== 'customer') {
-            abort(404);
-        }
+        $this->ensureUserType($customer, 'customer');
 
         // Load customer data with relationships
         $customer->load([
@@ -67,16 +44,8 @@ class CustomerController extends Controller
             'invoices'
         ]);
 
-        // Format customer data
-        $customerData = [
-            'id' => $customer->id,
-            'first_name' => $customer->first_name,
-            'last_name' => $customer->last_name,
-            'email' => $customer->email,
-            'phone' => $customer->phone,
-            'tax_code' => $customer->tax_code,
-            'created_at' => $customer->created_at->format('Y-m-d H:i'),
-        ];
+        // Format customer data using base controller method
+        $customerData = $this->formatDetailedUserData($customer);
 
         // Format motorcycles
         $motorcycles = $customer->motorcycles->map(function ($motorcycle) {
@@ -144,45 +113,23 @@ class CustomerController extends Controller
      */
     public function edit(User $customer): Response
     {
-        // Ensure we're editing a customer
-        if ($customer->type !== 'customer') {
-            abort(404);
-        }
+        $this->ensureUserType($customer, 'customer');
 
         return Inertia::render('admin/customers/edit', [
-            'customer' => [
-                'id' => $customer->id,
-                'first_name' => $customer->first_name,
-                'last_name' => $customer->last_name,
-                'email' => $customer->email,
-                'phone' => $customer->phone,
-                'tax_code' => $customer->tax_code,
-            ],
+            'customer' => $this->formatBasicUserData($customer),
         ]);
     }
 
     /**
      * Update the specified customer.
      */
-    public function update(Request $request, User $customer): RedirectResponse
+    public function update(UserUpdateRequest $request, User $customer): RedirectResponse
     {
-        // Ensure we're updating a customer
-        if ($customer->type !== 'customer') {
-            abort(404);
-        }
+        $this->ensureUserType($customer, 'customer');
 
-        $validated = $request->validate([
-            'first_name' => 'required|string|min:1|max:255|regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/',
-            'last_name' => 'required|string|min:1|max:255|regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $customer->id,
-            'phone' => 'nullable|string|max:20',
-            'tax_code' => 'nullable|string|max:16|unique:users,tax_code,' . $customer->id,
-        ]);
+        $customer->update($request->validated());
 
-        $customer->update($validated);
-
-        return redirect()->route('admin.customers.show', $customer)
-            ->with('success', 'Customer updated successfully!');
+        return $this->successRedirect('admin.customers.show', $customer, 'Customer updated successfully!');
     }
 
     /**
@@ -190,24 +137,16 @@ class CustomerController extends Controller
      */
     public function destroy(User $customer): RedirectResponse
     {
-        // Ensure we're deleting a customer
-        if ($customer->type !== 'customer') {
-            abort(404);
-        }
+        $this->ensureUserType($customer, 'customer');
 
-        // Check for active work orders
-        $activeWorkOrders = $customer->workOrders()
-            ->whereIn('status', ['pending', 'in_progress'])
-            ->count();
-
-        if ($activeWorkOrders > 0) {
-            return redirect()->route('admin.customers.index')
-                ->with('error', 'Cannot delete customer with active work orders.');
+        $deleteCheck = $this->canDeleteUser($customer);
+        
+        if (!$deleteCheck['canDelete']) {
+            return $this->errorRedirect('admin.customers.index', null, $deleteCheck['message']);
         }
 
         $customer->delete();
 
-        return redirect()->route('admin.customers.index')
-            ->with('success', 'Customer deleted successfully!');
+        return $this->successRedirect('admin.customers.index', null, 'Customer deleted successfully!');
     }
 } 

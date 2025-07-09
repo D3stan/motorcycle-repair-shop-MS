@@ -2,47 +2,33 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StaffCreateRequest;
+use App\Http\Requests\Admin\UserUpdateRequest;
+use App\Http\Resources\Admin\StaffResource;
 use App\Models\User;
-use App\Models\WorkOrder;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class StaffController extends Controller
+class StaffController extends BaseAdminController
 {
     /**
      * Display a listing of staff members (mechanics).
      */
     public function index(): Response
     {
-        $staff = User::where('type', 'mechanic')
-            ->withCount(['assignedWorkOrders'])
-            ->with(['assignedWorkOrders' => function($query) {
+        $staff = $this->getUsersWithCounts(
+            'mechanic',
+            ['assignedWorkOrders'],
+            ['assignedWorkOrders' => function($query) {
                 $query->whereIn('status', ['pending', 'in_progress']);
-            }])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-
-        $staffData = $staff->through(function ($mechanic) {
-            return [
-                'id' => $mechanic->id,
-                'first_name' => $mechanic->first_name,
-                'last_name' => $mechanic->last_name,
-                'email' => $mechanic->email,
-                'phone' => $mechanic->phone,
-                'tax_code' => $mechanic->tax_code,
-                'assigned_work_orders_count' => $mechanic->assigned_work_orders_count,
-                'active_work_orders_count' => $mechanic->assignedWorkOrders->count(),
-                'created_at' => $mechanic->created_at->format('Y-m-d'),
-            ];
-        });
+            }]
+        );
 
         return Inertia::render('admin/staff/index', [
-            'staff' => $staffData,
+            'staff' => StaffResource::collection($staff),
         ]);
     }
 
@@ -57,24 +43,14 @@ class StaffController extends Controller
     /**
      * Store a newly created staff member.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StaffCreateRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'first_name' => 'required|string|min:1|max:255|regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/',
-            'last_name' => 'required|string|min:1|max:255|regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email',
-            'phone' => 'nullable|string|max:20',
-            'tax_code' => 'nullable|string|max:16|unique:users,tax_code',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
-        $validated['type'] = 'mechanic';
+        $validated = $request->validated();
         $validated['password'] = Hash::make($validated['password']);
 
         $staff = User::create($validated);
 
-        return redirect()->route('admin.staff.show', $staff)
-            ->with('success', 'Staff member created successfully!');
+        return $this->successRedirect('admin.staff.show', $staff, 'Staff member created successfully!');
     }
 
     /**
@@ -82,10 +58,7 @@ class StaffController extends Controller
      */
     public function show(User $staff): Response
     {
-        // Ensure we're viewing a mechanic
-        if ($staff->type !== 'mechanic') {
-            abort(404);
-        }
+        $this->ensureUserType($staff, 'mechanic');
 
         // Load staff data with relationships
         $staff->load([
@@ -94,16 +67,8 @@ class StaffController extends Controller
             'workSessions'
         ]);
 
-        // Format staff data
-        $staffData = [
-            'id' => $staff->id,
-            'first_name' => $staff->first_name,
-            'last_name' => $staff->last_name,
-            'email' => $staff->email,
-            'phone' => $staff->phone,
-            'tax_code' => $staff->tax_code,
-            'created_at' => $staff->created_at->format('Y-m-d H:i'),
-        ];
+        // Format staff data using base controller method
+        $staffData = $this->formatDetailedUserData($staff);
 
         // Format assigned work orders
         $assignedWorkOrders = $staff->assignedWorkOrders->map(function ($workOrder) {
@@ -146,45 +111,23 @@ class StaffController extends Controller
      */
     public function edit(User $staff): Response
     {
-        // Ensure we're editing a mechanic
-        if ($staff->type !== 'mechanic') {
-            abort(404);
-        }
+        $this->ensureUserType($staff, 'mechanic');
 
         return Inertia::render('admin/staff/edit', [
-            'staff' => [
-                'id' => $staff->id,
-                'first_name' => $staff->first_name,
-                'last_name' => $staff->last_name,
-                'email' => $staff->email,
-                'phone' => $staff->phone,
-                'tax_code' => $staff->tax_code,
-            ],
+            'staff' => $this->formatBasicUserData($staff),
         ]);
     }
 
     /**
      * Update the specified staff member.
      */
-    public function update(Request $request, User $staff): RedirectResponse
+    public function update(UserUpdateRequest $request, User $staff): RedirectResponse
     {
-        // Ensure we're updating a mechanic
-        if ($staff->type !== 'mechanic') {
-            abort(404);
-        }
+        $this->ensureUserType($staff, 'mechanic');
 
-        $validated = $request->validate([
-            'first_name' => 'required|string|min:1|max:255|regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/',
-            'last_name' => 'required|string|min:1|max:255|regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $staff->id,
-            'phone' => 'nullable|string|max:20',
-            'tax_code' => 'nullable|string|max:16|unique:users,tax_code,' . $staff->id,
-        ]);
+        $staff->update($request->validated());
 
-        $staff->update($validated);
-
-        return redirect()->route('admin.staff.show', $staff)
-            ->with('success', 'Staff member updated successfully!');
+        return $this->successRedirect('admin.staff.show', $staff, 'Staff member updated successfully!');
     }
 
     /**
@@ -192,24 +135,16 @@ class StaffController extends Controller
      */
     public function destroy(User $staff): RedirectResponse
     {
-        // Ensure we're deleting a mechanic
-        if ($staff->type !== 'mechanic') {
-            abort(404);
-        }
+        $this->ensureUserType($staff, 'mechanic');
 
-        // Check for active work orders
-        $activeWorkOrders = $staff->assignedWorkOrders()
-            ->whereIn('status', ['pending', 'in_progress'])
-            ->count();
-
-        if ($activeWorkOrders > 0) {
-            return redirect()->route('admin.staff.index')
-                ->with('error', 'Cannot delete staff member with active work orders. Please reassign or complete work orders first.');
+        $deleteCheck = $this->canDeleteUser($staff);
+        
+        if (!$deleteCheck['canDelete']) {
+            return $this->errorRedirect('admin.staff.index', null, $deleteCheck['message']);
         }
 
         $staff->delete();
 
-        return redirect()->route('admin.staff.index')
-            ->with('success', 'Staff member deleted successfully!');
+        return $this->successRedirect('admin.staff.index', null, 'Staff member deleted successfully!');
     }
 } 
