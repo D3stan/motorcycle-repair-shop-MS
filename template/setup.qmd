@@ -1,0 +1,25 @@
+.docname {report template}
+.doctype {paged}
+.doclang {Italian}
+.docauthors
+    - Name Surname
+        - email: name.surname@studio.unibo.it
+        - matricula: 123456789
+    - Name Surname
+        - email: name.surname@studio.unibo.it
+        - matricula: 123456789
+    - Name Surname
+        - email: name.surname@studio.unibo.it
+        - matricula: 123456789
+    - Name Surname
+        - email: name.surname@studio.unibo.it
+        - matricula: 123456789
+
+.var {project} {Project Name}
+.var {academicyear} {2024-2025}
+
+.theme {paperwhite} layout:{latex}
+.pageformat {a4}
+
+.pagemargin {bottomright}
+	.currentpage

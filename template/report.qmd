@@ -1,0 +1,184 @@
+.include {setup.qmd}
+
+.include {header.qmd}
+
+.tableofcontents
+
+# Analisi dei requisiti
+
+[Inserire qui la descrizione del progetto.]
+
+## Intervista
+
+[Inserire qui il testo dell'intervista con il cliente.]
+
+
+## Rilevamento delle ambiguità e correzioni proposte
+
+[Inserire qui le ambiguità rilevate nel testo dell'intervista e le correzioni proposte.]
+
+.tablesort {1}
+    .csv {tables/concepts.csv} caption:{concetti.}
+
+
+## Definizione delle specifiche in linguaggio naturale ed estrazione dei concetti principali
+
+[Inserire qui il riassunto dell'intervista con le correzioni]
+
+[Elenco con le operazioni definite]
+- op1
+- op2
+
+
+# Progettazione Concettuale
+
+[Inserire qui descrizione della prima iterazione di schema ER]  
+
+## Schema scheletro
+
+![ER](imgs/scheletro.png "Inserire qui lo schema scheletro del database")
+
+## Raffinamenti proposti
+
+[Inserire qui i raffinamenti proposti allo schema scheletro.]
+
+## Schema concettuale finale
+
+![ER](imgs/finale.png "Inserire qui lo schema concettuale finale")
+
+
+
+# Progettazione logica
+
+## Stima del volume dei dati
+
+.tablesort {1}
+    .csv {tables/volumes.csv} caption:{volumi di dati.}
+
+## Descrizione delle operazioni principali e stima della loro frequenza
+
+.tablesort {1}
+    .csv {tables/operations.csv} caption:{frequenza operazioni.}
+
+[Inserire qui la descrizione delle operazioni principali e la stima della loro frequenza.]
+
+## Schemi di navigazione e tabelle degli accessi
+
+#####! OP 1 - Operazione 1
+[Inserire qui descrizione operazione 1]
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| Concetto1 | E | 1 | L
+| Concetto2 | R | 2 | S
+
+.center
+    [Totale costo operazione 1]
+
+#####! OP 2 - Operazione 2
+[Inserire qui descrizione operazione 2]
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| Concetto1 | E | 1 | L
+| Concetto2 | R | 2 | S
+
+.center
+    [Totale costo operazione 2]
+
+![ER](imgs/navigazione2.png "Inserire qui lo schema di navigazione dell'operazione 2")
+
+
+## Raffinamento dello schema
+
+#### Eliminazione degli attributi composti
+.loremipsum
+
+#### Eliminazione di identificatori esterni
+.loremipsum
+
+#### Eliminazione gerarchie
+.loremipsum
+
+#### Scelta delle chiavi 
+.loremipsum
+
+## Analisi delle ridondanze
+
+[Inserire qui l'elenco delle ridondanze presenti.]
+
+#####! OP 1 - Operazione 1
+[Inserire qui descrizione della ridondanza nell'operazione 1 (contando le ridondanze)]
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| Concetto1 | E | 1 | L
+| Concetto2 | R | 2 | S
+
+.center
+    [Totale costo operazione 1]
+
+[Inserire qui descrizione della ridondanza nell'operazione 1 (senza le ridondanze)]
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| Concetto1 | E | 1 | L
+| Concetto2 | R | 2 | S
+
+.center
+    [Totale costo operazione 1]
+
+#####! OP 2 - Operazione 2
+[Inserire qui descrizione operazione 2 (contando le ridondanze)]
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| Concetto1 | E | 1 | L
+| Concetto2 | R | 2 | S
+
+.center
+    [Totale costo operazione 2]
+
+[Inserire qui descrizione operazione 2 (senza le ridondanze)]
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| Concetto1 | E | 1 | L
+| Concetto2 | R | 2 | S
+
+.center
+    [Totale costo operazione 2]
+
+## Traduzione di entità e associazioni in relazioni
+
+[Inserire qui la traduzione di entità e associazioni in relazioni.]
+
+## Schema relazionale finale
+
+![RL](imgs/relazionale.png "Inserire qui lo schema relazionale")
+
+## Traduzione delle operazioni in query SQL
+
+##### OP 1 - Operazione 1
+[Inserire qui commenti aggiuntivi per l'operazione 1 se necessari.]
+
+.code {sql}
+    SELECT code
+    FROM goes
+    WHERE here  
+
+
+##### OP 2 - Operazione 2
+[Inserire qui commenti aggiuntivi per l'operazione 2 se necessari.]
+
+.code {sql}
+    SELECT code
+    FROM goes
+    WHERE here
+
+
+# Progettazione dell'applicazione
+
+## Descrizione dell'architettura dell'applicazione realizzata
+
+[Inserire qui la descrizione dell'architettura dell'applicazione realizzata]
+
+## Guida utente
+
+[Inserire qui una breve descrizione o demo dell'utilizzo dell'applicazione.]
+
+![screenshot](imgs/screenshot.png "Inserire qui screenshot dell'applicazione")
