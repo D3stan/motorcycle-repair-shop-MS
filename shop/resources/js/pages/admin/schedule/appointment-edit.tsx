@@ -83,7 +83,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
         user_id: appointment.user_id.toString(),
         motorcycle_id: appointment.motorcycle_id.toString(),
         appointment_date: appointment.appointment_date,
-        appointment_time: appointment.appointment_time,
+        appointment_time: appointment.appointment_time.substring(0, 5), // Extract HH:MM from time string
         type: appointment.type,
         status: appointment.status,
         notes: appointment.notes || '',
