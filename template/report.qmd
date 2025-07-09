@@ -6,12 +6,48 @@
 
 # Analisi dei requisiti
 
-[Inserire qui la descrizione del progetto.]
+Si vuole sviluppare un software che permetta la gestione di un'officina meccanica per motocicli e faciliti 
+le operazioni organizzative per ridurre notevolmente il carico di lavoro e il rischio di perdita e/o dimenticanza 
+di informazioni. I dati manipolati comprendono diversi domini (interventi, ricambi, fatturazione) e sono specifici
+in base all'utilizzatore.  
+Infatti il gestionale potrà essere utilizzato anche dai clienti per agire in autonomia e diminuire ulteriormente
+l'intervento umano da parte dell'officina.
 
 ## Intervista
 
-[Inserire qui il testo dell'intervista con il cliente.]
+Si vuole tenere traccia dei clienti dell'officina memorizzandone nome, cognome, codice fiscale, numero di telefono
+e indirizzo email. I clienti possono registrarsi autonomamente sul sistema per evitare di dover reinserire i propri dati
+ad ogni prenotazione. Al momento della registrazione ogni cliente può aggiungere le proprie motociclette ad un
+garage virtuale personale.  
+Di ogni motocicletta si memorizza il proprietario, la targa, il numero di telaio, l'anno di immatricolazione ed
+eventuali note particolari. Ogni motocicletta appartiene ad un modello specifico caratterizzato da marca, nome commerciale,
+cilindrata, segmento di appartenenza e potenza.
+I clienti possono prenotare appuntamenti presso l'officina specificando una data, una descrizione del problema o del servizio
+richiesto. Gli appuntamenti possono riguardare interventi di manutenzione ordinaria o straordinaria oppure sessioni di prova
+al banco dinamometrico per la valutazione e l'ottimizzazione delle prestazioni del motore.
 
+Ogni intervento di manutenzione viene caratterizzato da una data di inizio, una data di fine prevista, i chilometri della
+motocicletta al momento dell'intervento, il tipo di intervento (manutenzione ordinaria, riparazione, modifica), la causa che ha
+reso necessario l'intervento, le ore totali impiegate e eventuali note tecniche. Ogni intervento ha uno stato che ne descrive
+l'avanzamento (in attesa, in corso, sospeso, completato).  
+Gli interventi vengono svolti da uno o più meccanici dell'officina. Del personale si memorizzano nome, cognome, codice fiscale,
+numero di telefono e email. Il personale è classificato per tipologia (meccanico, amministratore).  
+Le sessioni al banco prova sono caratterizzate da una data di inizio, la durata in ore della sessione e note relative ai risultati
+ottenuti. Anche le sessioni possono essere svolte da uno o più meccanici e riguardano una specifica motocicletta.
+
+Per gli interventi di manutenzione è necessario utilizzare ricambi che vengono prelevati dal magazzino dell'officina.
+Ogni ricambio è caratterizzato da marca, nome, descrizione, codice identificativo e prezzo di acquisto dal fornitore.
+I ricambi sono forniti da diversi fornitori, ognuno identificato da un codice, nome, numero di telefono ed email.  
+Ogni ricambio è compatibile con uno o più modelli di motocicletta e viene conservato in magazzino fino al momento dell'utilizzo.
+Del magazzino si tiene traccia dei ricambi presenti e delle relative quantità.
+Durante un intervento si registra l'utilizzo di ogni ricambio specificando la quantità utilizzata e il prezzo applicato al cliente
+per quel particolare ricambio in quell'intervento.
+
+Al termine di ogni intervento o sessione al banco prova viene emessa una fattura intestata al cliente. Ogni fattura riporta un
+codice identificativo, l'importo totale, la data di emissione ed eventuali note. La fattura può riferirsi ad un intervento di manutenzione,
+ad una sessione al banco prova, o ad entrambi se eseguiti contestualmente.  
+I clienti possono consultare in tempo reale lo stato di avanzamento dei lavori sulle proprie motociclette e visualizzare lo storico
+completo degli interventi effettuati con i relativi dettagli tecnici e costi sostenuti.
 
 ## Rilevamento delle ambiguità e correzioni proposte
 
