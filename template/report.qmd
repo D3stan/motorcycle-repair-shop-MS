@@ -15,34 +15,40 @@ l'intervento umano da parte dell'officina.
 
 ## Intervista
 
-Il titolare di un'officina desidera snellire la gestione quotidiana della propria attività. Racconta che, al momento,
-tutte le informazioni su clientela, motociclette, appuntamenti e ricambi vengono annotate su fogli di calcolo e agende cartacee,
-con il rischio costante di errori, sovrapposizioni o semplici dimenticanze.
-Egli spiega che i clienti, prima di tutto, devono potersi registrare online inserendo i propri dati anagrafici e di contatto.
-Una volta registrato, il cliente ha la possibilità di aggiungere le sue moto a un “garage virtuale”, specificando targa, marca,
-modello e qualche nota personale. In questo modo lo staff può visualizzare lo storico della moto per aiutare con diagnosi di problemi futuri.  
+Si riporta in seguito la trascrizione dell'intervista effettuata col proprietario dell'officina.  
 
-Il passo successivo riguarda la prenotazione degli appuntamenti. Il titolare sottolinea l’esigenza di un calendario che mostri
-le fasce orarie libere per interventi di manutenzione ordinaria o per prove al banco.
-Infatti il cliente deve poter disdire in autonomia. Al momento della richiesta, il sistema deve salvare l'appuntamento in
-uno stato di “attesa di conferma” che l’officina potrà poi convertire in “confermato” oppure rifiutare, tenendo conto della
-disponibilità dei meccanici e della complessità del lavoro.  
-Durante il lavoro sulla moto, il proprietario vuole registrare uno o più meccanici assegnati, annotare ogni fase dell’intervento
-e i ricambi utilizzati. Serve aggiornare lo stato in tempo reale per permettere ai clienti di rimanere aggiornati senza disturbare l'officina.
-Terminato l’intervento, il sistema deve permettere di generare una fattura intestata al cliente, includendo manodopera ed eventuali ricambi utilizzati.
 
-Un’altra criticità evidenziata riguarda il magazzino: ricambi di varia natura, ciascuno con disponibilità, codice fornitore e categoria.
-Occorre un modulo di inventario con soglie di riordino e storico degli acquisti presso fornitori diversi. Il titolare desidera inoltre
-mettere in relazione ogni ricambio con i modelli di moto compatibili, così da evitare errori di montaggio.  
-Sul fronte amministrativo, l’officina impiega alcuni meccanici e un addetto alla reception che deve poter gestire assunzioni, turni
-e assegnazioni ai lavori. Per questo si richiede una sezione dedicata allo staff, con ruoli differenziati (meccanico, amministratore)
-e permessi di accesso mirati: ad esempio, solo l’amministratore emette fatture, mentre i meccanici aggiornano lo stato dei lavori a loro assegnati.  
-Infine, il titolare vorrebbe un cruscotto riepilogativo che mostri a colpo d’occhio appuntamenti imminenti, lavori in corso,
-ricavi mensili e ricambi sotto scorta minima. 
+.html
+    <br>
+    <em>
+    Il titolare di un'officina desidera snellire la gestione quotidiana della propria attività. Racconta che, al momento,
+    tutte le informazioni su clientela, motociclette, appuntamenti e ricambi vengono annotate su fogli di calcolo e agende cartacee,
+    con il rischio costante di errori, sovrapposizioni o semplici dimenticanze.
+    Egli spiega che i clienti, prima di tutto, devono potersi registrare online inserendo i propri dati anagrafici e di contatto.
+    Una volta registrato, il cliente ha la possibilità di aggiungere le sue moto a un "garage virtuale", specificando targa, marca,
+    modello e qualche nota personale. In questo modo lo staff può visualizzare lo storico della moto per aiutare con diagnosi di problemi futuri.  
 
+    Il passo successivo riguarda la prenotazione degli appuntamenti. Il titolare sottolinea l’esigenza di un calendario che mostri
+    le fasce orarie libere per interventi di manutenzione ordinaria o per prove al banco.
+    Infatti il cliente deve poter disdire in autonomia. Al momento della richiesta, il sistema deve salvare l'appuntamento in
+    uno stato di "attesa di conferma" che l’officina potrà poi convertire in "confermato" oppure rifiutare, tenendo conto della
+    disponibilità dei meccanici e della complessità del lavoro.  
+    Durante il lavoro sulla moto, il proprietario vuole registrare uno o più meccanici assegnati, annotare ogni fase dell’intervento
+    e i ricambi utilizzati. Serve aggiornare lo stato in tempo reale per permettere ai clienti di rimanere aggiornati senza disturbare l'officina.
+    Terminato l’intervento, il sistema deve permettere di generare una fattura intestata al cliente, includendo manodopera ed eventuali ricambi utilizzati.
+
+    Un’altra criticità evidenziata riguarda il magazzino: ricambi di varia natura, ciascuno con disponibilità, codice fornitore e categoria.
+    Occorre un modulo di inventario con soglie di riordino e storico degli acquisti presso fornitori diversi. Il titolare desidera inoltre
+    mettere in relazione ogni ricambio con i modelli di moto compatibili, così da evitare errori di montaggio.  
+    Sul fronte amministrativo, l’officina impiega alcuni meccanici e un addetto alla reception che deve poter gestire assunzioni, turni
+    e assegnazioni ai lavori. Per questo si richiede una sezione dedicata allo staff, con ruoli differenziati (meccanico, amministratore)
+    e permessi di accesso mirati: ad esempio, solo l’amministratore emette fatture, mentre i meccanici aggiornano lo stato dei lavori a loro assegnati.  
+    Infine, il titolare vorrebbe un cruscotto riepilogativo che mostri a colpo d’occhio appuntamenti imminenti, lavori in corso,
+    ricavi mensili e ricambi sotto scorta minima.
+    </em>
 ## Rilevamento delle ambiguità e correzioni proposte
 
-[Inserire qui le ambiguità rilevate nel testo dell'intervista e le correzioni proposte.]
+A seguito di un'analisi testuale dell'intervista 
 
 .tablesort {1}
     .csv {tables/concepts.csv} caption:{concetti.}
