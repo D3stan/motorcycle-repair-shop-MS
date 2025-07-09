@@ -46,7 +46,7 @@ Si riporta in seguito la trascrizione dell'intervista effettuata col proprietari
     ricavi mensili e ricambi sotto scorta minima.
     </em>
 
-## Rilevamento delle ambiguità e correzioni proposte
+## Rilevamento delle ambiguità ed estrazione dei concetti principali
 
 Un'analisi testuale dell'intervista ha portato alla luce diverse ambiguità elecate di seguito.
 
@@ -54,13 +54,26 @@ Un'analisi testuale dell'intervista ha portato alla luce diverse ambiguità elec
     .csv {tables/concepts.csv} caption:{concetti.}
 
 
-## Definizione delle specifiche in linguaggio naturale ed estrazione dei concetti principali
+## Ridefinizione delle specifiche in linguaggio naturale 
 
-[Inserire qui il riassunto dell'intervista con le correzioni]
+I **Clienti** rappresentano i proprietari delle motociclette che si registrano nel sistema fornendo i propri dati anagrafici e di contatto. Ogni cliente può possedere una o più **Motociclette**, caratterizzate da targa, marca, modello e note personali. Questa relazione di possesso è fondamentale per mantenere lo storico degli interventi per ogni veicolo.  
+Gli **Appuntamenti** costituiscono il collegamento tra clienti e officina, permettendo la prenotazione di interventi di manutenzione ordinaria o test diagnostici. Ogni appuntamento è associato a una specifica motocicletta e può trovarsi in diversi stati (pendente, confermato, rifiutato). Durante la fase operativa, gli appuntamenti si trasformano in **Interventi** veri e propri, ai quali vengono assegnati uno o più **Tecnici** (meccanici) responsabili dell'esecuzione del lavoro.  
+Il **Magazzino** gestisce i **Ricambi**, ognuno identificato da un codice fornitore, categoria e livello di disponibilità. Esiste una relazione di compatibilità tra ricambi e modelli di motociclette per evitare errori di montaggio. Durante gli interventi, i ricambi utilizzati vengono registrati e collegati sia all'intervento che al fornitore di provenienza.  
+Il **Personale** dell'officina comprende tecnici con diversi ruoli e permessi di accesso differenziati. Gli amministratori hanno accesso completo al sistema inclusa la generazione di fatture, mentre i tecnici possono aggiornare lo stato dei lavori a loro assegnati. L'operatore front-office gestisce la reception e le operazioni di accoglienza clienti.  
+Il sistema di **Fatturazione** collega gli interventi completati ai relativi clienti, includendo il calcolo della manodopera e dei ricambi utilizzati. Un **Dashboard** amministrativo fornisce una visione d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 
-[Elenco con le operazioni definite]
-- op1
-- op2
+##### Operazioni principali da implementare:
+
+- Registrazione e autenticazione di clienti e personale
+- Gestione del garage digitale con inserimento e modifica dati delle motociclette
+- Prenotazione, conferma e cancellazione appuntamenti
+- Assegnazione tecnici agli interventi e aggiornamento stato lavori
+- Gestione inventario ricambi con soglie di riordino
+- Registrazione acquisti da fornitori e storico movimenti magazzino
+- Generazione fatture per interventi completati
+- Visualizzazione dashboard con indicatori di performance
+- Gestione ruoli e permessi del personale
+- Tracciamento storico interventi per ogni motocicletta
 
 
 # Progettazione Concettuale
