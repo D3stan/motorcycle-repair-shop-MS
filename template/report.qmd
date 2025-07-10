@@ -29,7 +29,7 @@ Si riporta in seguito la trascrizione dell'intervista effettuata col proprietari
 
     Il passo successivo riguarda la prenotazione degli appuntamenti. Il titolare sottolinea l’esigenza di un calendario che mostri
     le fasce orarie libere per interventi di manutenzione ordinaria o per prove al banco.
-    Infatti il cliente deve poter disdire in autonomia. Al momento della richiesta, il sistema deve salvare l'appuntamento in
+    Inoltre il cliente deve poter disdire in autonomia. Al momento della richiesta, il sistema deve salvare l'appuntamento in
     uno stato di "attesa di conferma" che l’officina potrà poi convertire in "confermato" oppure rifiutare, tenendo conto della
     disponibilità dei meccanici e della complessità del lavoro.  
     Durante il lavoro sulla moto, il proprietario vuole registrare uno o più tecnici assegnati, annotare ogni fase dell’intervento
@@ -48,7 +48,7 @@ Si riporta in seguito la trascrizione dell'intervista effettuata col proprietari
 
 ## Rilevamento delle ambiguità ed estrazione dei concetti principali
 
-Un'analisi testuale dell'intervista ha portato alla luce diverse ambiguità elecate di seguito.
+Un'analisi testuale dell'intervista ha portato alla luce diverse ambiguità elencate di seguito.
 
 .tablesort {1}
     .csv {tables/concepts.csv} caption:{concetti.}
@@ -61,7 +61,7 @@ Ogni cliente può possedere una o più **Motociclette**, caratterizzate da targa
 Gli **Appuntamenti** costituiscono il collegamento tra clienti e officina, permettendo la prenotazione di interventi di manutenzione
 (ordinaria o straordinaria) o prove al banco. Ogni appuntamento è associato a una specifica motocicletta e può trovarsi in diversi stati
 (in attesa di conferma, in progesso, completato, annullato). Durante la fase operativa, gli appuntamenti si trasformano in **Interventi** veri e propri,
-ai quali vengono assegnati uno o più **Tecnici** (meccanici) responsabili dell'esecuzione del lavoro.  
+ai quali vengono assegnati uno o più **Tecnici** responsabili dell'esecuzione del lavoro.  
 Il **Magazzino** gestisce i **Ricambi**, ognuno identificato da un codice fornitore, categoria e livello di disponibilità. Esiste una
 relazione di compatibilità tra ricambi e modelli di motociclette per evitare errori di montaggio. Durante gli interventi, i ricambi
 utilizzati vengono registrati e collegati sia all'intervento che al fornitore di provenienza con i relativi prezzi.  
@@ -87,9 +87,9 @@ d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 
 # Progettazione Concettuale
 
-[Inserire qui descrizione della prima iterazione di schema ER]  
-
 ## Schema scheletro
+
+[Inserire qui descrizione della prima iterazione di schema ER]  
 
 ![ER](imgs/scheletro.png "Inserire qui lo schema scheletro del database")
 
