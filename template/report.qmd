@@ -87,15 +87,34 @@ d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 
 # Progettazione Concettuale
 
-## Schema scheletro
+## Persone
 
-[Inserire qui descrizione della prima iterazione di schema ER]  
+### Schema scheletro
 
-![ER](imgs/scheletro.png "Inserire qui lo schema scheletro del database")
+Un primo sviluppo legato al dominio del problema produce il seguente schema.
 
-## Raffinamenti proposti
+![ER](imgs/scheletroP.png "Scheletro per la modellazione delle persone")
 
-[Inserire qui i raffinamenti proposti allo schema scheletro.]
+### Raffinamenti proposti
+
+Si nota fin da subito la necessità di dividere l'entità **persona** in in due sotto entità per distinguere i clienti dai dipendenti dell'officina. Inoltre, data la descrizione del dominio, si vogliono distinguere i lavori in base al tipo di intervento, quindi sessione a banco oppure manutenzione.
+
+![ER](imgs/rifinitoP.png "Schema rifinito")
+
+## Persone
+
+### Schema scheletro
+
+Un primo sviluppo legato al dominio del problema produce il seguente schema.
+
+![ER](imgs/scheletroP.png "Scheletro per la modellazione delle persone")
+
+### Raffinamenti proposti
+
+Si nota fin da subito la necessità di dividere l'entità **persona** in in due sotto entità per distinguere i clienti dai dipendenti dell'officina. Inoltre, data la descrizione del dominio, si vogliono distinguere i lavori in base al tipo di intervento, quindi sessione a banco oppure manutenzione.
+
+![ER](imgs/rifinitoP.png "Schema rifinito")
+
 
 ## Schema concettuale finale
 
