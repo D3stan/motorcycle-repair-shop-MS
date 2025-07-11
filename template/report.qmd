@@ -420,26 +420,22 @@ PERSONE (
   Cellulare,
   Email,
   Tipo
-)
-
+)  
 APPUNTAMENTI (
   .text {CodiceAppuntamento} decoration:{underline},
   DataAppuntamento,
   Descrizione,
   Tipo,
   .text {CF} decoration:{underline}: PERSONE
-)
-
+)  
 AFFIANCAMENTI (
   .text {CodiceSessione} decoration:{underline},
   .text {CF} decoration:{underline}: PERSONE
-)
-
+)  
 SVOLGIMENTI (
   .text {CodiceIntervento} decoration:{underline},
   .text {CF} decoration:{underline}: PERSONE
-)
-
+)  
 FATTURE (
   .text {CodiceFattura} decoration:{underline},
   Importo,
@@ -448,16 +444,14 @@ FATTURE (
   .text {CF} decoration:{underline}: PERSONE,
   .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
   .text {CodiceSessione} decoration:{underline}: SESSIONI
-)
-
+)  
 SESSIONI (
   .text {CodiceSessione} decoration:{underline},
   DataInizio,
   OreImpiegate,
   Note,
   .text {NumTelaio} decoration:{underline}: MOTO
-)
-
+)  
 INTERVENTI (
   .text {CodiceIntervento} decoration:{underline},
   DataInizio,
@@ -469,8 +463,7 @@ INTERVENTI (
   Note,
   Nome,
   .text {NumTelaio} decoration:{underline}: MOTO
-)
-
+)  
 MOTO (
   .text {NumTelaio} decoration:{underline},
   Targa,
@@ -478,8 +471,7 @@ MOTO (
   Note,
   .text {CodiceModello} decoration:{underline}: MODELLI,
   .text {CF} decoration:{underline}: PERSONE
-)
-
+)  
 MODELLI (
   .text {CodiceModello} decoration:{underline},
   Marca,
@@ -487,15 +479,13 @@ MODELLI (
   Cilindrata,
   Segmento,
   Potenza
-)
-
+)  
 FORNITORI (
   .text {CodiceFornitore} decoration:{underline},
   Nome,
   Telefono,
   Email
-)
-
+)  
 RICAMBI (
   .text {CodiceRicambio} decoration:{underline},
   Marca,
@@ -503,22 +493,18 @@ RICAMBI (
   Descrizione[0–1],
   PrezzoFornitore,
   .text {CodiceFornitore} decoration:{underline}: FORNITORI
-)
-
+)  
 MAGAZZINI (
   .text {CodiceMagazzino} decoration:{underline}
-)
-
+)  
 STOCCAGGI (
   .text {CodiceMagazzino} decoration:{underline}: MAGAZZINI,
   .text {CodiceRicambio} decoration:{underline}: RICAMBI
-)
-
+)  
 APPARTENENZE (
   .text {CodiceRicambio} decoration:{underline}: RICAMBI,
   .text {CodiceModello} decoration:{underline}: MODELLI
-)
-
+)  
 UTILIZZI (
   .text {CodiceRicambio} decoration:{underline}: RICAMBI,
   .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
