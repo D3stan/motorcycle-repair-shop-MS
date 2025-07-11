@@ -139,8 +139,26 @@ La divisione di un lavoro in **intervento** e **sessione** permette di mettere i
 
 ## Stima del volume dei dati
 
-.tablesort {1}
-    .csv {tables/volumes.csv} caption:{volumi di dati.}
+.var {volumetable}
+    .csv {tables/volumes.csv}
+
+.var {tabledata}
+    .tablecolumn {1}
+        .volumetable
+
+.var {totalrows}
+    .tabledata::size
+
+.row alignment:{center} gap:{1cm}
+    .container
+        .tablefilter {4} {@lambda x: .x::islower {.totalrows::divide {2}} {true}}
+            .volumetable
+      
+    .container
+        .tablefilter {4} {@lambda x: .x::isgreater {.totalrows::divide {2}}}
+            .volumetable
+
+
 
 ## Descrizione delle operazioni principali e stima della loro frequenza
 
