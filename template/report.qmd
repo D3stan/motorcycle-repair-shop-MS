@@ -42,7 +42,7 @@ Si riporta in seguito la trascrizione dell'intervista effettuata col proprietari
     Sul fronte amministrativo, l’officina impiega alcuni operai e un addetto alla reception che deve poter gestire assunzioni, turni
     e assegnazioni ai lavori. Per questo si richiede una sezione dedicata allo staff, con ruoli differenziati (meccanico, amministratore)
     e permessi di accesso mirati: ad esempio, solo l’amministratore emette fatture, mentre i meccanici aggiornano lo stato dei lavori a loro assegnati.  
-    Infine, il titolare vorrebbe un cruscotto riepilogativo che mostri a colpo d’occhio appuntamenti imminenti, lavori in corso,
+    Infine, il titolare vorrebbe un cruscotto riepilogativo che mostri a colpo d'occhio appuntamenti imminenti, lavori in corso,
     ricavi mensili e ricambi sotto scorta minima.
     </em>
 
@@ -519,29 +519,206 @@ UTILIZZI (
 
 ## Traduzione delle operazioni in query SQL
 
-##### OP 1 - Operazione 1
-[Inserire qui commenti aggiuntivi per l'operazione 1 se necessari.]
+##### OP 1 - Registrazione di nuovi clienti
+Inserimento di un nuovo cliente nel sistema. La CF funge da chiave primaria e permette di verificare l’univocità dell’utente.
 
 .code {sql}
-    SELECT code
-    FROM goes
-    WHERE here  
+    INSERT INTO PERSONE (CF, Nome, Cognome, Cellulare, Email, Tipo)
+    VALUES (?, ?, ?, ?, ?, 'cliente');
 
 
-##### OP 2 - Operazione 2
-[Inserire qui commenti aggiuntivi per l'operazione 2 se necessari.]
+##### OP 2 - Inserimento di una nuova motocicletta nel garage
+Il cliente associa una moto già presente nel catalogo dei modelli al proprio garage.
 
 .code {sql}
-    SELECT code
-    FROM goes
-    WHERE here
+    INSERT INTO MOTO (NumTelaio, Targa, AnnoImmatricolazione, Note, CodiceModello, CF)
+    VALUES (?, ?, ?, ?, ?, ?);
+
+
+##### OP 3 - Prenotazione, conferma e cancellazione appuntamenti
+1) Inserimento richiesta in stato “attesa”.  
+2) Conferma da parte dell’officina.  
+3) Eventuale annullamento da parte del cliente.
+
+.code {sql}
+    INSERT INTO APPUNTAMENTI (CodiceAppuntamento, DataAppuntamento, Descrizione, Tipo, CF)
+    VALUES (?, ?, ?, 'attesa', ?);
+
+    UPDATE APPUNTAMENTI
+    SET Tipo = 'confermato'
+    WHERE CodiceAppuntamento = ?;
+
+    DELETE FROM APPUNTAMENTI
+    WHERE CodiceAppuntamento = ?;
+
+
+##### OP 4 - Assegnazione tecnici agli interventi
+Collega uno o più meccanici ad un intervento specifico.
+
+.code {sql}
+    INSERT INTO SVOLGIMENTI (CodiceIntervento, CF)
+    VALUES (?, ?);
+
+
+##### OP 5 - Visualizzazione inventario con soglie di riordino
+Elenco dei ricambi con quantità sotto la soglia impostata.
+
+.code {sql}
+    SELECT r.CodiceRicambio,
+           r.Nome,
+           SUM(s.`Quantita`) AS disponibilita,
+           r.SogliaMinima
+    FROM RICAMBI r
+    JOIN STOCCAGGI s ON s.CodiceRicambio = r.CodiceRicambio
+    GROUP BY r.CodiceRicambio, r.Nome, r.SogliaMinima
+    HAVING disponibilita < r.SogliaMinima;
+
+
+##### OP 6 - Registrazione acquisti da fornitori
+1) Aggiorna il prezzo del ricambio.  
+2) Aggiunge le unità acquistate nel magazzino indicato.
+
+.code {sql}
+    -- 1) Prezzo aggiornato
+    UPDATE RICAMBI
+    SET PrezzoFornitore = ?
+    WHERE CodiceRicambio = ?;
+
+    -- 2) Nuove scorte
+    INSERT INTO STOCCAGGI (CodiceMagazzino, CodiceRicambio, Quantita)
+    VALUES (?, ?, ?);
+
+
+##### OP 7 - Generazione fatture per interventi completati
+Inserisce la fattura passando il totale già calcolato dall'applicazione.
+
+.code {sql}
+    INSERT INTO FATTURE (CodiceFattura, Importo, Data, Note, CF, CodiceIntervento)
+    VALUES (?, ?, CURRENT_DATE, ?, ?, ?);
+
+
+##### OP 8 - Visualizzazione dashboard con KPI
+Esempi di query semplici per popolare la dashboard.
+
+.code {sql}
+    -- Appuntamenti nelle prossime 24h
+    SELECT *
+    FROM APPUNTAMENTI
+    WHERE DataAppuntamento BETWEEN NOW() AND NOW() + INTERVAL 1 DAY;
+
+    -- Interventi ancora aperti
+    SELECT *
+    FROM INTERVENTI
+    WHERE DataFine IS NULL;
+
+    -- Ricavo degli ultimi 6 mesi (anno-mese)
+    SELECT YEAR(Data)  AS anno,
+           MONTH(Data) AS mese,
+           SUM(Importo) AS ricavi
+    FROM FATTURE
+    GROUP BY anno, mese
+    ORDER BY anno DESC, mese DESC
+    LIMIT 6;
+
+    -- Ricambi sotto soglia
+    SELECT CodiceRicambio, Nome
+    FROM RICAMBI
+    WHERE CodiceRicambio IN (
+        SELECT CodiceRicambio
+        FROM STOCCAGGI
+        GROUP BY CodiceRicambio
+        HAVING SUM(Quantita) < (SELECT SogliaMinima FROM RICAMBI WHERE CodiceRicambio = STOCCAGGI.CodiceRicambio)
+    );
+
+
+##### OP 9 - Gestione ruoli e permessi del personale
+Modifica del ruolo di un dipendente.
+
+.code {sql}
+    UPDATE PERSONE
+    SET Tipo = ?
+    WHERE CF = ?;
+
+
+##### OP 10 - Storico interventi per una motocicletta
+Restituisce la lista completa degli interventi, meccanici e ricambi utilizzati su una moto.
+
+.code {sql}
+    SELECT i.CodiceIntervento,
+           i.DataInizio,
+           i.DataFine,
+           i.Tipo,
+           i.OreImpiegate,
+           i.Note,
+           GROUP_CONCAT(DISTINCT sv.CF) AS meccanici,
+           SUM(u.Quantità * u.Prezzo) AS costo_ricambi
+    FROM INTERVENTI i
+    LEFT JOIN SVOLGIMENTI sv USING (CodiceIntervento)
+    LEFT JOIN UTILIZZI u USING (CodiceIntervento)
+    WHERE i.NumTelaio = ?
+    GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine, i.Tipo, i.OreImpiegate, i.Note
+    ORDER BY i.DataInizio DESC;
+
+
+##### OP 11 - Stato intervento visibile al cliente
+Mostra al proprietario l’avanzamento degli interventi sulla propria moto.
+
+.code {sql}
+    SELECT i.CodiceIntervento,
+           i.DataInizio,
+           i.DataFine,
+           CASE WHEN i.DataFine IS NULL THEN 'in corso' ELSE 'completato' END AS stato,
+           GROUP_CONCAT(DISTINCT sv.CF) AS meccanici
+    FROM INTERVENTI i
+    JOIN MOTO m USING (NumTelaio)
+    JOIN PERSONE p USING (CF)
+    LEFT JOIN SVOLGIMENTI sv USING (CodiceIntervento)
+    WHERE p.CF = ?
+      AND i.NumTelaio = ?
+    GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine;
 
 
 # Progettazione dell'applicazione
 
 ## Descrizione dell'architettura dell'applicazione realizzata
+####! **Stack tecnologico**
+  - Backend: Laravel 12 con Eloquent ORM e adapter Inertia.js
+  - Front-end: React 18 + TypeScript servito via Inertia.js
+  - Build: Vite, Tailwind CSS e componenti shadcn/ui
+  - Database: MySQL 8 (InnoDB) gestito tramite migration e seeders
+  - Autenticazione: Laravel Breeze + Sanctum con gestione ruoli/policy
 
-[Inserire qui la descrizione dell'architettura dell'applicazione realizzata]
+####! **Architettura a livelli**
+  1. Presentazione – SPA Inertia/React (layouts, componenti, hook)
+  2. Routing HTTP – file `routes/*.php` che instradano verso i Controller
+  3. Controller – orchestrano validazione, logica di dominio e risposta Inertia/JSON
+  4. Validazione – FormRequest dedicati in `app/Http/Requests`
+  5. Business Logic – metodi nei Model + eventuali Service class
+  6. Persistenza – Eloquent ORM, migration, factory, seeder
+
+####! **Flussi chiave**
+  - Autenticazione → sessione Sanctum → redirect a dashboard
+  - CRUD (clienti, moto, ricambi, lavori) tramite Controller ↔ pagine Inertia
+  - Dashboard admin: query aggregate (KPI) restituite come JSON a grafici React
+  - Notifiche: Event & Listener con coda Redis per email e aggiornamenti stato
+
+####! **Frontend**
+  - Struttura modulare: `resources/js/layouts`, `components`, `hooks`
+  - Stato globale minimo: Inertia condivide props server-side
+
+####! **Backend extra**
+  - Queue worker (Redis) per task asincroni (invio email, generazione PDF)
+  - Policy & Gate per controllo accesso (cliente, meccanico, admin)
+
+####! **Deployment & CI/CD**
+  - Docker multi-stage (PHP-FPM + Nginx, Node per build asset)
+  - GitHub Actions: lint JS/PHP, test PHPUnit/Pest, build, deploy su VPS
+  - Backup giornaliero di database e storage
+
+####! **Sicurezza & Performance**
+  - CSRF, rate-limiting, hashing Bcrypt, validazione input lato server
+  - Cache config/session/route su Redis
+  - Ottimizzazione query (index, eager-loading vs lazy) per evitare N+1
 
 ## Guida utente
 
