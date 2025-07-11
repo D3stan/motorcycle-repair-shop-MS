@@ -126,7 +126,7 @@ A seguito di una prima analisi del dominio si sviluppa il seguente schema per mo
 
 ### Raffinamenti proposti
 
-.loremipsum
+La divisione di un lavoro in **intervento** e **sessione** permette di mettere in relazione un **ricambio** solo dove risulta davvero necessario. Inoltre specificare qualora un intervento si tratti di manutenzione **ordinaria** o **straordinaria** aiuta ulteriormente a giustificare la quantità e/o il tipo di ricambi che sono stati utilizzati. Infine i ricambi possono essere convervati in diversi magazzini per permettere maggiore flessibilità di caso di ampliamento dell'officina (basti pensare a un magazzino interno per ricambi generici utilizzati quasi giornalmente e un magazzino esterno per ricambi specifici).
 
 ![ER](imgs/rifinitoR.png "Schema rifinito")
 
