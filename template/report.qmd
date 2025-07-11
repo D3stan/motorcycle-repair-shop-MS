@@ -130,11 +130,9 @@ La divisione di un lavoro in **intervento** e **sessione** permette di mettere i
 
 ![ER](imgs/rifinitoR.png "Schema rifinito")
 
-
 ## Schema concettuale finale
 
-![ER](imgs/finale.png "Inserire qui lo schema concettuale finale")
-
+!(_x100%)[ER](imgs/finaleV.png)
 
 
 # Progettazione logica
