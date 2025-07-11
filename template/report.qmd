@@ -413,7 +413,122 @@ Partendo dallo schema ER sono state modificate le seguenti relazioni:
 
 ## Traduzione di entità e associazioni in relazioni
 
-[Inserire qui la traduzione di entità e associazioni in relazioni.]
+PERSONA(
+  CF PK,
+  Nome,
+  Cognome,
+  Cellulare,
+  Email,
+  Tipo
+)
+
+APPUNTAMENTO(
+  CodiceAppuntamento PK,
+  DataAppuntamento,
+  Descrizione,
+  Tipo,
+  CF FK→PERSONA.CF
+)
+
+AFFIANCAMENTO(
+  CodiceSessione PK,
+  CF FK→PERSONA.CF
+)
+
+SVOLGIMENTO(
+  CodiceIntervento PK,
+  CF FK→PERSONA.CF
+)
+
+FATTURA(
+  CodiceFattura PK,
+  Importo,
+  Data,
+  Note,
+  CF FK→PERSONA.CF,
+  CodiceIntervento FK→INTERVENTO.CodiceIntervento,
+  CodiceSessione FK→SESSIONE.CodiceSessione
+)
+
+SESSIONE(
+  CodiceSessione PK,
+  DataInizio,
+  OreImpiegate,
+  Note,
+  NumTelaio FK→MOTO.NumTelaio
+)
+
+INTERVENTO(
+  CodiceIntervento PK,
+  DataInizio,
+  DataFine,
+  KmMoto,
+  Tipo,
+  Causa[0–1],
+  OreImpiegate,
+  Note,
+  Nome,
+  NumTelaio FK→MOTO.NumTelaio
+)
+
+MOTO(
+  NumTelaio PK,
+  Targa,
+  AnnoImmatricolazione,
+  Note,
+  CodiceModello FK→MODELLO.CodiceModello,
+  CF FK→PERSONA.CF
+)
+
+MODELLO(
+  CodiceModello PK,
+  Marca,
+  Nome,
+  Cilindrata,
+  Segmento,
+  Potenza
+)
+
+FORNITORE(
+  CodiceFornitore PK,
+  Nome,
+  Telefono,
+  Email
+)
+
+RICAMBIO(
+  CodiceRicambio PK,
+  Marca,
+  Nome,
+  Descrizione[0–1],
+  PrezzoFornitore,
+  CodiceFornitore FK→FORNITORE.CodiceFornitore
+)
+
+MAGAZZINO(
+  CodiceMagazzino PK
+)
+
+STOCCAGGIO(
+  CodiceMagazzino FK→MAGAZZINO.CodiceMagazzino,
+  CodiceRicambio FK→RICAMBIO.CodiceRicambio,
+  PRIMARY KEY(CodiceMagazzino, CodiceRicambio)
+)
+
+APPARTENENZA(
+  CodiceRicambio FK→RICAMBIO.CodiceRicambio,
+  CodiceModello FK→MODELLO.CodiceModello,
+  PRIMARY KEY(CodiceRicambio, CodiceModello)
+)
+
+UTILIZZO(
+  CodiceRicambio FK→RICAMBIO.CodiceRicambio,
+  CodiceIntervento FK→INTERVENTO.CodiceIntervento,
+  Quantità,
+  Prezzo,
+  PRIMARY KEY(CodiceRicambio, CodiceIntervento)
+)
+
 
 ## Schema relazionale finale
 
