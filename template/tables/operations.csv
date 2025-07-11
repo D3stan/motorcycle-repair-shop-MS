@@ -1,3 +1,12 @@
 Codice, Descrizione, Frequenza
-1, Descrizione operazione1, 100
-2, Descrizione operazione2, 200
+1, Registrazione e autenticazione di clienti e personale, 50
+2, Gestione del garage digitale con inserimento e modifica dati delle motociclette, 80
+3, Prenotazione conferma e cancellazione appuntamenti, 150
+4, Assegnazione tecnici agli interventi e aggiornamento stato lavori, 120
+5, Gestione inventario ricambi con soglie di riordino, 200
+6, Registrazione acquisti da fornitori e storico movimenti magazzino, 60
+7, Generazione fatture per interventi completati, 100
+8, Visualizzazione dashboard con indicatori di performance, 300
+9, Gestione ruoli e permessi del personale, 20
+10, Tracciamento storico interventi per ogni motocicletta, 180
+11, Visualizzare lo stato di un intervento sulla propria moto, 250
