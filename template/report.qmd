@@ -413,8 +413,8 @@ Partendo dallo schema ER sono state modificate le seguenti relazioni:
 
 ## Traduzione di entità e associazioni in relazioni
 
-PERSONA(
-  CF PK,
+PERSONE (
+  .text {CF} decoration:{underline},
   Nome,
   Cognome,
   Cellulare,
@@ -422,44 +422,44 @@ PERSONA(
   Tipo
 )
 
-APPUNTAMENTO(
-  CodiceAppuntamento PK,
+APPUNTAMENTI (
+  .text {CodiceAppuntamento} decoration:{underline},
   DataAppuntamento,
   Descrizione,
   Tipo,
-  CF FK→PERSONA.CF
+  .text {CF} decoration:{underline}: PERSONE
 )
 
-AFFIANCAMENTO(
-  CodiceSessione PK,
-  CF FK→PERSONA.CF
+AFFIANCAMENTI (
+  .text {CodiceSessione} decoration:{underline},
+  .text {CF} decoration:{underline}: PERSONE
 )
 
-SVOLGIMENTO(
-  CodiceIntervento PK,
-  CF FK→PERSONA.CF
+SVOLGIMENTI (
+  .text {CodiceIntervento} decoration:{underline},
+  .text {CF} decoration:{underline}: PERSONE
 )
 
-FATTURA(
-  CodiceFattura PK,
+FATTURE (
+  .text {CodiceFattura} decoration:{underline},
   Importo,
   Data,
   Note,
-  CF FK→PERSONA.CF,
-  CodiceIntervento FK→INTERVENTO.CodiceIntervento,
-  CodiceSessione FK→SESSIONE.CodiceSessione
+  .text {CF} decoration:{underline}: PERSONE,
+  .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
+  .text {CodiceSessione} decoration:{underline}: SESSIONI
 )
 
-SESSIONE(
-  CodiceSessione PK,
+SESSIONI (
+  .text {CodiceSessione} decoration:{underline},
   DataInizio,
   OreImpiegate,
   Note,
-  NumTelaio FK→MOTO.NumTelaio
+  .text {NumTelaio} decoration:{underline}: MOTO
 )
 
-INTERVENTO(
-  CodiceIntervento PK,
+INTERVENTI (
+  .text {CodiceIntervento} decoration:{underline},
   DataInizio,
   DataFine,
   KmMoto,
@@ -468,20 +468,20 @@ INTERVENTO(
   OreImpiegate,
   Note,
   Nome,
-  NumTelaio FK→MOTO.NumTelaio
+  .text {NumTelaio} decoration:{underline}: MOTO
 )
 
-MOTO(
-  NumTelaio PK,
+MOTO (
+  .text {NumTelaio} decoration:{underline},
   Targa,
   AnnoImmatricolazione,
   Note,
-  CodiceModello FK→MODELLO.CodiceModello,
-  CF FK→PERSONA.CF
+  .text {CodiceModello} decoration:{underline}: MODELLI,
+  .text {CF} decoration:{underline}: PERSONE
 )
 
-MODELLO(
-  CodiceModello PK,
+MODELLI (
+  .text {CodiceModello} decoration:{underline},
   Marca,
   Nome,
   Cilindrata,
@@ -489,44 +489,41 @@ MODELLO(
   Potenza
 )
 
-FORNITORE(
-  CodiceFornitore PK,
+FORNITORI (
+  .text {CodiceFornitore} decoration:{underline},
   Nome,
   Telefono,
   Email
 )
 
-RICAMBIO(
-  CodiceRicambio PK,
+RICAMBI (
+  .text {CodiceRicambio} decoration:{underline},
   Marca,
   Nome,
   Descrizione[0–1],
   PrezzoFornitore,
-  CodiceFornitore FK→FORNITORE.CodiceFornitore
+  .text {CodiceFornitore} decoration:{underline}: FORNITORI
 )
 
-MAGAZZINO(
-  CodiceMagazzino PK
+MAGAZZINI (
+  .text {CodiceMagazzino} decoration:{underline}
 )
 
-STOCCAGGIO(
-  CodiceMagazzino FK→MAGAZZINO.CodiceMagazzino,
-  CodiceRicambio FK→RICAMBIO.CodiceRicambio,
-  PRIMARY KEY(CodiceMagazzino, CodiceRicambio)
+STOCCAGGI (
+  .text {CodiceMagazzino} decoration:{underline}: MAGAZZINI,
+  .text {CodiceRicambio} decoration:{underline}: RICAMBI
 )
 
-APPARTENENZA(
-  CodiceRicambio FK→RICAMBIO.CodiceRicambio,
-  CodiceModello FK→MODELLO.CodiceModello,
-  PRIMARY KEY(CodiceRicambio, CodiceModello)
+APPARTENENZE (
+  .text {CodiceRicambio} decoration:{underline}: RICAMBI,
+  .text {CodiceModello} decoration:{underline}: MODELLI
 )
 
-UTILIZZO(
-  CodiceRicambio FK→RICAMBIO.CodiceRicambio,
-  CodiceIntervento FK→INTERVENTO.CodiceIntervento,
+UTILIZZI (
+  .text {CodiceRicambio} decoration:{underline}: RICAMBI,
+  .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
   Quantità,
-  Prezzo,
-  PRIMARY KEY(CodiceRicambio, CodiceIntervento)
+  Prezzo
 )
 
 
