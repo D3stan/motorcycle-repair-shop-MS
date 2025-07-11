@@ -91,29 +91,44 @@ d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 
 ### Schema scheletro
 
-Un primo sviluppo legato al dominio del problema produce il seguente schema.
+Un primo sviluppo legato al dominio del problema produce il seguente schema:
 
 ![ER](imgs/scheletroP.png "Scheletro per la modellazione delle persone")
 
 ### Raffinamenti proposti
 
-Si nota fin da subito la necessità di dividere l'entità **persona** in in due sotto entità per distinguere i clienti dai dipendenti dell'officina. Inoltre, data la descrizione del dominio, si vogliono distinguere i lavori in base al tipo di intervento, quindi sessione a banco oppure manutenzione.
+Si nota fin da subito la necessità di dividere l'entità **persona** in in due sotto entità per distinguere i clienti dai dipendenti dell'officina. Inoltre, data la descrizione del dominio, si vogliono distinguere i lavori in base al tipo di intervento, quindi sessione a banco oppure manutenzione, in quanto si può così avere una distinzione maggiore tra uno e l'altro.
 
 ![ER](imgs/rifinitoP.png "Schema rifinito")
 
-## Persone
+## Motociclette
 
 ### Schema scheletro
 
-Un primo sviluppo legato al dominio del problema produce il seguente schema.
+La prima iterazione nella modellizzazione delle moto per il garage virtuale e i relativi lavori si traduce nel seguete schema:
 
-![ER](imgs/scheletroP.png "Scheletro per la modellazione delle persone")
+![ER](imgs/scheletroM.png "Scheletro per la modellazione delle moto")
 
 ### Raffinamenti proposti
 
-Si nota fin da subito la necessità di dividere l'entità **persona** in in due sotto entità per distinguere i clienti dai dipendenti dell'officina. Inoltre, data la descrizione del dominio, si vogliono distinguere i lavori in base al tipo di intervento, quindi sessione a banco oppure manutenzione.
+Mettere in relazione un **ricambio** direttamente con la **motoclicletta** di proprietà di una **persona** risulta essere una scelta poco conveniente: potrebbe capitare che due (o più) persone abbiano lo stesso modello e verrebbe introdotta una ridondaza inutile.  
+Per questo motivo si è deciso di separare le due entità di **moto** e **modello**, in quanto una rappresenta la motocicletta fisica posseduta da una persona e l'altra rappresenta il modello prodotto dalla casa madre. Così facendo, per motivi analoghi, si evitano problemi con le associazioni riguardo un lavoro effettuato su di una particolare moto.
 
-![ER](imgs/rifinitoP.png "Schema rifinito")
+![ER](imgs/rifinitoM.png "Schema rifinito")
+
+## Ricambi
+
+### Schema scheletro
+
+A seguito di una prima analisi del dominio si sviluppa il seguente schema per modellare il concetto di ricambi e il suo intorno:
+
+![ER](imgs/scheletroR.png "Scheletro per la modellazione dei ricambi")
+
+### Raffinamenti proposti
+
+.loremipsum
+
+![ER](imgs/rifinitoR.png "Schema rifinito")
 
 
 ## Schema concettuale finale
