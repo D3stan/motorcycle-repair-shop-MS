@@ -354,7 +354,20 @@ Sono presenti diverse gerarchie nello schema ed ognuna è stata trattata relativ
 Nello schema sono evidenziate le chiavi primarie utilizzate. Per l'entità **moto** si poteva far ricorso anche alla *targa* per l'identificazione ma si potrebbero verificare dei casi in cui la motocicletta viene reimmatricolata.
 
 #### Eliminazione di identificatori esterni
-.loremipsum
+Partendo dallo schema ER sono state modificate le seguenti relazioni:
+- **Creazione**, eliminata importando il _CodiceFiscale_ in **Appuntamento**
+- **Intestazione**, eliminata importando il _CodiceFiscale_ in **Fattura**
+- **Emissione**, eliminata importando il _CodiceIntervento_ in **Fattura**
+- **Possessione**, eliminata importando il _CodiceFiscale_ in **Moto**
+- **Realizzazione**, eliminata importando il _CodiceModello_ in **Moto**
+- **Fornitura**, eliminata importando il _CodiceFornitore_ in **Ricambio**
+- **Effettuazione**, eliminata importando il _NumTelaio_ in **Intervento**
+- **Sviluppo**, eliminata importando il _NumTelaio_ in **Sessione**
+- **Svolgimento**, reificata importando _CodiceIntervento_ da **Intervento** e _CodiceFiscale_ da **Persona**
+- **Affiancamento**, reificata importando _CodiceSessione_ da **Sessione** e _CodiceFiscale_ da **Persona**
+- **Utilizzo**, reificata importando _CodiceIntervento_ da **Intervento** e _CodiceRicambio_ da **Ricambio**, mantenendo gli attributi _quantità_ e _prezzo_
+- **Stoccaggio**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceMagazzino_ da **Magazzino**
+- **Appartenenza**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceModello_ da **Modello**
 
 ## Analisi delle ridondanze
 
