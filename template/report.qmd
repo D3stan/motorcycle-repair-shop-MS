@@ -345,15 +345,15 @@ Operazione che permette ai clienti di consultare in autonomia lo stato corrente 
 ## Raffinamento dello schema
 
 #### Eliminazione degli attributi composti
-.loremipsum
-
-#### Eliminazione di identificatori esterni
-.loremipsum
+Nello [schema ER](#raffinamenti-proposti-2) è presente un attributo composto _Contatti_ per salvare le informazioni di contatto del fornitore. Tale attributo viene scomposto e lato applicativo si mostreranno solo le informazioni disponibili di quel particolare fornitore.
 
 #### Eliminazione gerarchie
-.loremipsum
+Sono presenti diverse gerarchie nello schema ed ognuna è stata trattata relativamente alle sue specifiche. In particolare per gestire la gerarchia **persona** e **intervento** è stato effettuato un collasso verso l'alto in quanto i sotto-tipi non contenevano informazioni aggiuntive. Per la gerarchia **lavoro**, invece, si è preferito un collasso verso il basso in modo da mantenere una differenziazione forte.
 
 #### Scelta delle chiavi 
+Nello schema sono evidenziate le chiavi primarie utilizzate. Per l'entità **moto** si poteva far ricorso anche alla *targa* per l'identificazione ma si potrebbero verificare dei casi in cui la motocicletta viene reimmatricolata.
+
+#### Eliminazione di identificatori esterni
 .loremipsum
 
 ## Analisi delle ridondanze
