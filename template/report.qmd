@@ -579,12 +579,10 @@ Elenco dei ricambi con quantità sotto la soglia impostata.
 2) Aggiunge le unità acquistate nel magazzino indicato.
 
 .code {sql}
-    -- 1) Prezzo aggiornato
     UPDATE RICAMBI
     SET PrezzoFornitore = ?
     WHERE CodiceRicambio = ?;
 
-    -- 2) Nuove scorte
     INSERT INTO STOCCAGGI (CodiceMagazzino, CodiceRicambio, Quantita)
     VALUES (?, ?, ?);
 
@@ -597,7 +595,7 @@ Inserisce la fattura passando il totale già calcolato dall'applicazione.
     VALUES (?, ?, CURRENT_DATE, ?, ?, ?);
 
 
-##### OP 8 - Visualizzazione dashboard con KPI
+##### OP 8 - Visualizzazione dashboard con indicatori di performance
 Esempi di query semplici per popolare la dashboard.
 
 .code {sql}
@@ -627,7 +625,11 @@ Esempi di query semplici per popolare la dashboard.
         SELECT CodiceRicambio
         FROM STOCCAGGI
         GROUP BY CodiceRicambio
-        HAVING SUM(Quantita) < (SELECT SogliaMinima FROM RICAMBI WHERE CodiceRicambio = STOCCAGGI.CodiceRicambio)
+        HAVING SUM(Quantita) < (
+            SELECT SogliaMinima
+            FROM RICAMBI
+            WHERE CodiceRicambio = STOCCAGGI.CodiceRicambio
+        )
     );
 
 
@@ -674,7 +676,7 @@ Mostra al proprietario l’avanzamento degli interventi sulla propria moto.
     JOIN PERSONE p USING (CF)
     LEFT JOIN SVOLGIMENTI sv USING (CodiceIntervento)
     WHERE p.CF = ?
-      AND i.NumTelaio = ?
+    AND i.NumTelaio = ?
     GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine;
 
 
