@@ -22,26 +22,26 @@ class InvoiceController extends Controller
         // Get user's invoices with related data
         $invoices = $user->invoices()
             ->with(['workOrder.motorcycle.motorcycleModel'])
-            ->orderBy('issue_date', 'desc')
+            ->orderBy('DataEmissione', 'desc')
             ->get()
             ->map(function ($invoice) {
                 return [
-                    'id' => $invoice->id,
-                    'invoice_number' => $invoice->invoice_number,
-                    'issue_date' => $invoice->issue_date->format('Y-m-d'),
-                    'due_date' => $invoice->due_date->format('Y-m-d'),
-                    'status' => $invoice->status,
-                    'subtotal' => (float) $invoice->subtotal,
-                    'tax_amount' => (float) $invoice->tax_amount,
-                    'total_amount' => (float) $invoice->total_amount,
-                    'paid_at' => $invoice->paid_at?->format('Y-m-d'),
+                    'id' => $invoice->CodiceFattura,
+                    'invoice_number' => $invoice->CodiceFattura,
+                    'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
+                    'due_date' => $invoice->DataScadenza->format('Y-m-d'),
+                    'status' => $invoice->Stato,
+                    'subtotal' => (float) $invoice->Importo,
+                    'tax_amount' => 0.0, // Not using separate tax amount
+                    'total_amount' => (float) $invoice->Importo,
+                    'paid_at' => $invoice->DataPagamento?->format('Y-m-d'),
                     'work_order' => [
-                        'id' => $invoice->workOrder->id,
-                        'description' => $invoice->workOrder->description,
+                        'id' => $invoice->workOrder->CodiceIntervento,
+                        'description' => $invoice->workOrder->Note,
                         'motorcycle' => [
-                            'brand' => $invoice->workOrder->motorcycle->motorcycleModel->brand,
-                            'model' => $invoice->workOrder->motorcycle->motorcycleModel->name,
-                            'plate' => $invoice->workOrder->motorcycle->license_plate,
+                            'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca,
+                            'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome,
+                            'plate' => $invoice->workOrder->motorcycle->Targa,
                         ],
                     ],
                 ];
@@ -72,8 +72,8 @@ class InvoiceController extends Controller
         $user = $request->user();
 
         // Find the invoice manually to avoid route model binding issues
-        $invoice = Invoice::where('id', $invoiceId)
-            ->where('user_id', $user->id)
+        $invoice = Invoice::where('CodiceFattura', $invoiceId)
+            ->where('CF', $user->CF)
             ->first();
 
         // Check if invoice exists and belongs to user
@@ -107,7 +107,7 @@ class InvoiceController extends Controller
         ]);
 
         // Generate filename
-        $filename = "invoice-{$invoice->invoice_number}.pdf";
+        $filename = "invoice-{$invoice->CodiceFattura}.pdf";
         
         // Force download using the download method with proper headers
         return response()->streamDownload(function() use ($pdf) {

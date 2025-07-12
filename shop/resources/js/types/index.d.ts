@@ -38,7 +38,7 @@ export interface User {
     email: string;
     type: 'customer' | 'mechanic' | 'admin';
     phone?: string;
-    tax_code?: string;
+    CF?: string;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;
@@ -53,7 +53,7 @@ export interface AdminCustomer {
     last_name: string;
     email: string;
     phone?: string;
-    tax_code?: string;
+    CF?: string;
     motorcycles_count: number;
     appointments_count: number;
     work_orders_count: number;
@@ -130,7 +130,7 @@ export interface AdminStaff {
     last_name: string;
     email: string;
     phone?: string;
-    tax_code?: string;
+    CF?: string;
     assigned_work_orders_count: number;
     active_work_orders_count: number;
     created_at: string;
@@ -142,7 +142,7 @@ export interface AdminStaffDetails {
     last_name: string;
     email: string;
     phone?: string;
-    tax_code?: string;
+    CF?: string;
     created_at: string;
 }
 
@@ -477,7 +477,7 @@ export interface AdminAppointmentCustomer {
     name: string;
     email: string;
     phone?: string;
-    tax_code?: string;
+    CF?: string;
 }
 
 export interface AdminAppointmentMotorcycle {

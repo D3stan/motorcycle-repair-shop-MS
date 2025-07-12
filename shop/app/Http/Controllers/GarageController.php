@@ -24,45 +24,51 @@ class GarageController extends Controller
             ->get()
             ->map(function ($motorcycle) {
                 return [
-                    'id' => $motorcycle->id,
-                    'motorcycle_model_id' => $motorcycle->motorcycle_model_id,
-                    'brand' => $motorcycle->motorcycleModel->brand,
-                    'model' => $motorcycle->motorcycleModel->name,
-                    'year' => $motorcycle->registration_year,
-                    'plate' => $motorcycle->license_plate,
-                    'vin' => $motorcycle->vin,
-                    'engine_size' => $motorcycle->motorcycleModel->engine_size,
-                    'notes' => $motorcycle->notes,
+                    'id' => $motorcycle->NumTelaio,
+                    'CodiceModello' => $motorcycle->CodiceModello,
+                    'brand' => $motorcycle->motorcycleModel->Marca,
+                    'model' => $motorcycle->motorcycleModel->Nome,
+                    'year' => $motorcycle->AnnoImmatricolazione,
+                    'plate' => $motorcycle->Targa,
+                    'vin' => $motorcycle->NumTelaio,
+                    'engine_size' => $motorcycle->motorcycleModel->Cilindrata,
+                    'notes' => $motorcycle->Note,
                 ];
             });
 
         // Get all motorcycle models for the forms
-        $motorcycleModels = \App\Models\MotorcycleModel::orderBy('brand')
-            ->orderBy('name')
+        $motorcycleModels = \App\Models\MotorcycleModel::orderBy('Marca')
+            ->orderBy('Nome')
             ->get()
             ->map(function ($model) {
                 return [
-                    'id' => $model->id,
-                    'brand' => $model->brand,
-                    'name' => $model->name,
-                    'engine_size' => $model->engine_size,
-                    'display_name' => $model->brand . ' ' . $model->name . ' (' . $model->engine_size . 'cc)',
+                    'id' => $model->CodiceModello,
+                    'brand' => $model->Marca,
+                    'name' => $model->Nome,
+                    'engine_size' => $model->Cilindrata,
+                    'display_name' => $model->Marca . ' ' . $model->Nome . ' (' . $model->Cilindrata . 'cc)',
                 ];
             });
 
         // Get pending services count for all user's motorcycles
         $pendingServicesCount = $user->workOrders()
-            ->whereIn('status', ['pending', 'in_progress'])
+            ->where(function ($query) {
+                $query->whereNull('DataInizio')
+                    ->orWhere(function ($q) {
+                        $q->whereNotNull('DataInizio')
+                          ->whereNull('DataFine');
+                    });
+            })
             ->count();
 
         // Get last service date
         $lastService = $user->workOrders()
-            ->where('status', 'completed')
-            ->orderBy('completed_at', 'desc')
+            ->whereNotNull('DataFine')
+            ->orderBy('DataFine', 'desc')
             ->first();
 
         $lastServiceDate = $lastService ? 
-            floor($lastService->completed_at->diffInDays(now())) . ' days ago' : 
+            floor($lastService->DataFine->diffInDays(now())) . ' days ago' : 
             'No services yet';
 
         return Inertia::render('garage', [
@@ -79,11 +85,11 @@ class GarageController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'motorcycle_model_id' => 'required|exists:motorcycle_models,id',
-            'license_plate' => 'required|string|max:20|unique:motorcycles,license_plate',
-            'registration_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'vin' => 'required|string|max:17|unique:motorcycles,vin',
-            'notes' => 'nullable|string|max:1000',
+            'CodiceModello' => 'required|exists:MODELLI,CodiceModello',
+            'Targa' => 'required|string|max:20|unique:MOTO,Targa',
+            'AnnoImmatricolazione' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'NumTelaio' => 'required|string|max:17|unique:MOTO,NumTelaio',
+            'Note' => 'nullable|string|max:1000',
         ]);
 
         $motorcycle = $request->user()->motorcycles()->create($validated);
@@ -97,16 +103,16 @@ class GarageController extends Controller
     public function update(Request $request, Motorcycle $motorcycle)
     {
         // Ensure the motorcycle belongs to the authenticated user
-        if ($motorcycle->user_id !== $request->user()->id) {
+        if ($motorcycle->CF !== $request->user()->CF) {
             abort(403, 'Unauthorized action.');
         }
 
         $validated = $request->validate([
-            'motorcycle_model_id' => 'required|exists:motorcycle_models,id',
-            'license_plate' => 'required|string|max:20|unique:motorcycles,license_plate,' . $motorcycle->id,
-            'registration_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'vin' => 'required|string|max:17|unique:motorcycles,vin,' . $motorcycle->id,
-            'notes' => 'nullable|string|max:1000',
+            'CodiceModello' => 'required|exists:MODELLI,CodiceModello',
+            'Targa' => 'required|string|max:20|unique:MOTO,Targa,' . $motorcycle->NumTelaio . ',NumTelaio',
+            'AnnoImmatricolazione' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'NumTelaio' => 'required|string|max:17|unique:MOTO,NumTelaio,' . $motorcycle->NumTelaio . ',NumTelaio',
+            'Note' => 'nullable|string|max:1000',
         ]);
 
         $motorcycle->update($validated);
@@ -120,13 +126,19 @@ class GarageController extends Controller
     public function destroy(Request $request, Motorcycle $motorcycle)
     {
         // Ensure the motorcycle belongs to the authenticated user
-        if ($motorcycle->user_id !== $request->user()->id) {
+        if ($motorcycle->CF !== $request->user()->CF) {
             abort(403, 'Unauthorized action.');
         }
 
         // Check if motorcycle has active work orders
         $activeWorkOrders = $motorcycle->workOrders()
-            ->whereIn('status', ['pending', 'in_progress'])
+            ->where(function ($query) {
+                $query->whereNull('DataInizio')
+                    ->orWhere(function ($q) {
+                        $q->whereNotNull('DataInizio')
+                          ->whereNull('DataFine');
+                    });
+            })
             ->count();
 
         if ($activeWorkOrders > 0) {
@@ -144,7 +156,7 @@ class GarageController extends Controller
     public function history(Request $request, Motorcycle $motorcycle)
     {
         // Ensure the motorcycle belongs to the authenticated user
-        if ($motorcycle->user_id !== $request->user()->id) {
+        if ($motorcycle->CF !== $request->user()->CF) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -153,27 +165,35 @@ class GarageController extends Controller
 
         $serviceHistory = $motorcycle->workOrders()
             ->with('invoice')
-            ->orderBy('completed_at', 'desc')
+            ->orderBy('DataFine', 'desc')
             ->get()
             ->map(function ($workOrder) {
+                // Determine status based on dates
+                $status = 'pending';
+                if ($workOrder->DataInizio && $workOrder->DataFine) {
+                    $status = 'completed';
+                } elseif ($workOrder->DataInizio) {
+                    $status = 'in_progress';
+                }
+
                 return [
-                    'id' => $workOrder->id,
-                    'description' => $workOrder->description,
-                    'status' => $workOrder->status,
-                    'started_at' => $workOrder->started_at?->format('Y-m-d'),
-                    'completed_at' => $workOrder->completed_at?->format('Y-m-d'),
-                    'total_cost' => $workOrder->total_cost ? (float) $workOrder->total_cost : 0.0,
-                    'invoice_number' => $workOrder->invoice?->invoice_number,
+                    'id' => $workOrder->CodiceIntervento,
+                    'description' => $workOrder->Note,
+                    'status' => $status,
+                    'started_at' => $workOrder->DataInizio?->format('Y-m-d'),
+                    'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
+                    'total_cost' => $workOrder->invoice?->Importo ? (float) $workOrder->invoice->Importo : 0.0,
+                    'invoice_number' => $workOrder->invoice?->CodiceFattura,
                 ];
             });
 
         return Inertia::render('garage/history', [
             'motorcycle' => [
-                'id' => $motorcycle->id,
-                'brand' => $motorcycle->motorcycleModel->brand,
-                'model' => $motorcycle->motorcycleModel->name,
-                'year' => $motorcycle->registration_year,
-                'plate' => $motorcycle->license_plate,
+                'id' => $motorcycle->NumTelaio,
+                'brand' => $motorcycle->motorcycleModel->Marca,
+                'model' => $motorcycle->motorcycleModel->Nome,
+                'year' => $motorcycle->AnnoImmatricolazione,
+                'plate' => $motorcycle->Targa,
             ],
             'serviceHistory' => $serviceHistory,
         ]);

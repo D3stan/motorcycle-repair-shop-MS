@@ -20,11 +20,11 @@ interface BookAppointmentModalProps {
 }
 
 interface AppointmentFormData {
-    motorcycle_id: string;
-    appointment_date: string;
-    appointment_time: string;
-    type: 'maintenance' | 'dyno_testing';
-    notes: string;
+    NumTelaio: string;
+    DataAppuntamento: string;
+    Ora: string;
+    Tipo: 'maintenance' | 'dyno_testing';
+    Note: string;
     [key: string]: any;
 }
 
@@ -32,11 +32,11 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
     const [selectedType, setSelectedType] = useState<'maintenance' | 'dyno_testing' | ''>('');
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
-        motorcycle_id: '',
-        appointment_date: '',
-        appointment_time: '',
-        type: 'maintenance',
-        notes: '',
+        NumTelaio: '',
+        DataAppuntamento: '',
+        Ora: '',
+        Tipo: 'maintenance',
+        Note: '',
     });
 
     // Generate available time slots (9:00 AM to 5:00 PM)
@@ -64,7 +64,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
 
     const handleTypeSelect = (type: 'maintenance' | 'dyno_testing') => {
         setSelectedType(type);
-        setData('type', type);
+        setData('Tipo', type);
     };
 
     const handleClose = () => {
@@ -120,8 +120,8 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                 </CardContent>
                             </Card>
                         </div>
-                        {errors.type && (
-                            <p className="text-sm text-red-600">{errors.type}</p>
+                        {errors.Tipo && (
+                            <p className="text-sm text-red-600">{errors.Tipo}</p>
                         )}
                     </div>
 
@@ -139,8 +139,8 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                         className="w-full justify-between"
                                         type="button"
                                     >
-                                        {data.motorcycle_id 
-                                            ? motorcycles.find(m => m.id.toString() === data.motorcycle_id)?.label || 'Select your motorcycle'
+                                        {data.NumTelaio 
+                                            ? motorcycles.find(m => m.id.toString() === data.NumTelaio)?.label || 'Select your motorcycle'
                                             : 'Select your motorcycle'
                                         }
                                         <ChevronDown className="h-4 w-4 opacity-50" />
@@ -150,7 +150,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                     {motorcycles.map((motorcycle) => (
                                         <DropdownMenuItem 
                                             key={motorcycle.id}
-                                            onClick={() => setData('motorcycle_id', motorcycle.id.toString())}
+                                            onClick={() => setData('NumTelaio', motorcycle.id.toString())}
                                             className="cursor-pointer"
                                         >
                                             {motorcycle.label}
@@ -168,28 +168,28 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                 </p>
                             </div>
                         )}
-                        {errors.motorcycle_id && (
-                            <p className="text-sm text-red-600">{errors.motorcycle_id}</p>
+                        {errors.NumTelaio && (
+                            <p className="text-sm text-red-600">{errors.NumTelaio}</p>
                         )}
                     </div>
 
                     {/* Date and Time Selection */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="appointment_date" className="flex items-center gap-2">
+                            <Label htmlFor="DataAppuntamento" className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
                                 Date
                             </Label>
                             <Input
-                                id="appointment_date"
+                                id="DataAppuntamento"
                                 type="date"
                                 min={minDateString}
-                                value={data.appointment_date}
-                                onChange={(e) => setData('appointment_date', e.target.value)}
+                                value={data.DataAppuntamento}
+                                onChange={(e) => setData('DataAppuntamento', e.target.value)}
                                 className="w-full"
                             />
-                            {errors.appointment_date && (
-                                <p className="text-sm text-red-600">{errors.appointment_date}</p>
+                            {errors.DataAppuntamento && (
+                                <p className="text-sm text-red-600">{errors.DataAppuntamento}</p>
                             )}
                         </div>
 
@@ -205,7 +205,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                         className="w-full justify-between"
                                         type="button"
                                     >
-                                        {data.appointment_time || 'Select time'}
+                                        {data.Ora || 'Select time'}
                                         <ChevronDown className="h-4 w-4 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -213,7 +213,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                     {timeSlots.map((time) => (
                                         <DropdownMenuItem 
                                             key={time}
-                                            onClick={() => setData('appointment_time', time)}
+                                            onClick={() => setData('Ora', time)}
                                             className="cursor-pointer"
                                         >
                                             {time}
@@ -221,25 +221,25 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            {errors.appointment_time && (
-                                <p className="text-sm text-red-600">{errors.appointment_time}</p>
+                            {errors.Ora && (
+                                <p className="text-sm text-red-600">{errors.Ora}</p>
                             )}
                         </div>
                     </div>
 
                     {/* Notes */}
                     <div className="space-y-2">
-                        <Label htmlFor="notes">Additional Notes (Optional)</Label>
+                        <Label htmlFor="Note">Additional Notes (Optional)</Label>
                         <textarea
-                            id="notes"
+                            id="Note"
                             placeholder="Describe any specific issues, requirements, or preferences..."
-                            value={data.notes}
-                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('notes', e.target.value)}
+                            value={data.Note}
+                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('Note', e.target.value)}
                             rows={3}
                             className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         />
-                        {errors.notes && (
-                            <p className="text-sm text-red-600">{errors.notes}</p>
+                        {errors.Note && (
+                            <p className="text-sm text-red-600">{errors.Note}</p>
                         )}
                     </div>
 
@@ -250,7 +250,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                         </Button>
                         <Button 
                             type="submit" 
-                            disabled={processing || motorcycles.length === 0 || !selectedType || !data.motorcycle_id || !data.appointment_date || !data.appointment_time}
+                            disabled={processing || motorcycles.length === 0 || !selectedType || !data.NumTelaio || !data.DataAppuntamento || !data.Ora}
                             className={motorcycles.length === 0 ? 'cursor-not-allowed' : ''}
                         >
                             {processing ? 'Booking...' : motorcycles.length === 0 ? 'Add Motorcycle First' : 'Book Appointment'}

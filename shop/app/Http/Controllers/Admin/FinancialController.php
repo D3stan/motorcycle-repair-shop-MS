@@ -25,16 +25,16 @@ class FinancialController extends Controller
         $previousMonth = now()->subMonth()->startOfMonth();
         
         // Current month revenue
-        $currentMonthRevenue = Invoice::whereMonth('issue_date', $currentMonth->month)
-            ->whereYear('issue_date', $currentMonth->year)
-            ->where('status', 'paid')
-            ->sum('total_amount');
+        $currentMonthRevenue = Invoice::whereMonth('DataEmissione', $currentMonth->month)
+            ->whereYear('DataEmissione', $currentMonth->year)
+            ->where('Stato', 'paid')
+            ->sum('Importo');
             
         // Previous month revenue for comparison
-        $previousMonthRevenue = Invoice::whereMonth('issue_date', $previousMonth->month)
-            ->whereYear('issue_date', $previousMonth->year)
-            ->where('status', 'paid')
-            ->sum('total_amount');
+        $previousMonthRevenue = Invoice::whereMonth('DataEmissione', $previousMonth->month)
+            ->whereYear('DataEmissione', $previousMonth->year)
+            ->where('Stato', 'paid')
+            ->sum('Importo');
             
         // Revenue growth percentage
         $revenueGrowth = $previousMonthRevenue > 0 
@@ -44,10 +44,10 @@ class FinancialController extends Controller
         // Monthly revenue for last 12 months
         $monthlyRevenue = collect(range(11, 0))->map(function ($monthsBack) {
             $date = now()->subMonths($monthsBack);
-            $revenue = Invoice::whereMonth('issue_date', $date->month)
-                ->whereYear('issue_date', $date->year)
-                ->where('status', 'paid')
-                ->sum('total_amount');
+            $revenue = Invoice::whereMonth('DataEmissione', $date->month)
+                ->whereYear('DataEmissione', $date->year)
+                ->where('Stato', 'paid')
+                ->sum('Importo');
                 
             return [
                 'month' => $date->format('M Y'),
@@ -57,15 +57,15 @@ class FinancialController extends Controller
         
         // Invoice statistics
         $totalInvoices = Invoice::count();
-        $paidInvoices = Invoice::where('status', 'paid')->count();
-        $pendingInvoices = Invoice::where('status', 'pending')->count();
-        $overdueInvoices = Invoice::where('status', 'pending')
-            ->where('due_date', '<', now())
+        $paidInvoices = Invoice::where('Stato', 'paid')->count();
+        $pendingInvoices = Invoice::where('Stato', 'pending')->count();
+        $overdueInvoices = Invoice::where('Stato', 'pending')
+            ->where('DataScadenza', '<', now())
             ->count();
             
         // Outstanding payments (total amount of pending invoices)
-        $outstandingPayments = Invoice::where('status', 'pending')
-            ->sum('total_amount');
+        $outstandingPayments = Invoice::where('Stato', 'pending')
+            ->sum('Importo');
             
         // Recent invoices
         $recentInvoices = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel'])
@@ -74,29 +74,29 @@ class FinancialController extends Controller
             ->get()
             ->map(function ($invoice) {
                 return [
-                    'id' => $invoice->id,
-                    'invoice_number' => $invoice->invoice_number,
+                    'id' => $invoice->CodiceFattura,
+                    'invoice_number' => $invoice->CodiceFattura,
                     'customer' => $invoice->user->first_name . ' ' . $invoice->user->last_name,
                     'customer_email' => $invoice->user->email,
-                    'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->brand . ' ' . 
-                                   $invoice->workOrder->motorcycle->motorcycleModel->name . ' (' . 
-                                   $invoice->workOrder->motorcycle->license_plate . ')',
-                    'issue_date' => $invoice->issue_date->format('Y-m-d'),
-                    'due_date' => $invoice->due_date->format('Y-m-d'),
-                    'total_amount' => (float) $invoice->total_amount,
-                    'status' => $invoice->status,
-                    'paid_at' => $invoice->paid_at?->format('Y-m-d'),
-                    'is_overdue' => $invoice->status === 'pending' && $invoice->due_date < now(),
+                    'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
+                                   $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
+                                   $invoice->workOrder->motorcycle->Targa . ')',
+                    'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
+                    'due_date' => $invoice->DataScadenza->format('Y-m-d'),
+                    'total_amount' => (float) $invoice->Importo,
+                    'status' => $invoice->Stato,
+                    'paid_at' => $invoice->DataPagamento?->format('Y-m-d'),
+                    'is_overdue' => $invoice->Stato === 'pending' && $invoice->DataScadenza < now(),
                 ];
             });
             
         // Top customers by revenue
         $topCustomers = User::where('type', 'customer')
             ->withSum(['invoices' => function($query) {
-                $query->where('status', 'paid');
-            }], 'total_amount')
-            ->having('invoices_sum_total_amount', '>', 0)
-            ->orderBy('invoices_sum_total_amount', 'desc')
+                $query->where('Stato', 'paid');
+            }], 'Importo')
+            ->having('invoices_sum_importo', '>', 0)
+            ->orderBy('invoices_sum_importo', 'desc')
             ->limit(5)
             ->get()
             ->map(function ($customer) {
@@ -104,7 +104,7 @@ class FinancialController extends Controller
                     'id' => $customer->id,
                     'name' => $customer->first_name . ' ' . $customer->last_name,
                     'email' => $customer->email,
-                    'total_revenue' => (float) ($customer->invoices_sum_total_amount ?? 0),
+                    'total_revenue' => (float) ($customer->invoices_sum_importo ?? 0),
                 ];
             });
 
@@ -137,18 +137,18 @@ class FinancialController extends Controller
         // Apply filters
         if ($request->filled('status')) {
             if ($request->status === 'overdue') {
-                $query->where('status', 'pending')
-                      ->where('due_date', '<', now());
+                $query->where('Stato', 'pending')
+                      ->where('DataScadenza', '<', now());
             } else {
-                $query->where('status', $request->status)
-                      ->where('due_date', '>', now());
+                $query->where('Stato', $request->status)
+                      ->where('DataScadenza', '>', now());
             }
         }
         
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
+                $q->where('CodiceFattura', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($userQuery) use ($search) {
                       $userQuery->where('first_name', 'like', "%{$search}%")
                                ->orWhere('last_name', 'like', "%{$search}%")
@@ -158,11 +158,11 @@ class FinancialController extends Controller
         }
         
         if ($request->filled('date_from')) {
-            $query->where('issue_date', '>=', $request->date_from);
+            $query->where('DataEmissione', '>=', $request->date_from);
         }
         
         if ($request->filled('date_to')) {
-            $query->where('issue_date', '<=', $request->date_to);
+            $query->where('DataEmissione', '<=', $request->date_to);
         }
         
         $invoices = $query->orderBy('created_at', 'desc')
@@ -171,21 +171,21 @@ class FinancialController extends Controller
             
         $invoicesData = $invoices->through(function ($invoice) {
             return [
-                'id' => $invoice->id,
-                'invoice_number' => $invoice->invoice_number,
+                'id' => $invoice->CodiceFattura,
+                'invoice_number' => $invoice->CodiceFattura,
                 'customer' => $invoice->user->first_name . ' ' . $invoice->user->last_name,
                 'customer_email' => $invoice->user->email,
-                'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->brand . ' ' . 
-                               $invoice->workOrder->motorcycle->motorcycleModel->name . ' (' . 
-                               $invoice->workOrder->motorcycle->license_plate . ')',
-                'issue_date' => $invoice->issue_date->format('Y-m-d'),
-                'due_date' => $invoice->due_date->format('Y-m-d'),
-                'subtotal' => (float) $invoice->subtotal,
-                'tax_amount' => (float) $invoice->tax_amount,
-                'total_amount' => (float) $invoice->total_amount,
-                'status' => $invoice->status,
-                'paid_at' => $invoice->paid_at?->format('Y-m-d'),
-                'is_overdue' => $invoice->status === 'pending' && $invoice->due_date < now(),
+                'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
+                               $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
+                               $invoice->workOrder->motorcycle->Targa . ')',
+                'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
+                'due_date' => $invoice->DataScadenza->format('Y-m-d'),
+                'subtotal' => (float) $invoice->Importo,
+                'tax_amount' => 0.0, // Not using separate tax amount
+                'total_amount' => (float) $invoice->Importo,
+                'status' => $invoice->Stato,
+                'paid_at' => $invoice->DataPagamento?->format('Y-m-d'),
+                'is_overdue' => $invoice->Stato === 'pending' && $invoice->DataScadenza < now(),
                 'created_at' => $invoice->created_at->format('Y-m-d H:i'),
             ];
         });
@@ -204,15 +204,15 @@ class FinancialController extends Controller
         $invoice->load(['user', 'workOrder.motorcycle.motorcycleModel', 'workOrder.parts', 'workOrder.mechanics']);
         
         $invoiceData = [
-            'id' => $invoice->id,
-            'invoice_number' => $invoice->invoice_number,
-            'issue_date' => $invoice->issue_date->format('Y-m-d'),
-            'due_date' => $invoice->due_date->format('Y-m-d'),
-            'subtotal' => (float) $invoice->subtotal,
-            'tax_amount' => (float) $invoice->tax_amount,
-            'total_amount' => (float) $invoice->total_amount,
-            'status' => $invoice->status,
-            'paid_at' => $invoice->paid_at?->format('Y-m-d H:i'),
+            'id' => $invoice->CodiceFattura,
+            'invoice_number' => $invoice->CodiceFattura,
+            'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
+            'due_date' => $invoice->DataScadenza->format('Y-m-d'),
+            'subtotal' => (float) $invoice->Importo,
+            'tax_amount' => 0.0, // Not using separate tax amount
+            'total_amount' => (float) $invoice->Importo,
+            'status' => $invoice->Stato,
+            'paid_at' => $invoice->DataPagamento?->format('Y-m-d H:i'),
             'created_at' => $invoice->created_at->format('Y-m-d H:i'),
         ];
         
@@ -221,24 +221,32 @@ class FinancialController extends Controller
             'name' => $invoice->user->first_name . ' ' . $invoice->user->last_name,
             'email' => $invoice->user->email,
             'phone' => $invoice->user->phone,
-            'tax_code' => $invoice->user->tax_code,
+            'tax_code' => $invoice->user->CF,
         ];
         
+        // Determine work order status based on dates
+        $workOrderStatus = 'pending';
+        if ($invoice->workOrder->DataInizio && $invoice->workOrder->DataFine) {
+            $workOrderStatus = 'completed';
+        } elseif ($invoice->workOrder->DataInizio) {
+            $workOrderStatus = 'in_progress';
+        }
+        
         $workOrder = [
-            'id' => $invoice->workOrder->id,
-            'description' => $invoice->workOrder->description,
-            'status' => $invoice->workOrder->status,
-            'started_at' => $invoice->workOrder->started_at?->format('Y-m-d'),
-            'completed_at' => $invoice->workOrder->completed_at?->format('Y-m-d'),
-            'labor_cost' => (float) $invoice->workOrder->labor_cost,
-            'parts_cost' => (float) $invoice->workOrder->parts_cost,
-            'total_cost' => (float) $invoice->workOrder->total_cost,
+            'id' => $invoice->workOrder->CodiceIntervento,
+            'description' => $invoice->workOrder->Note,
+            'status' => $workOrderStatus,
+            'started_at' => $invoice->workOrder->DataInizio?->format('Y-m-d'),
+            'completed_at' => $invoice->workOrder->DataFine?->format('Y-m-d'),
+            'labor_cost' => 0.0, // Not using separate labor cost
+            'parts_cost' => 0.0, // Not using separate parts cost
+            'total_cost' => (float) $invoice->Importo,
             'motorcycle' => [
-                'brand' => $invoice->workOrder->motorcycle->motorcycleModel->brand,
-                'model' => $invoice->workOrder->motorcycle->motorcycleModel->name,
-                'year' => $invoice->workOrder->motorcycle->registration_year,
-                'plate' => $invoice->workOrder->motorcycle->license_plate,
-                'vin' => $invoice->workOrder->motorcycle->vin,
+                'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca,
+                'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome,
+                'year' => $invoice->workOrder->motorcycle->AnnoImmatricolazione,
+                'plate' => $invoice->workOrder->motorcycle->Targa,
+                'vin' => $invoice->workOrder->motorcycle->NumTelaio,
             ],
         ];
 
@@ -254,22 +262,20 @@ class FinancialController extends Controller
      */
     public function markAsPaid(Invoice $invoice): RedirectResponse
     {
-        if ($invoice->status === 'paid') {
+        if ($invoice->Stato === 'paid') {
             return back()->with('error', 'Invoice is already marked as paid.');
         }
         
         // Allow marking as paid for both pending and overdue invoices
-        if (!in_array($invoice->status, ['pending', 'overdue'])) {
+        if (!in_array($invoice->Stato, ['pending', 'overdue'])) {
             return back()->with('error', 'Only pending or overdue invoices can be marked as paid.');
         }
         
         $invoice->update([
-            'status' => 'paid',
-            'paid_at' => now(),
+            'Stato' => 'paid',
+            'DataPagamento' => now(),
         ]);
         
         return back()->with('success', 'Invoice marked as paid successfully.');
     }
-
-
 } 
