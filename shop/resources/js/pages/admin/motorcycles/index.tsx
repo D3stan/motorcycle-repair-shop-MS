@@ -109,9 +109,12 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {motorcycleModels.data.length > 0 
-                                    ? Math.round(motorcycleModels.data.reduce((sum, m) => sum + m.power, 0) / motorcycleModels.data.length)
-                                    : 0}hp
+                                {(() => {
+                                    const validModels = motorcycleModels.data.filter(m => m.power != null && !isNaN(Number(m.power)));
+                                    return validModels.length > 0 
+                                        ? Math.round(validModels.reduce((sum, m) => sum + Number(m.power), 0) / validModels.length)
+                                        : 0;
+                                })()}hp
                             </div>
                         </CardContent>
                     </Card>
