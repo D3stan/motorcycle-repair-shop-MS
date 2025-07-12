@@ -11,16 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('warehouse_parts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('part_id')->constrained()->onDelete('cascade'); // CodiceRicambio
-            $table->foreignId('warehouse_id')->constrained()->onDelete('cascade'); // CodiceMagazzino
-            $table->integer('quantity')->default(0);
-            $table->string('location_in_warehouse')->nullable(); // Shelf, bin, etc.
+        Schema::create('STOCCAGGI', function (Blueprint $table) {
+            $table->string('CodiceMagazzino');
+            $table->string('CodiceRicambio');
             $table->timestamps();
 
-            $table->unique(['part_id', 'warehouse_id']);
-            $table->index(['warehouse_id', 'quantity']);
+            $table->foreign('CodiceMagazzino')->references('CodiceMagazzino')->on('MAGAZZINI')->onDelete('cascade');
+            $table->foreign('CodiceRicambio')->references('CodiceRicambio')->on('RICAMBI')->onDelete('cascade');
+            $table->primary(['CodiceMagazzino', 'CodiceRicambio']);
+            $table->index('CodiceRicambio');
         });
     }
 
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('warehouse_parts');
+        Schema::dropIfExists('STOCCAGGI');
     }
 }; 

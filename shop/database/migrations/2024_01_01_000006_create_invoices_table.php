@@ -11,23 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoices', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('work_order_id')->constrained()->onDelete('cascade');
-            $table->string('invoice_number')->unique();
-            $table->date('issue_date');
-            $table->date('due_date');
-            $table->decimal('subtotal', 10, 2);
-            $table->decimal('tax_amount', 10, 2)->default(0);
-            $table->decimal('total_amount', 10, 2);
-            $table->enum('status', ['pending', 'paid', 'overdue', 'cancelled']);
-            $table->timestamp('paid_at')->nullable();
+        Schema::create('FATTURE', function (Blueprint $table) {
+            $table->string('CodiceFattura')->primary();
+            $table->decimal('Importo', 10, 2);
+            $table->date('Data');
+            $table->text('Note')->nullable();
+            $table->string('CF');
+            $table->string('CodiceIntervento')->nullable();
+            $table->string('CodiceSessione')->nullable();
             $table->timestamps();
 
-            $table->index(['user_id', 'status']);
-            $table->index(['status', 'due_date']);
-            $table->index('invoice_number');
+            $table->foreign('CF')->references('CF')->on('users')->onDelete('cascade');
+            $table->foreign('CodiceIntervento')->references('CodiceIntervento')->on('INTERVENTI')->onDelete('cascade');
+            $table->foreign('CodiceSessione')->references('CodiceSessione')->on('SESSIONI')->onDelete('cascade');
+            $table->index(['CF', 'Data']);
+            $table->index('Data');
         });
     }
 
@@ -36,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('invoices');
+        Schema::dropIfExists('FATTURE');
     }
 }; 

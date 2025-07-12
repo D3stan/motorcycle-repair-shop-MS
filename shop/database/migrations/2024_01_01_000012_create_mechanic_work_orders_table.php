@@ -11,18 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mechanic_work_orders', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Mechanic (CF)
-            $table->foreignId('work_order_id')->constrained()->onDelete('cascade'); // CodiceIntervento
-            $table->datetime('assigned_at')->nullable();
-            $table->datetime('started_at')->nullable();
-            $table->datetime('completed_at')->nullable();
-            $table->text('notes')->nullable();
+        Schema::create('SVOLGIMENTI', function (Blueprint $table) {
+            $table->string('CodiceIntervento');
+            $table->string('CF');
             $table->timestamps();
 
-            $table->unique(['user_id', 'work_order_id']);
-            $table->index(['work_order_id', 'assigned_at']);
+            $table->foreign('CodiceIntervento')->references('CodiceIntervento')->on('INTERVENTI')->onDelete('cascade');
+            $table->foreign('CF')->references('CF')->on('users')->onDelete('cascade');
+            $table->primary(['CodiceIntervento', 'CF']);
+            $table->index('CF');
         });
     }
 
@@ -31,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mechanic_work_orders');
+        Schema::dropIfExists('SVOLGIMENTI');
     }
 }; 

@@ -11,17 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('warehouses', function (Blueprint $table) {
-            $table->id();
-            $table->string('warehouse_code')->unique(); // CodiceMagazzino
-            $table->string('name');
-            $table->string('location')->nullable();
-            $table->text('description')->nullable();
-            $table->boolean('is_active')->default(true);
+        Schema::create('MAGAZZINI', function (Blueprint $table) {
+            $table->string('CodiceMagazzino')->primary();
             $table->timestamps();
-
-            $table->index('warehouse_code');
-            $table->index('is_active');
         });
     }
 
@@ -30,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('warehouses');
+        Schema::dropIfExists('MAGAZZINI');
     }
 }; 

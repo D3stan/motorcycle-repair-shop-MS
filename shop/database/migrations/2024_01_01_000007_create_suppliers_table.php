@@ -11,21 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('suppliers', function (Blueprint $table) {
-            $table->id();
-            $table->string('supplier_code')->unique(); // CodiceFornitore
-            $table->string('name'); // Nome
-            $table->string('phone'); // Telefono
-            $table->string('email'); // Email
-            $table->string('address')->nullable();
-            $table->string('city')->nullable();
-            $table->string('postal_code')->nullable();
-            $table->string('country')->default('Italy');
-            $table->text('notes')->nullable();
+        Schema::create('FORNITORI', function (Blueprint $table) {
+            $table->string('CodiceFornitore')->primary();
+            $table->string('Nome');
+            $table->string('Telefono');
+            $table->string('Email');
             $table->timestamps();
 
-            $table->index('name');
-            $table->index('supplier_code');
+            $table->index('Nome');
         });
     }
 
@@ -34,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('suppliers');
+        Schema::dropIfExists('FORNITORI');
     }
 }; 

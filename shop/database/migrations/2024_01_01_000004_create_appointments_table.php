@@ -11,19 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('appointments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('motorcycle_id')->constrained()->onDelete('cascade');
-            $table->date('appointment_date');
-            $table->time('appointment_time');
-            $table->enum('type', ['maintenance', 'dyno_testing']);
-            $table->enum('status', ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']);
-            $table->text('notes')->nullable();
+        Schema::create('APPUNTAMENTI', function (Blueprint $table) {
+            $table->string('CodiceAppuntamento')->primary();
+            $table->date('DataAppuntamento');
+            $table->text('Descrizione');
+            $table->enum('Tipo', ['manutenzione', 'prova_banco']);
+            $table->string('CF');
             $table->timestamps();
 
-            $table->index(['user_id', 'appointment_date']);
-            $table->index(['appointment_date', 'status']);
+            $table->foreign('CF')->references('CF')->on('users')->onDelete('cascade');
+            $table->index(['CF', 'DataAppuntamento']);
+            $table->index('DataAppuntamento');
         });
     }
 
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('appointments');
+        Schema::dropIfExists('APPUNTAMENTI');
     }
 }; 

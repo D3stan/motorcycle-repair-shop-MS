@@ -11,18 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('motorcycles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('motorcycle_model_id')->constrained()->onDelete('cascade');
-            $table->string('license_plate')->unique(); // Targa
-            $table->integer('registration_year'); // AnnoImmatricolazione
-            $table->string('vin')->unique(); // NumTelaio (VIN/chassis number)
-            $table->text('notes')->nullable(); // Note
+        Schema::create('MOTO', function (Blueprint $table) {
+            $table->string('NumTelaio')->primary();
+            $table->string('Targa')->unique();
+            $table->integer('AnnoImmatricolazione');
+            $table->text('Note')->nullable();
+            $table->string('CodiceModello');
+            $table->string('CF');
             $table->timestamps();
 
-            $table->index(['user_id', 'created_at']);
-            $table->index('motorcycle_model_id');
+            $table->foreign('CodiceModello')->references('CodiceModello')->on('MODELLI')->onDelete('cascade');
+            $table->foreign('CF')->references('CF')->on('users')->onDelete('cascade');
+            $table->index(['CF', 'created_at']);
+            $table->index('CodiceModello');
         });
     }
 
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('motorcycles');
+        Schema::dropIfExists('MOTO');
     }
 }; 

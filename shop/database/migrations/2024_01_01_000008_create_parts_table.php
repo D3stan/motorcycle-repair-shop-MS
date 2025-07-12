@@ -11,24 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('parts', function (Blueprint $table) {
-            $table->id();
-            $table->string('part_code')->unique(); // CodiceRicambio
-            $table->string('brand'); // Marca
-            $table->string('name'); // Nome
-            $table->text('description')->nullable(); // Descrizione
-            $table->decimal('supplier_price', 10, 2); // PrezzoFornitore
-            $table->decimal('selling_price', 10, 2)->nullable(); // Markup price for customers
-            $table->string('category')->nullable(); // Category for parts organization
-            $table->integer('stock_quantity')->default(0);
-            $table->integer('minimum_stock')->default(0);
-            $table->foreignId('supplier_id')->constrained()->onDelete('cascade');
+        Schema::create('RICAMBI', function (Blueprint $table) {
+            $table->string('CodiceRicambio')->primary();
+            $table->string('Marca');
+            $table->string('Nome');
+            $table->text('Descrizione')->nullable();
+            $table->decimal('PrezzoFornitore', 10, 2);
+            $table->string('CodiceFornitore');
             $table->timestamps();
 
-            $table->index(['brand', 'name']);
-            $table->index('category');
-            $table->index('part_code');
-            $table->index('supplier_id');
+            $table->foreign('CodiceFornitore')->references('CodiceFornitore')->on('FORNITORI')->onDelete('cascade');
+            $table->index(['Marca', 'Nome']);
+            $table->index('CodiceFornitore');
         });
     }
 
@@ -37,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('parts');
+        Schema::dropIfExists('RICAMBI');
     }
 }; 

@@ -11,20 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('work_sessions', function (Blueprint $table) {
-            $table->id();
-            $table->string('session_code')->unique(); // CodiceSessione
-            $table->foreignId('motorcycle_id')->constrained()->onDelete('cascade'); // NumTelaio reference
-            $table->datetime('start_time'); // DataInizio
-            $table->datetime('end_time')->nullable();
-            $table->decimal('hours_worked', 5, 2); // OreImpiegate
-            $table->text('notes')->nullable(); // Note
-            $table->string('session_type')->default('maintenance'); // maintenance, dyno, diagnosis, etc.
+        Schema::create('SESSIONI', function (Blueprint $table) {
+            $table->string('CodiceSessione')->primary();
+            $table->datetime('DataInizio');
+            $table->decimal('OreImpiegate', 5, 2);
+            $table->text('Note')->nullable();
+            $table->string('NumTelaio');
             $table->timestamps();
 
-            $table->index(['motorcycle_id', 'start_time']);
-            $table->index('session_code');
-            $table->index('session_type');
+            $table->foreign('NumTelaio')->references('NumTelaio')->on('MOTO')->onDelete('cascade');
+            $table->index(['NumTelaio', 'DataInizio']);
+            $table->index('DataInizio');
         });
     }
 
@@ -33,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('work_sessions');
+        Schema::dropIfExists('SESSIONI');
     }
 }; 

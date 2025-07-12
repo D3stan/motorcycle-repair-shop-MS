@@ -11,24 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('work_orders', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('motorcycle_id')->constrained()->onDelete('cascade');
-            $table->foreignId('appointment_id')->nullable()->constrained()->onDelete('set null');
-            $table->text('description');
-            $table->enum('status', ['pending', 'in_progress', 'completed', 'cancelled']);
-            $table->timestamp('started_at')->nullable();
-            $table->timestamp('completed_at')->nullable();
-            $table->decimal('labor_cost', 10, 2)->default(0);
-            $table->decimal('parts_cost', 10, 2)->default(0);
-            $table->decimal('total_cost', 10, 2)->default(0);
-            $table->text('notes')->nullable();
+        Schema::create('INTERVENTI', function (Blueprint $table) {
+            $table->string('CodiceIntervento')->primary();
+            $table->datetime('DataInizio');
+            $table->datetime('DataFine')->nullable();
+            $table->integer('KmMoto');
+            $table->enum('Tipo', ['manutenzione_ordinaria', 'manutenzione_straordinaria']);
+            $table->string('Causa')->nullable();
+            $table->decimal('OreImpiegate', 5, 2)->default(0);
+            $table->text('Note')->nullable();
+            $table->string('Nome');
+            $table->string('NumTelaio');
             $table->timestamps();
 
-            $table->index(['user_id', 'status']);
-            $table->index(['motorcycle_id', 'status']);
-            $table->index(['status', 'completed_at']);
+            $table->foreign('NumTelaio')->references('NumTelaio')->on('MOTO')->onDelete('cascade');
+            $table->index(['NumTelaio', 'DataInizio']);
+            $table->index('DataInizio');
         });
     }
 
@@ -37,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('work_orders');
+        Schema::dropIfExists('INTERVENTI');
     }
 }; 
