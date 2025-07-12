@@ -19,14 +19,14 @@ class AppointmentFactory extends Factory
     public function definition(): array
     {
         $appointmentDate = fake()->dateTimeBetween('now', '+3 months');
-        $appointmentTime = fake()->time('H:i:s');
+        $appointmentTime = fake()->time('H:i');
         
         return [
             'CodiceAppuntamento' => fake()->unique()->regexify('APP[0-9]{6}'),
             'DataAppuntamento' => $appointmentDate,
-            'Ora' => $appointmentDate->format('Y-m-d') . ' ' . $appointmentTime,
-            'Tipo' => fake()->randomElement(['maintenance', 'repair', 'inspection', 'consultation']),
-            'Stato' => fake()->randomElement(['scheduled', 'confirmed', 'completed', 'cancelled']),
+            'Ora' => $appointmentTime,
+            'Tipo' => fake()->randomElement(['maintenance', 'dyno_testing']),
+            'Stato' => fake()->randomElement(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']),
             'Note' => fake()->optional()->sentence(),
             'CF' => User::factory()->customer(),
             'NumTelaio' => Motorcycle::factory(),
@@ -39,8 +39,8 @@ class AppointmentFactory extends Factory
     public function upcoming(): static
     {
         return $this->state(fn (array $attributes) => [
-            'appointment_date' => fake()->dateTimeBetween('tomorrow', '+1 month')->format('Y-m-d'),
-            'status' => fake()->randomElement(['pending', 'confirmed']),
+            'DataAppuntamento' => fake()->dateTimeBetween('tomorrow', '+1 month')->format('Y-m-d'),
+            'Stato' => fake()->randomElement(['pending', 'confirmed']),
         ]);
     }
 
@@ -50,8 +50,8 @@ class AppointmentFactory extends Factory
     public function completed(): static
     {
         return $this->state(fn (array $attributes) => [
-            'appointment_date' => fake()->dateTimeBetween('-2 months', 'yesterday')->format('Y-m-d'),
-            'status' => 'completed',
+            'DataAppuntamento' => fake()->dateTimeBetween('-2 months', 'yesterday')->format('Y-m-d'),
+            'Stato' => 'completed',
         ]);
     }
 } 

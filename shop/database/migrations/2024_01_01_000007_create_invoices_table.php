@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('FATTURE', function (Blueprint $table) {
             $table->string('CodiceFattura')->primary();
             $table->decimal('Importo', 10, 2);
-            $table->date('Data');
+            $table->date('DataEmissione');
+            $table->date('DataScadenza');
+            $table->date('DataPagamento')->nullable();
+            $table->enum('Stato', ['pending', 'paid', 'overdue'])->default('pending');
             $table->text('Note')->nullable();
             $table->string('CF');
             $table->string('CodiceIntervento')->nullable();
@@ -24,8 +27,9 @@ return new class extends Migration
             $table->foreign('CF')->references('CF')->on('users')->onDelete('cascade');
             $table->foreign('CodiceIntervento')->references('CodiceIntervento')->on('INTERVENTI')->onDelete('cascade');
             $table->foreign('CodiceSessione')->references('CodiceSessione')->on('SESSIONI')->onDelete('cascade');
-            $table->index(['CF', 'Data']);
-            $table->index('Data');
+            $table->index(['CF', 'DataEmissione']);
+            $table->index('DataEmissione');
+            $table->index('Stato');
         });
     }
 

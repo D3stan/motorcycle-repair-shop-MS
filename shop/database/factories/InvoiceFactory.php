@@ -40,17 +40,12 @@ class InvoiceFactory extends Factory
      */
     public function forWorkOrder(WorkOrder $workOrder): static
     {
-        $subtotal = round((float) $workOrder->total_cost, 2);
-        $taxRate = 0.22; // 22% VAT (Italian standard)
-        $taxAmount = round($subtotal * $taxRate, 2);
-        $totalAmount = round($subtotal + $taxAmount, 2);
+        $amount = fake()->randomFloat(2, 100, 2000);
 
         return $this->state([
-            'user_id' => $workOrder->motorcycle->user_id,
-            'work_order_id' => $workOrder->id,
-            'subtotal' => $subtotal,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $totalAmount,
+            'CF' => $workOrder->user->CF,
+            'CodiceIntervento' => $workOrder->CodiceIntervento,
+            'Importo' => $amount,
         ]);
     }
 
@@ -60,8 +55,8 @@ class InvoiceFactory extends Factory
     public function paid(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'paid',
-            'paid_at' => fake()->dateTimeBetween($attributes['issue_date'] ?? '-6 months', '-1 day'),
+            'Stato' => 'paid',
+            'DataPagamento' => fake()->dateTimeBetween($attributes['DataEmissione'] ?? '-6 months', '-1 day'),
         ]);
     }
 
@@ -71,9 +66,9 @@ class InvoiceFactory extends Factory
     public function overdue(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'overdue',
-            'due_date' => fake()->dateTimeBetween('-2 months', '-1 day')->format('Y-m-d'),
-            'paid_at' => null,
+            'Stato' => 'overdue',
+            'DataScadenza' => fake()->dateTimeBetween('-2 months', '-1 day')->format('Y-m-d'),
+            'DataPagamento' => null,
         ]);
     }
 } 

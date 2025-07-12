@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('Nome');
             $table->integer('Cilindrata');
             $table->string('Segmento');
-            $table->decimal('Potenza', 5, 2);
+            $table->decimal('Potenza', 6, 2);
             $table->timestamps();
 
             $table->index(['Marca', 'Nome']);
