@@ -692,8 +692,40 @@ In particolare si ha la seguente struttura:
 Laravel fornisce degli _starter kit_ per la logica di base e un setup iniziale per funzionare _out of the box_.
 Per questo motivo il database risulta popolato con tabelle non facenti parte dell'analisi di questo documento ma che servono per funzioni già implementate di default, come il salvataggio della sessione di login.
 
+<<<
+
 ## Guida utente
 
-[Inserire qui una breve descrizione o demo dell'utilizzo dell'applicazione.]
+#### Home
 
-![screenshot](imgs/screenshot.png "Inserire qui screenshot dell'applicazione")
+L'applicativo si presenta all'utente come un sito web dedicato alla presentazione dell'officina in questione.
+Una volta effettuato il login o la registrazione si ha accesso alle funzioni complete.
+Infine, in base al tipo di utente, si potranno effettuare operazioni specifiche.
+
+![screenshot](imgs/app/homepage.png "Home Page")
+
+![screenshot](imgs/app/login.png "Login")
+
+<<<
+
+#### Cliente
+
+Di seguito viene mostrata la dashboard personale di un cliente tipo dell'officina, subito dopo aver effettuato l'operazione di login.
+
+![screenshot](imgs/app/user/dashboardW.png "Dashboard cliente")
+
+Premento il relativo pulsante o navigando nell'apposita sezione è possibile prenotare un appuntamento.
+Verrà mostrata una schermata in cui il cliente potrà esprimere in maniera intuitiva le sue preferenze.
+
+!(300x_)[screenshot](imgs/app/user/bookappointment.png "Prenotazione appuntamento")
+
+#### Amministratore
+
+La dashboard per l'amministratore risulta essere completa e allo stesso tempo intuitiva, senza effetti grafici o figure complesse.
+Si è mantenuto uno stile _minimal_ anche nel resto dell'applicazione per facilitarne l'utilizzo.
+
+![screenshot](imgs/app/admin/dashboardW.png "Dashboard amministratore")
+
+L'amministratore, dal suo punto di vista, può confermare o disdire gli appuntamenti creati dai clienti e visualizzarne le informazioni di base a colpo d'occhio, per poi poter accedere ai dettagli di ogni appuntamento singolo.
+
+![screenshot](imgs/app/admin/appointments.png "Lista appuntamenti")
