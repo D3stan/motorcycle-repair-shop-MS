@@ -55,7 +55,7 @@ class InvoiceFactory extends Factory
         $totalAmount = round($subtotal + $taxAmount, 2);
 
         return $this->state([
-            'user_id' => $workOrder->user_id,
+            'user_id' => $workOrder->motorcycle->user_id,
             'work_order_id' => $workOrder->id,
             'subtotal' => $subtotal,
             'tax_amount' => $taxAmount,

@@ -2,9 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
 use App\Models\Motorcycle;
-use App\Models\Appointment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -39,10 +37,15 @@ class WorkOrderFactory extends Factory
         $laborCost = fake()->randomFloat(2, 50, 300);
         $partsCost = fake()->randomFloat(2, 0, 500);
 
+        $workTypes = ['maintenance', 'dyno_testing', 'diagnosis'];
+
         return [
-            'user_id' => User::factory()->customer(),
             'motorcycle_id' => Motorcycle::factory(),
-            'appointment_id' => fake()->boolean(70) ? Appointment::factory() : null,
+            'title' => fake()->sentence(3),
+            'work_type' => fake()->randomElement($workTypes),
+            'km_start' => fake()->numberBetween(0, 120000),
+            'hours_worked' => fake()->randomFloat(2, 0.5, 8),
+            'cause' => fake()->optional()->words(3, true),
             'description' => fake()->randomElement($descriptions),
             'status' => $status,
             'started_at' => in_array($status, ['in_progress', 'completed']) ? $startDate : null,

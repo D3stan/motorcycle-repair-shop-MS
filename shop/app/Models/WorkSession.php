@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class WorkSession extends Model
 {
@@ -57,6 +58,14 @@ class WorkSession extends Model
             ->withPivot('role')
             ->withTimestamps()
             ->where('users.type', 'mechanic');
+    }
+
+    /**
+     * Get the invoice associated with this session.
+     */
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class);
     }
 
     /**

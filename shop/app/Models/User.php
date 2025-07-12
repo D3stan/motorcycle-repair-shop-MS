@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class User extends Authenticatable
 {
@@ -70,19 +71,35 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the work orders for this user.
-     */
-    public function workOrders(): HasMany
-    {
-        return $this->hasMany(WorkOrder::class);
-    }
-
-    /**
      * Get the invoices for this user.
      */
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    /**
+     * Get all work orders for this user via their motorcycles.
+     */
+    public function workOrders(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            WorkOrder::class,
+            Motorcycle::class,
+            'user_id',        // Foreign key on motorcycles table...
+            'motorcycle_id',  // Foreign key on work_orders table...
+            'id',             // Local key on users table...
+            'id'              // Local key on motorcycles table...
+        );
+    }
+
+    /**
+     * Temporary shim: mechanics can view work orders related to their sessions.
+     * Currently returns the same as workOrders until assignment mechanism is rebuilt.
+     */
+    public function assignedWorkOrders(): HasManyThrough
+    {
+        return $this->workOrders();
     }
 
     /**
@@ -115,16 +132,6 @@ class User extends Authenticatable
     public function isCustomer(): bool
     {
         return $this->type === 'customer';
-    }
-
-    /**
-     * Get the work orders assigned to this mechanic.
-     */
-    public function assignedWorkOrders(): BelongsToMany
-    {
-        return $this->belongsToMany(WorkOrder::class, 'mechanic_work_orders')
-            ->withPivot('assigned_at', 'started_at', 'completed_at', 'notes')
-            ->withTimestamps();
     }
 
     /**

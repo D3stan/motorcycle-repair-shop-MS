@@ -18,6 +18,7 @@ class Invoice extends Model
     protected $fillable = [
         'user_id',
         'work_order_id',
+        'work_session_id',
         'invoice_number',
         'issue_date',
         'due_date',
@@ -59,5 +60,13 @@ class Invoice extends Model
     public function workOrder(): BelongsTo
     {
         return $this->belongsTo(WorkOrder::class);
+    }
+
+    /**
+     * Get the work session (if any) for this invoice.
+     */
+    public function workSession(): BelongsTo
+    {
+        return $this->belongsTo(WorkSession::class);
     }
 } 

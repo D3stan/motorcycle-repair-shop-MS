@@ -91,16 +91,16 @@ class DatabaseSeeder extends Seeder
             $appointments = $appointments->merge($motorcycleAppointments);
         });
 
-        // Create work orders
+        // Create work orders (no user/appointment foreign keys anymore)
         $workOrders = collect();
-        $motorcycles->take(25)->each(function ($motorcycle) use ($appointments, &$workOrders) {
+        $motorcycles->take(25)->each(function ($motorcycle) use (&$workOrders) {
             $motorcycleWorkOrders = WorkOrder::factory()
                 ->count(rand(1, 3))
                 ->state(function () {
                     // Ensure completed work orders have dates in the past
                     $startDate = fake()->dateTimeBetween('-6 months', '-1 week');
                     $status = fake()->randomElement(['pending', 'in_progress', 'completed', 'cancelled']);
-                    
+
                     return [
                         'started_at' => in_array($status, ['in_progress', 'completed']) ? $startDate : null,
                         'completed_at' => $status === 'completed' ? fake()->dateTimeBetween($startDate, '-1 day') : null,
@@ -108,9 +108,7 @@ class DatabaseSeeder extends Seeder
                     ];
                 })
                 ->create([
-                    'user_id' => $motorcycle->user_id,
                     'motorcycle_id' => $motorcycle->id,
-                    'appointment_id' => $appointments->where('motorcycle_id', $motorcycle->id)->random()->id ?? null,
                 ]);
             $workOrders = $workOrders->merge($motorcycleWorkOrders);
         });
@@ -150,7 +148,7 @@ class DatabaseSeeder extends Seeder
                 ->create();
         });
 
-        // Create relationships
+        // Create other relationships (parts, models, warehouses, sessions)
         $this->createRelationships($workOrders, $mechanics, $parts, $motorcycleModels, $warehouses, $workSessions);
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
@@ -185,17 +183,7 @@ class DatabaseSeeder extends Seeder
 
     private function createRelationships($workOrders, $mechanics, $parts, $motorcycleModels, $warehouses, $workSessions): void
     {
-        // Assign mechanics to work orders
-        $workOrders->each(function ($workOrder) use ($mechanics) {
-            if (rand(1, 100) <= 80) { // 80% of work orders have assigned mechanics
-                $assignedMechanics = $mechanics->random(rand(1, 2));
-                $workOrder->mechanics()->attach($assignedMechanics->pluck('id')->toArray(), [
-                    'assigned_at' => $workOrder->created_at,
-                    'started_at' => $workOrder->started_at,
-                    'completed_at' => $workOrder->completed_at,
-                ]);
-            }
-        });
+        // Removed mechanic assignment to work orders (pivot table no longer exists)
 
         // Assign parts to work orders (UTILIZZO relationship)
         $workOrders->each(function ($workOrder) use ($parts) {
