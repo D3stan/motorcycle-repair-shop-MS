@@ -34,11 +34,6 @@ class SupplierFactory extends Factory
             'Nome' => fake()->randomElement($companies),
             'Telefono' => fake()->phoneNumber(),
             'Email' => fake()->unique()->companyEmail(),
-            'Indirizzo' => fake()->optional()->streetAddress(),
-            'Citta' => fake()->optional()->city(),
-            'CAP' => fake()->optional()->regexify('[0-9]{5}'),
-            'Paese' => 'Italia',
-            'Note' => fake()->optional()->sentence(),
         ];
     }
 } 

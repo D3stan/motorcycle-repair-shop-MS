@@ -115,7 +115,7 @@ export default function WorkOrderShow({
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                €{workOrder.total_cost.toFixed(2)}
+                                €{(workOrder.total_cost || 0).toFixed(2)}
                             </div>
                         </CardContent>
                     </Card>
@@ -126,7 +126,7 @@ export default function WorkOrderShow({
                         </CardHeader>
                         <CardContent>
                             <div className="text-lg font-medium">
-                                €{workOrder.labor_cost.toFixed(2)}
+                                €{(workOrder.labor_cost || 0).toFixed(2)}
                             </div>
                         </CardContent>
                     </Card>
@@ -137,7 +137,7 @@ export default function WorkOrderShow({
                         </CardHeader>
                         <CardContent>
                             <div className="text-lg font-medium">
-                                €{workOrder.parts_cost.toFixed(2)}
+                                €{(workOrder.parts_cost || 0).toFixed(2)}
                             </div>
                         </CardContent>
                     </Card>
@@ -278,9 +278,9 @@ export default function WorkOrderShow({
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="font-medium">€{part.total_price.toFixed(2)}</div>
+                                            <div className="font-medium">€{(part.total_price || 0).toFixed(2)}</div>
                                             <div className="text-sm text-muted-foreground">
-                                                €{part.unit_price.toFixed(2)} each
+                                                €{(part.unit_price || 0).toFixed(2)} each
                                             </div>
                                         </div>
                                     </div>
@@ -333,7 +333,7 @@ export default function WorkOrderShow({
                                     </div>
                                     <div>
                                         <span className="text-sm font-medium text-muted-foreground">Amount:</span>
-                                        <div>€{invoice.total_amount.toFixed(2)}</div>
+                                        <div>€{(invoice.total_amount || 0).toFixed(2)}</div>
                                     </div>
                                     <div>
                                         <span className="text-sm font-medium text-muted-foreground">Status:</span>

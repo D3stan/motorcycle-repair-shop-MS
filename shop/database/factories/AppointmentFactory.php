@@ -24,12 +24,9 @@ class AppointmentFactory extends Factory
         return [
             'CodiceAppuntamento' => fake()->unique()->regexify('APP[0-9]{6}'),
             'DataAppuntamento' => $appointmentDate,
-            'Ora' => $appointmentTime,
+            'Descrizione' => fake()->sentence(),
             'Tipo' => fake()->randomElement(['maintenance', 'dyno_testing']),
-            'Stato' => fake()->randomElement(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']),
-            'Note' => fake()->optional()->sentence(),
             'CF' => User::factory()->customer(),
-            'NumTelaio' => Motorcycle::factory(),
         ];
     }
 
@@ -39,19 +36,17 @@ class AppointmentFactory extends Factory
     public function upcoming(): static
     {
         return $this->state(fn (array $attributes) => [
-            'DataAppuntamento' => fake()->dateTimeBetween('tomorrow', '+1 month')->format('Y-m-d'),
-            'Stato' => fake()->randomElement(['pending', 'confirmed']),
+            'DataAppuntamento' => fake()->dateTimeBetween('tomorrow', '+1 month'),
         ]);
     }
 
     /**
-     * Create a completed appointment.
+     * Create a past appointment.
      */
-    public function completed(): static
+    public function past(): static
     {
         return $this->state(fn (array $attributes) => [
-            'DataAppuntamento' => fake()->dateTimeBetween('-2 months', 'yesterday')->format('Y-m-d'),
-            'Stato' => 'completed',
+            'DataAppuntamento' => fake()->dateTimeBetween('-2 months', 'yesterday'),
         ]);
     }
 } 

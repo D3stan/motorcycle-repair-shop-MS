@@ -37,19 +37,19 @@ export default function CustomersIndex({ customers }: Props) {
         },
         {
             title: "Active Customers",
-            value: customers.data.filter(c => c.motorcycles_count > 0).length,
+            value: customers.data.filter(c => (c.motorcycles_count || 0) > 0).length,
             description: "With motorcycles",
             icon: Users,
         },
         {
             title: "Total Motorcycles",
-            value: customers.data.reduce((sum, c) => sum + c.motorcycles_count, 0),
+            value: customers.data.reduce((sum, c) => sum + (c.motorcycles_count || 0), 0),
             icon: Bike,
         },
         {
             title: "Pending Invoices",
-            value: customers.data.reduce((sum, c) => sum + c.pending_invoices_count, 0),
-            variant: customers.data.reduce((sum, c) => sum + c.pending_invoices_count, 0) > 0 ? 'warning' as const : 'default' as const,
+            value: customers.data.reduce((sum, c) => sum + (c.pending_invoices_count || 0), 0),
+            variant: customers.data.reduce((sum, c) => sum + (c.pending_invoices_count || 0), 0) > 0 ? 'warning' as const : 'default' as const,
             icon: FileText,
         }
     ];
@@ -88,7 +88,7 @@ export default function CustomersIndex({ customers }: Props) {
             key: 'motorcycles',
             label: 'Motorcycles',
             render: (customer: AdminCustomer) => (
-                <CountBadge count={customer.motorcycles_count} label="motorcycles" />
+                <CountBadge count={customer.motorcycles_count || 0} label="motorcycles" />
             )
         },
         {
@@ -96,9 +96,9 @@ export default function CustomersIndex({ customers }: Props) {
             label: 'Activity',
             render: (customer: AdminCustomer) => (
                 <div className="text-sm space-y-1">
-                    <div>{customer.appointments_count} appointments</div>
-                    <div>{customer.work_orders_count} work orders</div>
-                    <div>{customer.invoices_count} invoices</div>
+                    <div>{customer.appointments_count || 0} appointments</div>
+                    <div>{customer.work_orders_count || 0} work orders</div>
+                    <div>{customer.invoices_count || 0} invoices</div>
                 </div>
             )
         },
@@ -106,8 +106,8 @@ export default function CustomersIndex({ customers }: Props) {
             key: 'status',
             label: 'Status',
             render: (customer: AdminCustomer) => (
-                customer.pending_invoices_count > 0 ? (
-                    <StatusBadge status={`${customer.pending_invoices_count} pending`} />
+                (customer.pending_invoices_count || 0) > 0 ? (
+                    <StatusBadge status={`${customer.pending_invoices_count || 0} pending`} />
                 ) : (
                     <StatusBadge status="Active" />
                 )

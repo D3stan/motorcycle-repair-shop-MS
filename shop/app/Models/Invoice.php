@@ -37,11 +37,9 @@ class Invoice extends Model
      */
     protected $fillable = [
         'CodiceFattura',
-        'DataEmissione',
-        'DataScadenza',
         'Importo',
-        'Stato',
-        'DataPagamento',
+        'Data',
+        'Note',
         'CF',
         'CodiceIntervento',
         'CodiceSessione',
@@ -55,9 +53,7 @@ class Invoice extends Model
     protected function casts(): array
     {
         return [
-            'DataEmissione' => 'date',
-            'DataScadenza' => 'date',
-            'DataPagamento' => 'datetime',
+            'Data' => 'date',
             'Importo' => 'decimal:2',
         ];
     }

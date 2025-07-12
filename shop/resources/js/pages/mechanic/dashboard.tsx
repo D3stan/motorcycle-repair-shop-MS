@@ -237,7 +237,7 @@ export default function MechanicDashboard({
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-sm font-medium">
-                                                    €{Number(workOrder.labor_cost).toFixed(2)}
+                                                    €{Number(workOrder.labor_cost || 0).toFixed(2)}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">Labor</div>
                                             </div>

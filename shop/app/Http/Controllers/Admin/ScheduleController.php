@@ -25,53 +25,48 @@ class ScheduleController extends Controller
         $startOfWeek = $currentDate->copy()->startOfWeek();
         $endOfWeek = $currentDate->copy()->endOfWeek();
         
-        // Get appointments for the current week
-        $appointments = Appointment::with(['user', 'motorcycle.motorcycleModel'])
-            ->whereBetween('appointment_date', [$startOfWeek, $endOfWeek])
-            ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
+        // Get appointments for the current week (simplified schema)
+        $appointments = Appointment::with(['user'])
+            ->whereBetween('DataAppuntamento', [$startOfWeek, $endOfWeek])
+            ->orderBy('DataAppuntamento')
             ->get()
             ->map(function ($appointment) {
                 return [
-                    'id' => $appointment->id,
-                    'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                    'appointment_time' => $appointment->appointment_time,
-                    'type' => $appointment->type,
-                    'status' => $appointment->status,
+                    'id' => $appointment->CodiceAppuntamento,
+                    'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+                    'appointment_time' => null, // No time field in simplified schema
+                    'type' => $appointment->Tipo,
+                    'status' => 'scheduled', // Simplified schema - all appointments are scheduled
                     'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
                     'customer_email' => $appointment->user->email,
                     'customer_phone' => $appointment->user->phone,
-                    'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . 
-                                   $appointment->motorcycle->motorcycleModel->name . ' (' . 
-                                   $appointment->motorcycle->license_plate . ')',
-                    'notes' => $appointment->notes,
+                    'motorcycle' => 'Not linked in simplified schema', // No motorcycle link
+                    'description' => $appointment->Descrizione,
                     'created_at' => $appointment->created_at->format('Y-m-d H:i'),
                 ];
             });
             
-        // Schedule statistics
-        $todayAppointments = Appointment::whereDate('appointment_date', now())->count();
-        $pendingAppointments = Appointment::where('status', 'pending')->count();
-        $confirmedAppointments = Appointment::where('status', 'confirmed')->count();
-        $completedAppointments = Appointment::where('status', 'completed')->count();
+        // Schedule statistics (simplified schema)
+        $todayAppointments = Appointment::whereDate('DataAppuntamento', now())->count();
+        $pendingAppointments = 0; // No status field in simplified schema
+        $confirmedAppointments = Appointment::count(); // All appointments are considered confirmed
+        $completedAppointments = 0; // No status field in simplified schema
         
         // Daily schedule for the week
         $weeklySchedule = collect(range(0, 6))->map(function ($dayOffset) use ($startOfWeek) {
             $date = $startOfWeek->copy()->addDays($dayOffset);
-            $dayAppointments = Appointment::with(['user', 'motorcycle.motorcycleModel'])
-                ->whereDate('appointment_date', $date)
-                ->orderBy('appointment_time')
+            $dayAppointments = Appointment::with(['user'])
+                ->whereDate('DataAppuntamento', $date)
                 ->get()
                 ->map(function ($appointment) {
                     return [
-                        'id' => $appointment->id,
-                        'time' => $appointment->appointment_time,
-                        'type' => $appointment->type,
-                        'status' => $appointment->status,
+                        'id' => $appointment->CodiceAppuntamento,
+                        'time' => null, // No time field in simplified schema
+                        'type' => $appointment->Tipo,
+                        'status' => 'scheduled',
                         'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                        'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . 
-                                       $appointment->motorcycle->motorcycleModel->name,
-                        'plate' => $appointment->motorcycle->license_plate,
+                        'motorcycle' => 'Not linked',
+                        'description' => $appointment->Descrizione,
                     ];
                 });
                 
@@ -89,25 +84,23 @@ class ScheduleController extends Controller
             return sprintf('%02d:00', $hour);
         });
         
-        // Upcoming appointments (next 7 days)
-        $upcomingAppointments = Appointment::with(['user', 'motorcycle.motorcycleModel'])
-            ->where('appointment_date', '>', now())
-            ->where('appointment_date', '<=', now()->addDays(7))
-            ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
+        // Upcoming appointments (next 7 days) - simplified schema
+        $upcomingAppointments = Appointment::with(['user'])
+            ->where('DataAppuntamento', '>', now())
+            ->where('DataAppuntamento', '<=', now()->addDays(7))
+            ->orderBy('DataAppuntamento')
             ->limit(10)
             ->get()
             ->map(function ($appointment) {
                 return [
-                    'id' => $appointment->id,
-                    'appointment_date' => $appointment->appointment_date->format('M j, Y'),
-                    'appointment_time' => $appointment->appointment_time,
-                    'type' => ucfirst(str_replace('_', ' ', $appointment->type)),
-                    'status' => $appointment->status,
+                    'id' => $appointment->CodiceAppuntamento,
+                    'appointment_date' => $appointment->DataAppuntamento->format('M j, Y'),
+                    'appointment_time' => null, // No time field in simplified schema
+                    'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
+                    'status' => 'scheduled',
                     'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                    'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . 
-                                   $appointment->motorcycle->motorcycleModel->name,
-                    'plate' => $appointment->motorcycle->license_plate,
+                    'motorcycle' => 'Not linked',
+                    'description' => $appointment->Descrizione,
                 ];
             });
 
@@ -157,34 +150,31 @@ class ScheduleController extends Controller
         }
         
         if ($request->filled('date_from')) {
-            $query->where('appointment_date', '>=', $request->date_from);
+            $query->where('DataAppuntamento', '>=', $request->date_from);
         }
         
         if ($request->filled('date_to')) {
-            $query->where('appointment_date', '<=', $request->date_to);
+            $query->where('DataAppuntamento', '<=', $request->date_to);
         }
         
-        $appointments = $query->orderBy('appointment_date', 'desc')
-            ->orderBy('appointment_time', 'desc')
+        $appointments = $query->orderBy('DataAppuntamento', 'desc')
             ->paginate(20)
             ->withQueryString();
             
         $appointmentsData = $appointments->through(function ($appointment) {
             return [
-                'id' => $appointment->id,
-                'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                'appointment_time' => $appointment->appointment_time,
-                'type' => $appointment->type,
-                'status' => $appointment->status,
+                'id' => $appointment->CodiceAppuntamento,
+                'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+                'appointment_time' => null, // No time field in simplified schema
+                'type' => $appointment->Tipo,
+                'status' => 'scheduled',
                 'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
                 'customer_email' => $appointment->user->email,
                 'customer_phone' => $appointment->user->phone,
-                'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . 
-                               $appointment->motorcycle->motorcycleModel->name . ' (' . 
-                               $appointment->motorcycle->license_plate . ')',
-                'notes' => $appointment->notes,
+                'motorcycle' => 'Not linked in simplified schema',
+                'description' => $appointment->Descrizione,
                 'created_at' => $appointment->created_at->format('Y-m-d H:i'),
-                'has_work_order' => $appointment->workOrders()->exists(),
+                'has_work_order' => false, // No direct link in simplified schema
             ];
         });
 
@@ -199,15 +189,15 @@ class ScheduleController extends Controller
      */
     public function show(Appointment $appointment): Response
     {
-        $appointment->load(['user', 'motorcycle.motorcycleModel', 'workOrders']);
+        $appointment->load(['user']); // Simplified schema - no motorcycle or work order links
         
         $appointmentData = [
-            'id' => $appointment->id,
-            'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-            'appointment_time' => $appointment->appointment_time,
-            'type' => $appointment->type,
-            'status' => $appointment->status,
-            'notes' => $appointment->notes,
+            'id' => $appointment->CodiceAppuntamento,
+            'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+            'appointment_time' => null, // No time field in simplified schema
+            'type' => $appointment->Tipo,
+            'status' => 'scheduled', // No status field in simplified schema
+            'description' => $appointment->Descrizione,
             'created_at' => $appointment->created_at->format('Y-m-d H:i'),
         ];
         
@@ -216,35 +206,15 @@ class ScheduleController extends Controller
             'name' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
             'email' => $appointment->user->email,
             'phone' => $appointment->user->phone,
-            'tax_code' => $appointment->user->tax_code,
+            'tax_code' => $appointment->user->CF,
         ];
         
-        $motorcycle = [
-            'id' => $appointment->motorcycle->id,
-            'brand' => $appointment->motorcycle->motorcycleModel->brand,
-            'model' => $appointment->motorcycle->motorcycleModel->name,
-            'year' => $appointment->motorcycle->registration_year,
-            'plate' => $appointment->motorcycle->license_plate,
-            'vin' => $appointment->motorcycle->vin,
-            'engine_size' => $appointment->motorcycle->motorcycleModel->engine_size,
-        ];
-        
-        $workOrders = $appointment->workOrders->map(function ($workOrder) {
-            return [
-                'id' => $workOrder->id,
-                'description' => $workOrder->description,
-                'status' => $workOrder->status,
-                'started_at' => $workOrder->started_at?->format('Y-m-d'),
-                'completed_at' => $workOrder->completed_at?->format('Y-m-d'),
-                'total_cost' => (float) $workOrder->total_cost,
-            ];
-        });
-
+        // No motorcycle or work orders in simplified schema
         return Inertia::render('admin/schedule/appointment-show', [
             'appointment' => $appointmentData,
             'customer' => $customer,
-            'motorcycle' => $motorcycle,
-            'workOrders' => $workOrders,
+            'motorcycle' => null, // Not available in simplified schema
+            'workOrders' => [], // Not linked in simplified schema
         ]);
     }
 

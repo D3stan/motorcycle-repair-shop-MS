@@ -59,7 +59,6 @@ class WorkOrderFactory extends Factory
             'Note' => fake()->randomElement($descriptions),
             'Nome' => fake()->sentence(3),
             'NumTelaio' => Motorcycle::factory(),
-            'CF' => null, // Will be set by seeder
         ];
     }
 

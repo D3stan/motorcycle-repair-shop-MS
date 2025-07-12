@@ -16,26 +16,19 @@ class AppointmentController extends Controller
     {
         $user = $request->user();
 
-        // Get user's appointments with motorcycle information
+        // Get user's appointments (simplified schema - no motorcycle link)
         $appointments = $user->appointments()
-            ->with(['motorcycle', 'motorcycle.motorcycleModel'])
             ->orderBy('DataAppuntamento', 'desc')
-            ->orderBy('Ora', 'desc')
             ->get()
             ->map(function ($appointment) {
                 return [
                     'id' => $appointment->CodiceAppuntamento,
                     'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
-                    'appointment_time' => substr($appointment->Ora, 0, 5), // Extract HH:MM from time string
                     'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
-                    'status' => $appointment->Stato,
-                    'motorcycle' => [
-                        'id' => $appointment->motorcycle->NumTelaio,
-                        'brand' => $appointment->motorcycle->motorcycleModel->Marca,
-                        'model' => $appointment->motorcycle->motorcycleModel->Nome,
-                        'plate' => $appointment->motorcycle->Targa,
-                    ],
-                    'notes' => $appointment->Note,
+                    'description' => $appointment->Descrizione,
+                    'status' => 'scheduled', // Simplified schema - all appointments are scheduled
+                    'motorcycle' => null, // Appointments don't link to motorcycles in simplified schema
+                    'notes' => null, // No notes field in simplified schema
                 ];
             });
 

@@ -25,7 +25,7 @@ class WorkOrderController extends Controller
             'user',
             'motorcycle.motorcycleModel',
             'mechanics',
-            'appointment'
+            'invoice'
         ])
         ->orderBy('created_at', 'desc')
         ->paginate(20);
@@ -49,7 +49,8 @@ class WorkOrderController extends Controller
                         'assigned_at' => $mechanic->pivot->created_at ? Carbon::parse($mechanic->pivot->created_at)->format('Y-m-d H:i') : null,
                     ];
                 }),
-                'appointment_id' => $workOrder->appointment?->CodiceAppuntamento,
+                'appointment_id' => null, // Appointments not linked to work orders in simplified schema
+                'total_cost' => $workOrder->invoice ? (float) $workOrder->invoice->Importo : 0.0,
                 'created_at' => $workOrder->created_at->format('Y-m-d H:i'),
             ];
         });
@@ -60,6 +61,7 @@ class WorkOrderController extends Controller
             'pending' => WorkOrder::where('Stato', 'pending')->count(),
             'in_progress' => WorkOrder::where('Stato', 'in_progress')->count(),
             'completed' => WorkOrder::where('Stato', 'completed')->count(),
+            'cancelled' => WorkOrder::where('Stato', 'cancelled')->count(),
         ];
 
         return Inertia::render('admin/work-orders/index', [
@@ -104,25 +106,24 @@ class WorkOrderController extends Controller
                 ];
             });
 
-        $appointments = Appointment::where('Stato', 'pending')
-            ->with(['user', 'motorcycle.motorcycleModel'])
+        // Appointments simplified - no direct link to motorcycles in schema
+        $appointments = Appointment::with(['user'])
             ->orderBy('DataAppuntamento')
             ->get()
             ->map(function ($appointment) {
                 return [
                     'id' => $appointment->CodiceAppuntamento,
                     'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                    'motorcycle' => $appointment->motorcycle->motorcycleModel->Marca . ' ' . $appointment->motorcycle->motorcycleModel->Nome,
+                    'description' => $appointment->Descrizione,
                     'date' => $appointment->DataAppuntamento->format('Y-m-d'),
-                    'time' => $appointment->Ora,
                     'type' => $appointment->Tipo,
                 ];
             });
 
-        // Pre-fill data if coming from appointment
+        // Pre-fill data if coming from appointment (simplified)
         $prefilledData = null;
         if ($request->has('appointment_id')) {
-            $appointment = Appointment::with(['user', 'motorcycle.motorcycleModel'])
+            $appointment = Appointment::with(['user'])
                 ->where('CodiceAppuntamento', $request->appointment_id)
                 ->first();
             
@@ -130,10 +131,8 @@ class WorkOrderController extends Controller
                 $prefilledData = [
                     'appointment_id' => $appointment->CodiceAppuntamento,
                     'CF' => $appointment->CF,
-                    'NumTelaio' => $appointment->NumTelaio,
-                    'description' => 'Work order for ' . ucfirst(str_replace('_', ' ', $appointment->Tipo)) . ' appointment scheduled on ' . $appointment->DataAppuntamento->format('M j, Y'),
+                    'description' => 'Work order for ' . ucfirst(str_replace('_', ' ', $appointment->Tipo)) . ' appointment: ' . $appointment->Descrizione,
                     'customer_name' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                    'motorcycle_name' => $appointment->motorcycle->motorcycleModel->Marca . ' ' . $appointment->motorcycle->motorcycleModel->Nome . ' (' . $appointment->motorcycle->Targa . ')',
                 ];
             }
         }
@@ -227,7 +226,6 @@ class WorkOrderController extends Controller
             'user',
             'motorcycle.motorcycleModel',
             'mechanics',
-            'appointment',
             'parts',
             'invoice'
         ]);
@@ -244,6 +242,9 @@ class WorkOrderController extends Controller
             'cause' => $workOrder->Causa,
             'name' => $workOrder->Nome,
             'notes' => $workOrder->Note,
+            'total_cost' => $workOrder->invoice ? (float) $workOrder->invoice->Importo : 0.0,
+            'labor_cost' => 0.0, // Labor cost not tracked separately in simplified schema
+            'parts_cost' => $workOrder->parts->sum(fn($part) => $part->pivot->Quantita * $part->pivot->Prezzo),
             'created_at' => $workOrder->created_at->format('Y-m-d H:i'),
         ];
 
@@ -285,12 +286,8 @@ class WorkOrderController extends Controller
             ];
         });
 
-        $appointment = $workOrder->appointment ? [
-            'id' => $workOrder->appointment->CodiceAppuntamento,
-            'date' => $workOrder->appointment->DataAppuntamento->format('Y-m-d'),
-            'time' => $workOrder->appointment->Ora instanceof \DateTime ? $workOrder->appointment->Ora->format('H:i') : $workOrder->appointment->Ora,
-            'type' => $workOrder->appointment->Tipo,
-        ] : null;
+        // Appointment relationship not available in simplified schema
+        $appointment = null;
 
         $invoice = $workOrder->invoice ? [
             'id' => $workOrder->invoice->CodiceFattura,

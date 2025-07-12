@@ -161,7 +161,7 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                             <div className="flex items-center justify-between">
                                 <span className="text-sm">Total Invoiced</span>
                                 <span className="font-medium">
-                                    €{invoices.reduce((sum, inv) => sum + inv.total_amount, 0).toFixed(2)}
+                                    €{invoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0).toFixed(2)}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between">
@@ -173,7 +173,7 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                             <div className="flex items-center justify-between">
                                 <span className="text-sm">Total Work Orders</span>
                                 <span className="font-medium">
-                                    €{workOrders.reduce((sum, wo) => sum + wo.total_cost, 0).toFixed(2)}
+                                    €{workOrders.reduce((sum, wo) => sum + (wo.total_cost || 0), 0).toFixed(2)}
                                 </span>
                             </div>
                         </CardContent>
@@ -265,7 +265,7 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                                             <div className="text-right">
                                                 {getStatusBadge(workOrder.status)}
                                                 <div className="text-sm font-medium mt-1">
-                                                    €{workOrder.total_cost.toFixed(2)}
+                                                    €{(workOrder.total_cost || 0).toFixed(2)}
                                                 </div>
                                             </div>
                                         </div>
@@ -306,7 +306,7 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                                                 <td className="p-2 font-medium">{invoice.invoice_number}</td>
                                                 <td className="p-2">{invoice.issue_date}</td>
                                                 <td className="p-2">{invoice.due_date}</td>
-                                                <td className="p-2">€{invoice.total_amount.toFixed(2)}</td>
+                                                <td className="p-2">€{(invoice.total_amount || 0).toFixed(2)}</td>
                                                 <td className="p-2">{getStatusBadge(invoice.status)}</td>
                                                 <td className="p-2">{invoice.paid_at || '-'}</td>
                                             </tr>

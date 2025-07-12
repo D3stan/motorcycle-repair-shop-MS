@@ -24,11 +24,9 @@ class InvoiceFactory extends Factory
 
         return [
             'CodiceFattura' => fake()->unique()->regexify('INV[0-9]{6}'),
-            'DataEmissione' => $issueDate,
-            'DataScadenza' => $dueDate,
             'Importo' => $amount,
-            'Stato' => fake()->randomElement(['pending', 'paid', 'overdue']),
-            'DataPagamento' => fake()->boolean(70) ? fake()->dateTimeBetween($issueDate, 'now') : null,
+            'Data' => $issueDate,
+            'Note' => fake()->optional()->sentence(),
             'CF' => User::factory()->customer(),
             'CodiceIntervento' => WorkOrder::factory(),
             'CodiceSessione' => null, // Will be set manually when needed
@@ -46,29 +44,6 @@ class InvoiceFactory extends Factory
             'CF' => $workOrder->user->CF,
             'CodiceIntervento' => $workOrder->CodiceIntervento,
             'Importo' => $amount,
-        ]);
-    }
-
-    /**
-     * Create a paid invoice.
-     */
-    public function paid(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'Stato' => 'paid',
-            'DataPagamento' => fake()->dateTimeBetween($attributes['DataEmissione'] ?? '-6 months', '-1 day'),
-        ]);
-    }
-
-    /**
-     * Create an overdue invoice.
-     */
-    public function overdue(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'Stato' => 'overdue',
-            'DataScadenza' => fake()->dateTimeBetween('-2 months', '-1 day')->format('Y-m-d'),
-            'DataPagamento' => null,
         ]);
     }
 } 

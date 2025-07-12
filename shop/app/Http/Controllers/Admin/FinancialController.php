@@ -25,15 +25,13 @@ class FinancialController extends Controller
         $previousMonth = now()->subMonth()->startOfMonth();
         
         // Current month revenue
-        $currentMonthRevenue = Invoice::whereMonth('DataEmissione', $currentMonth->month)
-            ->whereYear('DataEmissione', $currentMonth->year)
-            ->where('Stato', 'paid')
+        $currentMonthRevenue = Invoice::whereMonth('Data', $currentMonth->month)
+            ->whereYear('Data', $currentMonth->year)
             ->sum('Importo');
             
         // Previous month revenue for comparison
-        $previousMonthRevenue = Invoice::whereMonth('DataEmissione', $previousMonth->month)
-            ->whereYear('DataEmissione', $previousMonth->year)
-            ->where('Stato', 'paid')
+        $previousMonthRevenue = Invoice::whereMonth('Data', $previousMonth->month)
+            ->whereYear('Data', $previousMonth->year)
             ->sum('Importo');
             
         // Revenue growth percentage
@@ -44,9 +42,8 @@ class FinancialController extends Controller
         // Monthly revenue for last 12 months
         $monthlyRevenue = collect(range(11, 0))->map(function ($monthsBack) {
             $date = now()->subMonths($monthsBack);
-            $revenue = Invoice::whereMonth('DataEmissione', $date->month)
-                ->whereYear('DataEmissione', $date->year)
-                ->where('Stato', 'paid')
+            $revenue = Invoice::whereMonth('Data', $date->month)
+                ->whereYear('Data', $date->year)
                 ->sum('Importo');
                 
             return [
@@ -55,17 +52,14 @@ class FinancialController extends Controller
             ];
         });
         
-        // Invoice statistics
+        // Invoice statistics (simplified for schema)
         $totalInvoices = Invoice::count();
-        $paidInvoices = Invoice::where('Stato', 'paid')->count();
-        $pendingInvoices = Invoice::where('Stato', 'pending')->count();
-        $overdueInvoices = Invoice::where('Stato', 'pending')
-            ->where('DataScadenza', '<', now())
-            ->count();
+        $paidInvoices = Invoice::count(); // All invoices considered paid in simplified schema
+        $pendingInvoices = 0;
+        $overdueInvoices = 0;
             
-        // Outstanding payments (total amount of pending invoices)
-        $outstandingPayments = Invoice::where('Stato', 'pending')
-            ->sum('Importo');
+        // Outstanding payments (no pending invoices in simplified schema)
+        $outstandingPayments = 0;
             
         // Recent invoices
         $recentInvoices = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel'])
@@ -81,20 +75,18 @@ class FinancialController extends Controller
                     'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
                                    $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
                                    $invoice->workOrder->motorcycle->Targa . ')',
-                    'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
-                    'due_date' => $invoice->DataScadenza->format('Y-m-d'),
+                    'issue_date' => $invoice->Data->format('Y-m-d'),
+                    'due_date' => null, // No due date in simplified schema
                     'total_amount' => (float) $invoice->Importo,
-                    'status' => $invoice->Stato,
-                    'paid_at' => $invoice->DataPagamento?->format('Y-m-d'),
-                    'is_overdue' => $invoice->Stato === 'pending' && $invoice->DataScadenza < now(),
+                    'status' => 'paid', // All invoices considered paid in simplified schema
+                    'paid_at' => $invoice->Data?->format('Y-m-d'),
+                    'is_overdue' => false, // No overdue tracking in simplified schema
                 ];
             });
             
         // Top customers by revenue
         $topCustomers = User::where('type', 'customer')
-            ->withSum(['invoices' => function($query) {
-                $query->where('Stato', 'paid');
-            }], 'Importo')
+            ->withSum('invoices', 'Importo')
             ->having('invoices_sum_importo', '>', 0)
             ->orderBy('invoices_sum_importo', 'desc')
             ->limit(5)
@@ -136,13 +128,8 @@ class FinancialController extends Controller
         
         // Apply filters
         if ($request->filled('status')) {
-            if ($request->status === 'overdue') {
-                $query->where('Stato', 'pending')
-                      ->where('DataScadenza', '<', now());
-            } else {
-                $query->where('Stato', $request->status)
-                      ->where('DataScadenza', '>', now());
-            }
+            // Status filtering simplified - all invoices considered paid
+            // No filtering needed since no status field in schema
         }
         
         if ($request->filled('search')) {
@@ -158,11 +145,11 @@ class FinancialController extends Controller
         }
         
         if ($request->filled('date_from')) {
-            $query->where('DataEmissione', '>=', $request->date_from);
+            $query->where('Data', '>=', $request->date_from);
         }
         
         if ($request->filled('date_to')) {
-            $query->where('DataEmissione', '<=', $request->date_to);
+            $query->where('Data', '<=', $request->date_to);
         }
         
         $invoices = $query->orderBy('created_at', 'desc')
@@ -178,14 +165,14 @@ class FinancialController extends Controller
                 'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
                                $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
                                $invoice->workOrder->motorcycle->Targa . ')',
-                'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
-                'due_date' => $invoice->DataScadenza->format('Y-m-d'),
+                'issue_date' => $invoice->Data->format('Y-m-d'),
+                'due_date' => null, // No due date in simplified schema
                 'subtotal' => (float) $invoice->Importo,
                 'tax_amount' => 0.0, // Not using separate tax amount
                 'total_amount' => (float) $invoice->Importo,
-                'status' => $invoice->Stato,
-                'paid_at' => $invoice->DataPagamento?->format('Y-m-d'),
-                'is_overdue' => $invoice->Stato === 'pending' && $invoice->DataScadenza < now(),
+                'status' => 'paid', // All invoices considered paid in simplified schema
+                'paid_at' => $invoice->Data->format('Y-m-d'),
+                'is_overdue' => false, // No overdue tracking in simplified schema
                 'created_at' => $invoice->created_at->format('Y-m-d H:i'),
             ];
         });
@@ -206,13 +193,13 @@ class FinancialController extends Controller
         $invoiceData = [
             'id' => $invoice->CodiceFattura,
             'invoice_number' => $invoice->CodiceFattura,
-            'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
-            'due_date' => $invoice->DataScadenza->format('Y-m-d'),
+            'issue_date' => $invoice->Data->format('Y-m-d'),
+            'due_date' => null, // No due date in simplified schema
             'subtotal' => (float) $invoice->Importo,
             'tax_amount' => 0.0, // Not using separate tax amount
             'total_amount' => (float) $invoice->Importo,
-            'status' => $invoice->Stato,
-            'paid_at' => $invoice->DataPagamento?->format('Y-m-d H:i'),
+            'status' => 'paid', // All invoices considered paid in simplified schema
+            'paid_at' => $invoice->Data->format('Y-m-d H:i'),
             'created_at' => $invoice->created_at->format('Y-m-d H:i'),
         ];
         
@@ -262,20 +249,8 @@ class FinancialController extends Controller
      */
     public function markAsPaid(Invoice $invoice): RedirectResponse
     {
-        if ($invoice->Stato === 'paid') {
-            return back()->with('error', 'Invoice is already marked as paid.');
-        }
-        
-        // Allow marking as paid for both pending and overdue invoices
-        if (!in_array($invoice->Stato, ['pending', 'overdue'])) {
-            return back()->with('error', 'Only pending or overdue invoices can be marked as paid.');
-        }
-        
-        $invoice->update([
-            'Stato' => 'paid',
-            'DataPagamento' => now(),
-        ]);
-        
-        return back()->with('success', 'Invoice marked as paid successfully.');
+        // In simplified schema, all invoices are considered paid
+        // This method is kept for interface compatibility but doesn't change anything
+        return back()->with('success', 'Invoice is already considered paid in the simplified system.');
     }
 } 

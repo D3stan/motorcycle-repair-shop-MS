@@ -74,7 +74,7 @@ export default function AdminDashboard({
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold mb-2">
-                                €{Number(currentMonthRevenue).toFixed(2)}
+                                €{Number(currentMonthRevenue || 0).toFixed(2)}
                             </div>
                             <div className="text-sm text-muted-foreground">
                                 From completed work orders

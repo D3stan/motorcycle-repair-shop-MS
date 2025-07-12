@@ -81,37 +81,30 @@ class DatabaseSeeder extends Seeder
 
         // Create appointments
         $appointments = collect();
-        $customers->take(15)->each(function ($customer) use ($motorcycles, &$appointments) {
-            $customerMotorcycles = $motorcycles->where('CF', $customer->CF);
-            if ($customerMotorcycles->isNotEmpty()) {
-                $appointmentData = Appointment::factory()
-                    ->count(rand(1, 2))
-                    ->make([
-                        'CF' => $customer->CF,
-                        'NumTelaio' => $customerMotorcycles->random()->NumTelaio,
-                    ]);
-                
-                foreach ($appointmentData as $appointment) {
-                    $createdAppointment = Appointment::create($appointment->toArray());
-                    $appointments->push($createdAppointment);
-                }
+        $customers->take(15)->each(function ($customer) use (&$appointments) {
+            $appointmentData = Appointment::factory()
+                ->count(rand(1, 2))
+                ->make([
+                    'CF' => $customer->CF,
+                ]);
+            
+            foreach ($appointmentData as $appointment) {
+                $createdAppointment = Appointment::create($appointment->toArray());
+                $appointments->push($createdAppointment);
             }
         });
 
         // Create work orders
         $workOrders = collect();
-        $customers->take(12)->each(function ($customer) use ($motorcycles, $appointments, &$workOrders) {
+        $customers->take(12)->each(function ($customer) use ($motorcycles, &$workOrders) {
             $customerMotorcycles = $motorcycles->where('CF', $customer->CF);
             if ($customerMotorcycles->isNotEmpty()) {
                 $motorcycle = $customerMotorcycles->random();
-                $appointment = $appointments->where('CF', $customer->CF)->where('NumTelaio', $motorcycle->NumTelaio)->first();
                 
                 $workOrderData = WorkOrder::factory()
                     ->count(rand(1, 2))
                     ->make([
-                        'CF' => $customer->CF,
                         'NumTelaio' => $motorcycle->NumTelaio,
-                        'CodiceAppuntamento' => $appointment?->CodiceAppuntamento ?? null,
                     ]);
                 
                 foreach ($workOrderData as $workOrder) {
@@ -170,11 +163,14 @@ class DatabaseSeeder extends Seeder
         $workOrders->each(function ($workOrder) use ($parts) {
             $usedParts = $parts->random(rand(0, 5));
             foreach ($usedParts as $part) {
+                // Calculate selling price as markup over supplier price
+                $sellingPrice = $part->PrezzoFornitore * fake()->randomFloat(2, 1.2, 2.5);
+                
                 DB::table('UTILIZZI')->insert([
                     'CodiceRicambio' => $part->CodiceRicambio,
                     'CodiceIntervento' => $workOrder->CodiceIntervento,
                     'Quantita' => rand(1, 5),
-                    'Prezzo' => $part->PrezzoVendita,
+                    'Prezzo' => $sellingPrice,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -183,12 +179,16 @@ class DatabaseSeeder extends Seeder
 
         // Create invoices for completed work orders
         $completedWorkOrders = $workOrders->where('Stato', 'completed');
-        $completedWorkOrders->each(function ($workOrder) {
-            Invoice::factory()->create([
-                'CF' => $workOrder->CF,
-                'CodiceIntervento' => $workOrder->CodiceIntervento,
-                'CodiceSessione' => null, // Will be linked to sessions later if needed
-            ]);
+        $completedWorkOrders->each(function ($workOrder) use ($motorcycles) {
+            // Find the motorcycle owner for this work order
+            $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
+            if ($motorcycle) {
+                Invoice::factory()->create([
+                    'CF' => $motorcycle->CF,
+                    'CodiceIntervento' => $workOrder->CodiceIntervento,
+                    'CodiceSessione' => null, // Will be linked to sessions later if needed
+                ]);
+            }
         });
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');

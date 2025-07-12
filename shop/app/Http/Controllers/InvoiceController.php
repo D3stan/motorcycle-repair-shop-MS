@@ -28,13 +28,13 @@ class InvoiceController extends Controller
                 return [
                     'id' => $invoice->CodiceFattura,
                     'invoice_number' => $invoice->CodiceFattura,
-                    'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
-                    'due_date' => $invoice->DataScadenza->format('Y-m-d'),
-                    'status' => $invoice->Stato,
+                    'issue_date' => $invoice->Data->format('Y-m-d'),
+                    'due_date' => null, // No due date in simplified schema
+                    'status' => 'paid', // All invoices considered paid in simplified schema
                     'subtotal' => (float) $invoice->Importo,
                     'tax_amount' => 0.0, // Not using separate tax amount
                     'total_amount' => (float) $invoice->Importo,
-                    'paid_at' => $invoice->DataPagamento?->format('Y-m-d'),
+                    'paid_at' => $invoice->Data->format('Y-m-d'),
                     'work_order' => [
                         'id' => $invoice->workOrder->CodiceIntervento,
                         'description' => $invoice->workOrder->Note,

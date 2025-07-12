@@ -181,7 +181,7 @@ export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
                                         <div className="flex items-center space-x-4">
                                             <div className="text-right">
                                                 <div className="text-sm font-medium">
-                                                    €{workOrder.total_cost.toFixed(2)}
+                                                    €{(workOrder.total_cost || 0).toFixed(2)}
                                                 </div>
                                                 <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                                                     <Users className="h-3 w-3" />

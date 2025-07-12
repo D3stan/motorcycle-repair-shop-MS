@@ -19,9 +19,7 @@ class CustomerController extends BaseAdminController
         $customers = $this->getUsersWithCounts(
             'customer',
             ['motorcycles', 'appointments', 'workOrders', 'invoices'],
-            ['invoices' => function($query) {
-                $query->where('Stato', 'pending');
-            }]
+            [] // No filtering needed - simplified schema has no invoice status
         );
 
         return Inertia::render('admin/customers/index', [
@@ -39,7 +37,7 @@ class CustomerController extends BaseAdminController
         // Load customer data with relationships
         $customer->load([
             'motorcycles.motorcycleModel',
-            'appointments.motorcycle.motorcycleModel',
+            'appointments', // Simplified schema - appointments don't link to motorcycles
             'workOrders.motorcycle.motorcycleModel',
             'invoices'
         ]);
@@ -65,11 +63,10 @@ class CustomerController extends BaseAdminController
             return [
                 'id' => $appointment->CodiceAppuntamento,
                 'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
-                'appointment_time' => $appointment->Ora,
                 'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
-                'status' => $appointment->Stato,
-                'motorcycle' => $appointment->motorcycle->motorcycleModel->Marca . ' ' . $appointment->motorcycle->motorcycleModel->Nome,
-                'notes' => $appointment->Note,
+                'description' => $appointment->Descrizione,
+                'motorcycle' => 'Not linked in simplified schema', // Appointments don't link to motorcycles
+                'notes' => null, // No notes field in simplified schema
             ];
         });
 
@@ -99,11 +96,11 @@ class CustomerController extends BaseAdminController
             return [
                 'id' => $invoice->CodiceFattura,
                 'invoice_number' => $invoice->CodiceFattura,
-                'issue_date' => $invoice->DataEmissione->format('Y-m-d'),
-                'due_date' => $invoice->DataScadenza->format('Y-m-d'),
+                'issue_date' => $invoice->Data->format('Y-m-d'),
+                'due_date' => null, // No due date in simplified schema
                 'total_amount' => (float) $invoice->Importo,
-                'status' => $invoice->Stato,
-                'paid_at' => $invoice->DataPagamento?->format('Y-m-d'),
+                'status' => 'paid', // All invoices considered paid in simplified schema
+                'paid_at' => $invoice->Data->format('Y-m-d'),
             ];
         });
 

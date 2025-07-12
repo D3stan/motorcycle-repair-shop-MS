@@ -38,22 +38,18 @@ class DashboardController extends Controller
      */
     private function customerDashboard(User $user): Response
     {
-        // Get upcoming appointments
+        // Get upcoming appointments (simplified schema - no motorcycle link, no status)
         $upcomingAppointments = $user->appointments()
-            ->with(['motorcycle.motorcycleModel'])
             ->where('DataAppuntamento', '>=', now()->toDateString())
-            ->where('Stato', '!=', 'cancelled')
             ->orderBy('DataAppuntamento')
-            ->orderBy('Ora')
             ->get()
             ->map(function ($appointment) {
                 return [
                     'id' => $appointment->CodiceAppuntamento,
                     'date' => $appointment->DataAppuntamento->format('Y-m-d'),
-                    'time' => $appointment->Ora instanceof \DateTime ? $appointment->Ora->format('H:i') : substr($appointment->Ora, 0, 5),
                     'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
-                    'motorcycle' => $appointment->motorcycle->motorcycleModel->Marca . ' ' . $appointment->motorcycle->motorcycleModel->Nome,
-                    'status' => $appointment->Stato,
+                    'description' => $appointment->Descrizione,
+                    'status' => 'scheduled', // All appointments considered scheduled in simplified schema
                 ];
             });
 
@@ -63,36 +59,29 @@ class DashboardController extends Controller
             ->whereNull('DataFine')
             ->count();
 
-        // Get outstanding balance
-        $outstandingBalance = $user->invoices()
-            ->where('Stato', '!=', 'paid')
-            ->sum('Importo');
-
-        // Get pending invoices count
-        $pendingInvoicesCount = $user->invoices()
-            ->where('Stato', '!=', 'paid')
-            ->count();
+        // Outstanding balance and pending invoices not tracked in simplified schema
+        $outstandingBalance = 0;
+        $pendingInvoicesCount = 0;
 
         // Get recent activity
         $recentActivity = collect();
 
-        // Add recent completed work orders
-        $recentWorkOrders = $user->workOrders()
-            ->with(['motorcycle.motorcycleModel'])
-            ->whereNotNull('DataFine')
-            ->orderBy('DataFine', 'desc')
-            ->limit(3)
-            ->get();
-
-        foreach ($recentWorkOrders as $workOrder) {
-            $recentActivity->push([
-                'id' => $workOrder->CodiceIntervento,
-                'action' => 'Work order completed',
-                'description' => $workOrder->Note . ' for ' . $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
-                'date' => $workOrder->DataFine->format('Y-m-d'),
-                'amount' => null, // Cost calculation removed from work orders
-            ]);
-        }
+        // Add recent completed work orders (via user's motorcycles)
+        $user->motorcycles->each(function ($motorcycle) use ($recentActivity) {
+            $motorcycle->workOrders
+                ->whereNotNull('DataFine')
+                ->sortByDesc('DataFine')
+                ->take(3)
+                ->each(function ($workOrder) use ($recentActivity, $motorcycle) {
+                    $recentActivity->push([
+                        'id' => $workOrder->CodiceIntervento,
+                        'action' => 'Work order completed',
+                        'description' => $workOrder->Note . ' for ' . $motorcycle->Targa,
+                        'date' => $workOrder->DataFine?->format('Y-m-d') ?? 'N/A',
+                        'amount' => null, // Cost calculation removed from work orders
+                    ]);
+                });
+        });
 
         // Add recent invoices
         $recentInvoices = $user->invoices()
@@ -105,14 +94,13 @@ class DashboardController extends Controller
                 'id' => $invoice->CodiceFattura,
                 'action' => 'Invoice generated',
                 'description' => 'Invoice #' . $invoice->CodiceFattura,
-                'date' => $invoice->DataEmissione->format('Y-m-d'),
+                'date' => $invoice->Data->format('Y-m-d'),
                 'amount' => '€' . number_format($invoice->Importo, 2),
             ]);
         }
 
-        // Add recent appointments
+        // Add recent appointments (simplified - no motorcycle link)
         $recentAppointments = $user->appointments()
-            ->with(['motorcycle.motorcycleModel'])
             ->where('created_at', '>=', now()->subDays(7))
             ->orderBy('created_at', 'desc')
             ->limit(2)
@@ -122,7 +110,7 @@ class DashboardController extends Controller
             $recentActivity->push([
                 'id' => $appointment->CodiceAppuntamento,
                 'action' => 'Appointment booked',
-                'description' => ucfirst(str_replace('_', ' ', $appointment->Tipo)) . ' for ' . $appointment->motorcycle->motorcycleModel->Marca . ' ' . $appointment->motorcycle->motorcycleModel->Nome,
+                'description' => ucfirst(str_replace('_', ' ', $appointment->Tipo)) . ': ' . $appointment->Descrizione,
                 'date' => $appointment->created_at->format('Y-m-d'),
                 'amount' => null,
             ]);
@@ -150,30 +138,29 @@ class DashboardController extends Controller
      */
     private function adminDashboard(User $user): Response
     {
-        // Current revenue (this month)
-        $currentMonthRevenue = Invoice::where('Stato', 'paid')
-            ->whereMonth('DataPagamento', now()->month)
-            ->whereYear('DataPagamento', now()->year)
+        // Current revenue (this month) - using Data field
+        $currentMonthRevenue = Invoice::whereMonth('Data', now()->month)
+            ->whereYear('Data', now()->year)
             ->sum('Importo');
 
         // Active work orders count (use Stato column)
         $activeWorkOrdersCount = WorkOrder::whereIn('Stato', ['pending', 'in_progress'])->count();
 
-        // Pending appointments count
-        $pendingAppointmentsCount = Appointment::where('Stato', 'pending')->count();
+        // Future appointments count (since no status field in schema)
+        $pendingAppointmentsCount = Appointment::where('DataAppuntamento', '>=', now()->toDateString())->count();
 
         // Total customers count
         $totalCustomersCount = User::where('type', 'customer')->count();
 
         // Recent work orders
-        $recentWorkOrders = WorkOrder::with(['user', 'motorcycle.motorcycleModel', 'mechanics'])
+        $recentWorkOrders = WorkOrder::with(['motorcycle.user', 'motorcycle.motorcycleModel', 'mechanics'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
             ->map(function ($workOrder) {
                 return [
                     'id' => $workOrder->CodiceIntervento,
-                    'customer' => $workOrder->user->full_name,
+                    'customer' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
                     'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
                     'description' => $workOrder->Note,
                     'status' => $workOrder->Stato,
@@ -182,20 +169,19 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Recent appointments
-        $recentAppointments = Appointment::with(['user', 'motorcycle.motorcycleModel'])
+        // Recent appointments (simplified schema)
+        $recentAppointments = Appointment::with(['user'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
             ->map(function ($appointment) {
                 return [
                     'id' => $appointment->CodiceAppuntamento,
-                    'customer' => $appointment->user->full_name,
-                    'motorcycle' => $appointment->motorcycle->motorcycleModel->Marca . ' ' . $appointment->motorcycle->motorcycleModel->Nome,
+                    'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
+                    'description' => $appointment->Descrizione,
                     'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
                     'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
-                    'appointment_time' => $appointment->Ora instanceof \DateTime ? $appointment->Ora->format('H:i') : $appointment->Ora,
-                    'status' => $appointment->Stato,
+                    'status' => 'scheduled', // Simplified status
                 ];
             });
 
@@ -215,9 +201,8 @@ class DashboardController extends Controller
         $monthlyRevenue = collect();
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $revenue = Invoice::where('Stato', 'paid')
-                ->whereMonth('DataPagamento', $date->month)
-                ->whereYear('DataPagamento', $date->year)
+            $revenue = Invoice::whereMonth('Data', $date->month)
+                ->whereYear('Data', $date->year)
                 ->sum('Importo');
             
             $monthlyRevenue->push([
@@ -250,14 +235,14 @@ class DashboardController extends Controller
     {
         // Get assigned work orders
         $assignedWorkOrders = $user->assignedWorkOrders()
-            ->with(['motorcycle.motorcycleModel', 'user'])
+            ->with(['motorcycle.motorcycleModel', 'motorcycle.user'])
             ->whereIn('Stato', ['pending', 'in_progress'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($workOrder) {
                 return [
                     'id' => $workOrder->CodiceIntervento,
-                    'customer' => $workOrder->user->full_name,
+                    'customer' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
                     'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
                     'description' => $workOrder->Note,
                     'status' => $workOrder->Stato,
@@ -280,14 +265,14 @@ class DashboardController extends Controller
                 return [
                     'id' => $session->CodiceSessione,
                     'motorcycle' => $session->motorcycle->motorcycleModel->Marca . ' ' . $session->motorcycle->motorcycleModel->Nome,
-                    'start_time' => $session->DataInizio->format('Y-m-d H:i'),
+                    'date' => $session->Data->format('Y-m-d'),
                     'hours_worked' => $session->OreImpiegate,
                 ];
             });
 
         // Get recent completed work orders
         $recentCompletedOrders = $user->assignedWorkOrders()
-            ->with(['motorcycle.motorcycleModel', 'user'])
+            ->with(['motorcycle.motorcycleModel', 'motorcycle.user'])
             ->whereNotNull('DataFine')
             ->orderBy('DataFine', 'desc')
             ->limit(5)
@@ -295,37 +280,31 @@ class DashboardController extends Controller
             ->map(function ($workOrder) {
                 return [
                     'id' => $workOrder->CodiceIntervento,
-                    'customer' => $workOrder->user->full_name,
+                    'customer' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
                     'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
                     'description' => $workOrder->Note,
-                    'completed_at' => $workOrder->DataFine->format('Y-m-d'),
+                    'completed_at' => $workOrder->DataFine?->format('Y-m-d') ?? 'N/A',
                     'hours_worked' => $workOrder->OreImpiegate,
                 ];
             });
 
         // Calculate hours worked this week
         $hoursWorkedThisWeek = $user->workSessions()
-            ->whereBetween('DataInizio', [now()->startOfWeek(), now()->endOfWeek()])
+            ->whereBetween('Data', [now()->startOfWeek(), now()->endOfWeek()])
             ->sum('OreImpiegate');
 
-        // Today's appointments where mechanic is assigned to related work orders
+        // Today's schedule simplified - show work orders for today (no appointment link in schema)
         $todaySchedule = $user->assignedWorkOrders()
-            ->with(['appointment.motorcycle.motorcycleModel', 'appointment.user'])
-            ->whereHas('appointment', function ($query) {
-                $query->where('DataAppuntamento', now()->toDateString());
-            })
+            ->with(['motorcycle.motorcycleModel', 'motorcycle.user'])
+            ->whereDate('created_at', now()->toDateString())
             ->get()
-            ->filter(function ($workOrder) {
-                return $workOrder->appointment !== null;
-            })
             ->map(function ($workOrder) {
                 return [
-                    'id' => $workOrder->appointment->CodiceAppuntamento,
-                    'customer' => $workOrder->appointment->user->full_name,
-                    'motorcycle' => $workOrder->appointment->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->appointment->motorcycle->motorcycleModel->Nome,
-                    'type' => ucfirst(str_replace('_', ' ', $workOrder->appointment->Tipo)),
-                    'time' => $workOrder->appointment->Ora instanceof \DateTime ? $workOrder->appointment->Ora->format('H:i') : $workOrder->appointment->Ora,
-                    'status' => $workOrder->appointment->Stato,
+                    'id' => $workOrder->CodiceIntervento,
+                    'customer' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
+                    'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
+                    'description' => $workOrder->Note,
+                    'status' => $workOrder->Stato,
                 ];
             });
 

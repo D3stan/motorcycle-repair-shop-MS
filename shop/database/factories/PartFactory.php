@@ -40,10 +40,6 @@ class PartFactory extends Factory
             'Nome' => $partName,
             'Descrizione' => fake()->optional()->sentence(),
             'PrezzoFornitore' => $supplierPrice,
-            'PrezzoVendita' => $supplierPrice * fake()->randomFloat(2, 1.2, 2.5), // 20-150% markup
-            'Categoria' => $category,
-            'QuantitaDisponibile' => fake()->numberBetween(0, 100),
-            'ScortaMinima' => fake()->numberBetween(1, 20),
             'CodiceFornitore' => Supplier::factory(),
         ];
     }

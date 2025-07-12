@@ -18,7 +18,7 @@ class WorkOrderController extends Controller
 
         // Get user's work orders with related data
         $workOrders = $user->workOrders()
-            ->with(['motorcycle.motorcycleModel', 'appointment', 'invoice'])
+            ->with(['motorcycle.motorcycleModel', 'invoice'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($workOrder) {
@@ -35,11 +35,7 @@ class WorkOrderController extends Controller
                         'model' => $workOrder->motorcycle->motorcycleModel->Nome,
                         'plate' => $workOrder->motorcycle->Targa,
                     ],
-                    'appointment' => $workOrder->appointment ? [
-                        'id' => $workOrder->appointment->CodiceAppuntamento,
-                        'appointment_date' => $workOrder->appointment->DataAppuntamento->format('Y-m-d'),
-                        'type' => ucfirst(str_replace('_', ' ', $workOrder->appointment->Tipo)),
-                    ] : null,
+                    'appointment' => null, // Appointments not linked to work orders in simplified schema
                     'invoice' => $workOrder->invoice ? [
                         'id' => $workOrder->invoice->CodiceFattura,
                         'invoice_number' => $workOrder->invoice->CodiceFattura,
@@ -75,7 +71,7 @@ class WorkOrderController extends Controller
         }
 
         // Load relationships
-        $workOrder->load(['motorcycle.motorcycleModel', 'appointment', 'invoice', 'parts']);
+        $workOrder->load(['motorcycle.motorcycleModel', 'invoice', 'parts']);
 
         $workOrderDetails = [
             'id' => $workOrder->CodiceIntervento,
@@ -95,18 +91,13 @@ class WorkOrderController extends Controller
                 'plate' => $workOrder->motorcycle->Targa,
                 'vin' => $workOrder->motorcycle->NumTelaio,
             ],
-            'appointment' => $workOrder->appointment ? [
-                'id' => $workOrder->appointment->CodiceAppuntamento,
-                'appointment_date' => $workOrder->appointment->DataAppuntamento->format('Y-m-d'),
-                'appointment_time' => $workOrder->appointment->Ora instanceof \DateTime ? $workOrder->appointment->Ora->format('H:i') : substr($workOrder->appointment->Ora, 0, 5),
-                'type' => ucfirst(str_replace('_', ' ', $workOrder->appointment->Tipo)),
-            ] : null,
+            'appointment' => null, // Appointments not linked to work orders in simplified schema
             'invoice' => $workOrder->invoice ? [
                 'id' => $workOrder->invoice->CodiceFattura,
                 'invoice_number' => $workOrder->invoice->CodiceFattura,
-                'issue_date' => $workOrder->invoice->DataEmissione->format('Y-m-d'),
-                'due_date' => $workOrder->invoice->DataScadenza->format('Y-m-d'),
-                'status' => $workOrder->invoice->Stato,
+                'issue_date' => $workOrder->invoice->Data->format('Y-m-d'),
+                'due_date' => null, // No due date in simplified schema
+                'status' => 'paid', // All invoices considered paid in simplified schema
                 'total_amount' => $workOrder->invoice->Importo ? (float) $workOrder->invoice->Importo : 0.0,
             ] : null,
             'notes' => $workOrder->Note,
