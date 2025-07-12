@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('INTERVENTI', function (Blueprint $table) {
             $table->string('CodiceIntervento')->primary();
-            $table->datetime('DataInizio');
+            $table->datetime('DataInizio')->nullable();
             $table->datetime('DataFine')->nullable();
             $table->integer('KmMoto');
             $table->enum('Tipo', ['manutenzione_ordinaria', 'manutenzione_straordinaria']);
+            $table->enum('Stato', ['pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
             $table->string('Causa')->nullable();
             $table->decimal('OreImpiegate', 5, 2)->default(0);
             $table->text('Note')->nullable();
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->foreign('NumTelaio')->references('NumTelaio')->on('MOTO')->onDelete('cascade');
             $table->index(['NumTelaio', 'DataInizio']);
             $table->index('DataInizio');
+            $table->index('Stato');
         });
     }
 

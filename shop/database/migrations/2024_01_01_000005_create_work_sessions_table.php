@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('SESSIONI', function (Blueprint $table) {
             $table->string('CodiceSessione')->primary();
             $table->datetime('DataInizio');
-            $table->decimal('OreImpiegate', 5, 2);
+            $table->datetime('DataFine')->nullable();
+            $table->enum('Stato', ['pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
+            $table->decimal('OreImpiegate', 5, 2)->default(0);
             $table->text('Note')->nullable();
             $table->string('NumTelaio');
             $table->timestamps();
@@ -22,6 +24,7 @@ return new class extends Migration
             $table->foreign('NumTelaio')->references('NumTelaio')->on('MOTO')->onDelete('cascade');
             $table->index(['NumTelaio', 'DataInizio']);
             $table->index('DataInizio');
+            $table->index('Stato');
         });
     }
 

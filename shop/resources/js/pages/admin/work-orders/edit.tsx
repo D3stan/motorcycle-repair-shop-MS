@@ -28,8 +28,7 @@ interface WorkOrderEditData {
     appointment_id?: number;
     description: string;
     status: string;
-    labor_cost: number;
-    parts_cost: number;
+    hours_worked: number;
     notes?: string;
     assigned_mechanics: number[];
 }
@@ -62,8 +61,7 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
         appointment_id: workOrder.appointment_id?.toString() || '',
         description: workOrder.description || '',
         status: workOrder.status || 'pending',
-        labor_cost: workOrder.labor_cost?.toString() || '',
-        parts_cost: workOrder.parts_cost?.toString() || '',
+        hours_worked: workOrder.hours_worked?.toString() || '',
         notes: workOrder.notes || '',
         mechanics: workOrder.assigned_mechanics || [] as number[],
     });
@@ -194,8 +192,8 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                                 )}
                             </div>
 
-                            {/* Status and Costs */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Status and Hours Worked */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status *</Label>
                                     <Select value={data.status} onValueChange={(value) => setData('status', value)}>
@@ -212,36 +210,19 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="labor_cost">Labor Cost (€)</Label>
+                                    <Label htmlFor="hours_worked">Hours Worked</Label>
                                     <Input
-                                        id="labor_cost"
+                                        id="hours_worked"
                                         type="number"
-                                        step="0.01"
+                                        step="0.25"
                                         min="0"
-                                        value={data.labor_cost}
-                                        onChange={(e) => setData('labor_cost', e.target.value)}
-                                        className={errors.labor_cost ? 'border-red-500' : ''}
+                                        value={data.hours_worked}
+                                        onChange={(e) => setData('hours_worked', e.target.value)}
+                                        className={errors.hours_worked ? 'border-red-500' : ''}
                                         placeholder="0.00"
                                     />
-                                    {errors.labor_cost && (
-                                        <p className="text-sm text-red-500">{errors.labor_cost}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="parts_cost">Parts Cost (€)</Label>
-                                    <Input
-                                        id="parts_cost"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={data.parts_cost}
-                                        onChange={(e) => setData('parts_cost', e.target.value)}
-                                        className={errors.parts_cost ? 'border-red-500' : ''}
-                                        placeholder="0.00"
-                                    />
-                                    {errors.parts_cost && (
-                                        <p className="text-sm text-red-500">{errors.parts_cost}</p>
+                                    {errors.hours_worked && (
+                                        <p className="text-sm text-red-500">{errors.hours_worked}</p>
                                     )}
                                 </div>
                             </div>

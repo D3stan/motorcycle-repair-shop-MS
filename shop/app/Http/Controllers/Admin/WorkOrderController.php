@@ -34,7 +34,7 @@ class WorkOrderController extends Controller
             return [
                 'id' => $workOrder->CodiceIntervento,
                 'description' => $workOrder->Note,
-                'status' => $workOrder->DataFine ? 'completed' : ($workOrder->DataInizio ? 'in_progress' : 'pending'),
+                'status' => $workOrder->Stato,
                 'started_at' => $workOrder->DataInizio?->format('Y-m-d'),
                 'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
                 'hours_worked' => $workOrder->OreImpiegate ? (float) $workOrder->OreImpiegate : 0.0,
@@ -54,12 +54,12 @@ class WorkOrderController extends Controller
             ];
         });
 
-        // Get statistics (derive from DataInizio/DataFine)
+        // Get statistics using Stato column
         $statistics = [
             'total' => WorkOrder::count(),
-            'pending' => WorkOrder::whereNull('DataInizio')->count(),
-            'in_progress' => WorkOrder::whereNotNull('DataInizio')->whereNull('DataFine')->count(),
-            'completed' => WorkOrder::whereNotNull('DataFine')->count(),
+            'pending' => WorkOrder::where('Stato', 'pending')->count(),
+            'in_progress' => WorkOrder::where('Stato', 'in_progress')->count(),
+            'completed' => WorkOrder::where('Stato', 'completed')->count(),
         ];
 
         return Inertia::render('admin/work-orders/index', [
@@ -79,15 +79,15 @@ class WorkOrderController extends Controller
             ->get()
             ->map(function ($customer) {
                 return [
-                    'id' => $customer->id,
+                    'id' => $customer->CF,
                     'name' => $customer->first_name . ' ' . $customer->last_name,
                     'email' => $customer->email,
                     'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
                         return [
-                            'id' => $motorcycle->id,
-                            'name' => $motorcycle->motorcycleModel->brand . ' ' . $motorcycle->motorcycleModel->name,
-                            'plate' => $motorcycle->license_plate,
-                            'year' => $motorcycle->registration_year,
+                            'id' => $motorcycle->NumTelaio,
+                            'name' => $motorcycle->motorcycleModel->Marca . ' ' . $motorcycle->motorcycleModel->Nome,
+                            'plate' => $motorcycle->Targa,
+                            'year' => $motorcycle->AnnoImmatricolazione,
                         ];
                     }),
                 ];
@@ -98,24 +98,24 @@ class WorkOrderController extends Controller
             ->get()
             ->map(function ($mechanic) {
                 return [
-                    'id' => $mechanic->id,
+                    'id' => $mechanic->CF,
                     'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
                     'email' => $mechanic->email,
                 ];
             });
 
-        $appointments = Appointment::where('status', 'scheduled')
+        $appointments = Appointment::where('Stato', 'pending')
             ->with(['user', 'motorcycle.motorcycleModel'])
-            ->orderBy('appointment_date')
+            ->orderBy('DataAppuntamento')
             ->get()
             ->map(function ($appointment) {
                 return [
-                    'id' => $appointment->id,
+                    'id' => $appointment->CodiceAppuntamento,
                     'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                    'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . $appointment->motorcycle->motorcycleModel->name,
-                    'date' => $appointment->appointment_date->format('Y-m-d'),
-                    'time' => $appointment->appointment_time,
-                    'type' => $appointment->type,
+                    'motorcycle' => $appointment->motorcycle->motorcycleModel->Marca . ' ' . $appointment->motorcycle->motorcycleModel->Nome,
+                    'date' => $appointment->DataAppuntamento->format('Y-m-d'),
+                    'time' => $appointment->Ora,
+                    'type' => $appointment->Tipo,
                 ];
             });
 
@@ -123,16 +123,17 @@ class WorkOrderController extends Controller
         $prefilledData = null;
         if ($request->has('appointment_id')) {
             $appointment = Appointment::with(['user', 'motorcycle.motorcycleModel'])
-                ->find($request->appointment_id);
+                ->where('CodiceAppuntamento', $request->appointment_id)
+                ->first();
             
             if ($appointment) {
                 $prefilledData = [
-                    'appointment_id' => $appointment->id,
-                    'user_id' => $appointment->user_id,
-                    'motorcycle_id' => $appointment->motorcycle_id,
-                    'description' => 'Work order for ' . ucfirst(str_replace('_', ' ', $appointment->type)) . ' appointment scheduled on ' . $appointment->appointment_date->format('M j, Y'),
+                    'appointment_id' => $appointment->CodiceAppuntamento,
+                    'CF' => $appointment->CF,
+                    'NumTelaio' => $appointment->NumTelaio,
+                    'description' => 'Work order for ' . ucfirst(str_replace('_', ' ', $appointment->Tipo)) . ' appointment scheduled on ' . $appointment->DataAppuntamento->format('M j, Y'),
                     'customer_name' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                    'motorcycle_name' => $appointment->motorcycle->motorcycleModel->brand . ' ' . $appointment->motorcycle->motorcycleModel->name . ' (' . $appointment->motorcycle->license_plate . ')',
+                    'motorcycle_name' => $appointment->motorcycle->motorcycleModel->Marca . ' ' . $appointment->motorcycle->motorcycleModel->Nome . ' (' . $appointment->motorcycle->Targa . ')',
                 ];
             }
         }
@@ -151,28 +152,27 @@ class WorkOrderController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'CF' => 'required|exists:users,CF',
-            'NumTelaio' => 'required|exists:motorcycles,NumTelaio',
-            'CodiceAppuntamento' => 'nullable|exists:appointments,CodiceAppuntamento',
-            'Nome' => 'required|string|max:1000',
-            'Tipo' => 'required|string|max:255',
-            'Causa' => 'nullable|string|max:1000',
-            'KmMoto' => 'nullable|integer|min:0',
-            'OreImpiegate' => 'nullable|numeric|min:0',
-            'Note' => 'nullable|string|max:2000',
+            'user_id' => 'required|exists:users,CF',
+            'motorcycle_id' => 'required|exists:MOTO,NumTelaio',
+            'appointment_id' => 'nullable|exists:APPUNTAMENTI,CodiceAppuntamento',
+            'description' => 'required|string|max:1000',
+            'status' => 'required|in:pending,in_progress,completed,cancelled',
+            'hours_worked' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string|max:2000',
             'mechanics' => 'nullable|array',
             'mechanics.*' => 'exists:users,CF',
         ]);
 
-        // Determine dates based on status
+        // Determine status and dates based on request
+        $stato = $validated['status'];
         $dataInizio = null;
         $dataFine = null;
         
-        if ($request->has('start_immediately') && $request->start_immediately) {
+        if ($stato === 'in_progress') {
             $dataInizio = now();
         }
         
-        if ($request->has('mark_completed') && $request->mark_completed) {
+        if ($stato === 'completed') {
             $dataInizio = $dataInizio ?? now();
             $dataFine = now();
         }
@@ -181,13 +181,17 @@ class WorkOrderController extends Controller
             'CodiceIntervento' => 'WO' . str_pad(WorkOrder::count() + 1, 6, '0', STR_PAD_LEFT),
             'DataInizio' => $dataInizio,
             'DataFine' => $dataFine,
-            'KmMoto' => $validated['KmMoto'] ?? null,
-            'Tipo' => $validated['Tipo'],
-            'Causa' => $validated['Causa'] ?? null,
-            'OreImpiegate' => $validated['OreImpiegate'] ?? 0,
-            'Note' => $validated['Note'] ?? null,
-            'Nome' => $validated['Nome'],
-            'NumTelaio' => $validated['NumTelaio'],
+            'KmMoto' => 0,
+            'Tipo' => 'manutenzione_ordinaria', // Default type
+            'Stato' => $stato,
+            'Causa' => null,
+            'OreImpiegate' => $validated['hours_worked'] ?? 0,
+            'Note' => $validated['description'],
+            'NoteAggiuntive' => $validated['notes'],
+            'Nome' => $validated['description'], // Using description as name
+            'NumTelaio' => $validated['motorcycle_id'],
+            'CF' => $validated['user_id'],
+            'CodiceAppuntamento' => $validated['appointment_id'],
         ];
 
         $workOrder = WorkOrder::create($workOrderData);
@@ -205,8 +209,8 @@ class WorkOrderController extends Controller
         }
 
         // Update appointment status if linked
-        if (!empty($validated['CodiceAppuntamento'])) {
-            Appointment::where('CodiceAppuntamento', $validated['CodiceAppuntamento'])
+        if (!empty($validated['appointment_id'])) {
+            Appointment::where('CodiceAppuntamento', $validated['appointment_id'])
                 ->update(['Stato' => 'in_progress']);
         }
 
@@ -319,15 +323,15 @@ class WorkOrderController extends Controller
             ->get()
             ->map(function ($customer) {
                 return [
-                    'id' => $customer->id,
+                    'id' => $customer->CF,
                     'name' => $customer->first_name . ' ' . $customer->last_name,
                     'email' => $customer->email,
                     'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
                         return [
-                            'id' => $motorcycle->id,
-                            'name' => $motorcycle->motorcycleModel->brand . ' ' . $motorcycle->motorcycleModel->name,
-                            'plate' => $motorcycle->license_plate,
-                            'year' => $motorcycle->registration_year,
+                            'id' => $motorcycle->NumTelaio,
+                            'name' => $motorcycle->motorcycleModel->Marca . ' ' . $motorcycle->motorcycleModel->Nome,
+                            'plate' => $motorcycle->Targa,
+                            'year' => $motorcycle->AnnoImmatricolazione,
                         ];
                     }),
                 ];
@@ -338,7 +342,7 @@ class WorkOrderController extends Controller
             ->get()
             ->map(function ($mechanic) {
                 return [
-                    'id' => $mechanic->id,
+                    'id' => $mechanic->CF,
                     'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
                     'email' => $mechanic->email,
                 ];
@@ -346,15 +350,14 @@ class WorkOrderController extends Controller
 
         $workOrderData = [
             'id' => $workOrder->CodiceIntervento,
-            'user_id' => $workOrder->user_id,
-            'motorcycle_id' => $workOrder->motorcycle_id,
-            'appointment_id' => $workOrder->appointment_id,
+            'user_id' => $workOrder->CF,
+            'motorcycle_id' => $workOrder->NumTelaio,
+            'appointment_id' => $workOrder->CodiceAppuntamento,
             'description' => $workOrder->Note,
-            'status' => $workOrder->DataFine ? 'completed' : ($workOrder->DataInizio ? 'in_progress' : 'pending'),
-            'labor_cost' => $workOrder->labor_cost ? (float) $workOrder->labor_cost : 0.0,
-            'parts_cost' => $workOrder->parts_cost ? (float) $workOrder->parts_cost : 0.0,
-            'notes' => $workOrder->notes,
-            'assigned_mechanics' => $workOrder->mechanics->pluck('id')->toArray(),
+            'status' => $workOrder->Stato,
+            'hours_worked' => $workOrder->OreImpiegate ? (float) $workOrder->OreImpiegate : 0.0,
+            'notes' => $workOrder->NoteAggiuntive,
+            'assigned_mechanics' => $workOrder->mechanics->pluck('CF')->toArray(),
         ];
 
         return Inertia::render('admin/work-orders/edit', [
@@ -370,44 +373,50 @@ class WorkOrderController extends Controller
     public function update(Request $request, WorkOrder $workOrder): RedirectResponse
     {
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'motorcycle_id' => 'required|exists:motorcycles,id',
-            'appointment_id' => 'nullable|exists:appointments,id',
+            'user_id' => 'required|exists:users,CF',
+            'motorcycle_id' => 'required|exists:MOTO,NumTelaio',
+            'appointment_id' => 'nullable|exists:APPUNTAMENTI,CodiceAppuntamento',
             'description' => 'required|string|max:1000',
             'status' => 'required|in:pending,in_progress,completed,cancelled',
-            'labor_cost' => 'nullable|numeric|min:0',
-            'parts_cost' => 'nullable|numeric|min:0',
+            'hours_worked' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:2000',
             'mechanics' => 'nullable|array',
-            'mechanics.*' => 'exists:users,id',
+            'mechanics.*' => 'exists:users,CF',
         ]);
 
-        // Calculate total cost
-        $laborCost = $validated['labor_cost'] ?? 0;
-        $partsCost = $validated['parts_cost'] ?? 0;
-        $validated['total_cost'] = $laborCost + $partsCost;
-
-        // Set started_at if status changed to in_progress and not already set
-        if ($validated['status'] === 'in_progress' && !$workOrder->started_at) {
-            $validated['started_at'] = now();
+        // Determine status and dates based on request
+        $stato = $validated['status'];
+        $dataInizio = $workOrder->DataInizio;
+        $dataFine = $workOrder->DataFine;
+        
+        if ($stato === 'in_progress' && !$workOrder->DataInizio) {
+            $dataInizio = now();
         }
-
-        // Set completed_at if status changed to completed and not already set
-        if ($validated['status'] === 'completed' && !$workOrder->completed_at) {
-            $validated['completed_at'] = now();
-            if (!$workOrder->started_at) {
-                $validated['started_at'] = now();
+        
+        if ($stato === 'completed' && !$workOrder->DataFine) {
+            $dataFine = now();
+            if (!$workOrder->DataInizio) {
+                $dataInizio = now();
             }
         }
 
-        $workOrder->update($validated);
+        $workOrder->update([
+            'DataInizio' => $dataInizio,
+            'DataFine' => $dataFine,
+            'Stato' => $stato,
+            'OreImpiegate' => $validated['hours_worked'] ?? 0,
+            'Note' => $validated['description'],
+            'NoteAggiuntive' => $validated['notes'],
+            'NumTelaio' => $validated['motorcycle_id'],
+            'CF' => $validated['user_id'],
+            'CodiceAppuntamento' => $validated['appointment_id'],
+        ]);
 
         // Update mechanics assignment
         if (isset($validated['mechanics'])) {
             $mechanicData = [];
-            foreach ($validated['mechanics'] as $mechanicId) {
-                $mechanicData[$mechanicId] = [
-                    'assigned_at' => now(),
+            foreach ($validated['mechanics'] as $mechanicCF) {
+                $mechanicData[$mechanicCF] = [
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -417,7 +426,7 @@ class WorkOrderController extends Controller
             $workOrder->mechanics()->detach();
         }
 
-        return redirect()->route('admin.work-orders.show', $workOrder)
+        return redirect()->route('admin.work-orders.show', $workOrder->CodiceIntervento)
             ->with('success', 'Work order updated successfully!');
     }
 

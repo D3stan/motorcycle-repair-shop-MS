@@ -40,6 +40,8 @@ class WorkSession extends Model
     protected $fillable = [
         'CodiceSessione',
         'DataInizio',
+        'DataFine',
+        'Stato',
         'OreImpiegate',
         'Note',
         'NumTelaio',
@@ -54,6 +56,7 @@ class WorkSession extends Model
     {
         return [
             'DataInizio' => 'datetime',
+            'DataFine' => 'datetime',
             'OreImpiegate' => 'decimal:2',
         ];
     }

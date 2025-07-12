@@ -32,11 +32,20 @@ class WorkOrderFactory extends Factory
             'Cooling system flush and refill'
         ];
 
+        // Generate dates before today
         $startDate = fake()->dateTimeBetween('-6 months', '-1 week');
         $endDate = fake()->boolean(70) ? fake()->dateTimeBetween($startDate, '-1 day') : null;
-        $hoursWorked = fake()->randomFloat(2, 0.5, 8);
+        $hoursWorked = $endDate ? fake()->randomFloat(2, 0.5, 8) : 0;
+        
+        // Determine status based on dates
+        $stato = 'pending';
+        if ($startDate && $endDate) {
+            $stato = 'completed';
+        } elseif ($startDate) {
+            $stato = 'in_progress';
+        }
 
-        $workTypes = ['maintenance', 'dyno_testing', 'diagnosis'];
+        $workTypes = ['manutenzione_ordinaria', 'manutenzione_straordinaria'];
 
         return [
             'CodiceIntervento' => fake()->unique()->regexify('WO[0-9]{6}'),
@@ -44,11 +53,13 @@ class WorkOrderFactory extends Factory
             'DataFine' => $endDate,
             'KmMoto' => fake()->numberBetween(0, 120000),
             'Tipo' => fake()->randomElement($workTypes),
+            'Stato' => $stato,
             'Causa' => fake()->optional()->words(3, true),
             'OreImpiegate' => $hoursWorked,
             'Note' => fake()->randomElement($descriptions),
             'Nome' => fake()->sentence(3),
             'NumTelaio' => Motorcycle::factory(),
+            'CF' => null, // Will be set by seeder
         ];
     }
 
@@ -60,6 +71,8 @@ class WorkOrderFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'DataInizio' => null,
             'DataFine' => null,
+            'Stato' => 'pending',
+            'OreImpiegate' => 0,
         ]);
     }
 
@@ -71,6 +84,8 @@ class WorkOrderFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'DataInizio' => fake()->dateTimeBetween('-2 weeks', '-1 day'),
             'DataFine' => null,
+            'Stato' => 'in_progress',
+            'OreImpiegate' => fake()->randomFloat(2, 0.5, 4),
         ]);
     }
 
@@ -79,9 +94,12 @@ class WorkOrderFactory extends Factory
      */
     public function completed(): static
     {
+        $startDate = fake()->dateTimeBetween('-6 months', '-2 days');
         return $this->state(fn (array $attributes) => [
-            'DataInizio' => fake()->dateTimeBetween('-6 months', '-2 days'),
-            'DataFine' => fake()->dateTimeBetween($attributes['DataInizio'] ?? '-6 months', '-1 day'),
+            'DataInizio' => $startDate,
+            'DataFine' => fake()->dateTimeBetween($startDate, '-1 day'),
+            'Stato' => 'completed',
+            'OreImpiegate' => fake()->randomFloat(2, 1, 8),
         ]);
     }
 } 

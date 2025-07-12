@@ -447,19 +447,21 @@ FATTURE (
 )  
 SESSIONI (
   .text {CodiceSessione} decoration:{underline},
-  DataInizio,
+  Data,
   OreImpiegate,
+  Stato,
   Note,
   .text {NumTelaio} decoration:{underline}: MOTO
 )  
 INTERVENTI (
   .text {CodiceIntervento} decoration:{underline},
   DataInizio,
-  DataFine,
+  DataFine[0–1],
   KmMoto,
   Tipo,
   Causa[0–1],
   OreImpiegate,
+  Stato,
   Note,
   Nome,
   .text {NumTelaio} decoration:{underline}: MOTO

@@ -32,7 +32,7 @@ abstract class BaseAdminController extends Controller
     protected function canDeleteUser(User $user): array
     {
         $activeWorkOrders = $user->workOrders()
-            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereIn('Stato', ['pending', 'in_progress'])
             ->count();
 
         if ($activeWorkOrders > 0) {
@@ -45,7 +45,7 @@ abstract class BaseAdminController extends Controller
         // For mechanics, also check assigned work orders
         if ($user->isMechanic()) {
             $assignedActiveWorkOrders = $user->assignedWorkOrders()
-                ->whereIn('status', ['pending', 'in_progress'])
+                ->whereIn('Stato', ['pending', 'in_progress'])
                 ->count();
 
             if ($assignedActiveWorkOrders > 0) {

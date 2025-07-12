@@ -46,6 +46,7 @@ class WorkOrder extends Model
         'DataFine',
         'KmMoto',
         'Tipo',
+        'Stato',
         'Causa',
         'OreImpiegate',
         'Note',

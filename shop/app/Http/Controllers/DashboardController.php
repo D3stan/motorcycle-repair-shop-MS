@@ -156,10 +156,8 @@ class DashboardController extends Controller
             ->whereYear('DataPagamento', now()->year)
             ->sum('Importo');
 
-        // Active work orders count (DataInizio not null, DataFine null)
-        $activeWorkOrdersCount = WorkOrder::whereNotNull('DataInizio')
-            ->whereNull('DataFine')
-            ->count();
+        // Active work orders count (use Stato column)
+        $activeWorkOrdersCount = WorkOrder::whereIn('Stato', ['pending', 'in_progress'])->count();
 
         // Pending appointments count
         $pendingAppointmentsCount = Appointment::where('Stato', 'pending')->count();
@@ -178,7 +176,7 @@ class DashboardController extends Controller
                     'customer' => $workOrder->user->full_name,
                     'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
                     'description' => $workOrder->Note,
-                    'status' => $workOrder->DataFine ? 'completed' : ($workOrder->DataInizio ? 'in_progress' : 'pending'),
+                    'status' => $workOrder->Stato,
                     'created_at' => $workOrder->created_at->format('Y-m-d H:i'),
                     'mechanics' => $workOrder->mechanics->pluck('first_name')->implode(', '),
                 ];
@@ -201,11 +199,11 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Work orders by status (derive status from DataInizio/DataFine)
+        // Work orders by status (use Stato column)
         $totalWorkOrders = WorkOrder::count();
-        $pendingWorkOrders = WorkOrder::whereNull('DataInizio')->count();
-        $inProgressWorkOrders = WorkOrder::whereNotNull('DataInizio')->whereNull('DataFine')->count();
-        $completedWorkOrders = WorkOrder::whereNotNull('DataFine')->count();
+        $pendingWorkOrders = WorkOrder::where('Stato', 'pending')->count();
+        $inProgressWorkOrders = WorkOrder::where('Stato', 'in_progress')->count();
+        $completedWorkOrders = WorkOrder::where('Stato', 'completed')->count();
 
         $workOrdersByStatus = [
             'pending' => $pendingWorkOrders,
@@ -253,8 +251,7 @@ class DashboardController extends Controller
         // Get assigned work orders
         $assignedWorkOrders = $user->assignedWorkOrders()
             ->with(['motorcycle.motorcycleModel', 'user'])
-            ->whereNotNull('DataInizio')
-            ->whereNull('DataFine')
+            ->whereIn('Stato', ['pending', 'in_progress'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($workOrder) {
@@ -263,16 +260,16 @@ class DashboardController extends Controller
                     'customer' => $workOrder->user->full_name,
                     'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
                     'description' => $workOrder->Note,
-                    'status' => $workOrder->DataFine ? 'completed' : ($workOrder->DataInizio ? 'in_progress' : 'pending'),
+                    'status' => $workOrder->Stato,
                     'created_at' => $workOrder->created_at->format('Y-m-d'),
                 ];
             });
 
         // Get completed work orders count (this month)
         $completedThisMonth = $user->assignedWorkOrders()
-            ->whereNotNull('DataFine')
-            ->whereMonth('DataFine', now()->month)
-            ->whereYear('DataFine', now()->year)
+            ->where('Stato', 'completed')
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
             ->count();
 
         // Get active work sessions

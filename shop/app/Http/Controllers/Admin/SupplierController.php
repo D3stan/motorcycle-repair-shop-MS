@@ -17,21 +17,21 @@ class SupplierController extends Controller
     public function index(): Response
     {
         $suppliers = Supplier::withCount('parts')
-            ->orderBy('name')
+            ->orderBy('Nome')
             ->paginate(20);
 
         $suppliersData = $suppliers->through(function ($supplier) {
             return [
-                'id' => $supplier->id,
-                'supplier_code' => $supplier->supplier_code,
-                'name' => $supplier->name,
-                'phone' => $supplier->phone,
-                'email' => $supplier->email,
-                'address' => $supplier->address,
-                'city' => $supplier->city,
-                'postal_code' => $supplier->postal_code,
-                'country' => $supplier->country,
-                'notes' => $supplier->notes,
+                'id' => $supplier->CodiceFornitore,
+                'supplier_code' => $supplier->CodiceFornitore,
+                'name' => $supplier->Nome,
+                'phone' => $supplier->Telefono,
+                'email' => $supplier->Email,
+                'address' => $supplier->Indirizzo,
+                'city' => $supplier->Citta,
+                'postal_code' => $supplier->CAP,
+                'country' => $supplier->Paese,
+                'notes' => $supplier->Note,
                 'parts_count' => $supplier->parts_count,
                 'created_at' => $supplier->created_at->format('Y-m-d'),
             ];
@@ -56,7 +56,7 @@ class SupplierController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'supplier_code' => 'required|string|max:255|unique:suppliers,supplier_code',
+            'supplier_code' => 'required|string|max:255|unique:FORNITORI,CodiceFornitore',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|string|email|max:255',
@@ -67,7 +67,17 @@ class SupplierController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $supplier = Supplier::create($validated);
+        $supplier = Supplier::create([
+            'CodiceFornitore' => $validated['supplier_code'],
+            'Nome' => $validated['name'],
+            'Telefono' => $validated['phone'],
+            'Email' => $validated['email'],
+            'Indirizzo' => $validated['address'],
+            'Citta' => $validated['city'],
+            'CAP' => $validated['postal_code'],
+            'Paese' => $validated['country'],
+            'Note' => $validated['notes'],
+        ]);
 
         return redirect()->route('admin.suppliers.show', $supplier)
             ->with('success', 'Supplier created successfully!');
@@ -81,31 +91,31 @@ class SupplierController extends Controller
         $supplier->load(['parts']);
 
         $supplierData = [
-            'id' => $supplier->id,
-            'supplier_code' => $supplier->supplier_code,
-            'name' => $supplier->name,
-            'phone' => $supplier->phone,
-            'email' => $supplier->email,
-            'address' => $supplier->address,
-            'city' => $supplier->city,
-            'postal_code' => $supplier->postal_code,
-            'country' => $supplier->country,
-            'notes' => $supplier->notes,
+            'id' => $supplier->CodiceFornitore,
+            'supplier_code' => $supplier->CodiceFornitore,
+            'name' => $supplier->Nome,
+            'phone' => $supplier->Telefono,
+            'email' => $supplier->Email,
+            'address' => $supplier->Indirizzo,
+            'city' => $supplier->Citta,
+            'postal_code' => $supplier->CAP,
+            'country' => $supplier->Paese,
+            'notes' => $supplier->Note,
             'created_at' => $supplier->created_at->format('Y-m-d H:i'),
         ];
 
         // Format supplied parts
         $suppliedParts = $supplier->parts->map(function ($part) {
             return [
-                'id' => $part->id,
-                'part_code' => $part->part_code,
-                'brand' => $part->brand,
-                'name' => $part->name,
-                'category' => $part->category,
-                'supplier_price' => (float) $part->supplier_price,
-                'selling_price' => (float) $part->selling_price,
-                'stock_quantity' => $part->stock_quantity,
-                'minimum_stock' => $part->minimum_stock,
+                'id' => $part->CodiceRicambio,
+                'part_code' => $part->CodiceRicambio,
+                'brand' => $part->Marca,
+                'name' => $part->Nome,
+                'category' => $part->Categoria,
+                'supplier_price' => (float) $part->PrezzoFornitore,
+                'selling_price' => (float) $part->PrezzoVendita,
+                'stock_quantity' => $part->QuantitaDisponibile,
+                'minimum_stock' => $part->ScortaMinima,
                 'is_low_stock' => $part->isLowStock(),
             ];
         });
@@ -123,16 +133,16 @@ class SupplierController extends Controller
     {
         return Inertia::render('admin/suppliers/edit', [
             'supplier' => [
-                'id' => $supplier->id,
-                'supplier_code' => $supplier->supplier_code,
-                'name' => $supplier->name,
-                'phone' => $supplier->phone,
-                'email' => $supplier->email,
-                'address' => $supplier->address,
-                'city' => $supplier->city,
-                'postal_code' => $supplier->postal_code,
-                'country' => $supplier->country,
-                'notes' => $supplier->notes,
+                'id' => $supplier->CodiceFornitore,
+                'supplier_code' => $supplier->CodiceFornitore,
+                'name' => $supplier->Nome,
+                'phone' => $supplier->Telefono,
+                'email' => $supplier->Email,
+                'address' => $supplier->Indirizzo,
+                'city' => $supplier->Citta,
+                'postal_code' => $supplier->CAP,
+                'country' => $supplier->Paese,
+                'notes' => $supplier->Note,
             ],
         ]);
     }
@@ -143,7 +153,7 @@ class SupplierController extends Controller
     public function update(Request $request, Supplier $supplier): RedirectResponse
     {
         $validated = $request->validate([
-            'supplier_code' => 'required|string|max:255|unique:suppliers,supplier_code,' . $supplier->id,
+            'supplier_code' => 'required|string|max:255|unique:FORNITORI,CodiceFornitore,' . $supplier->CodiceFornitore . ',CodiceFornitore',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|string|email|max:255',
@@ -154,7 +164,17 @@ class SupplierController extends Controller
             'notes' => 'nullable|string',
         ]);
 
-        $supplier->update($validated);
+        $supplier->update([
+            'CodiceFornitore' => $validated['supplier_code'],
+            'Nome' => $validated['name'],
+            'Telefono' => $validated['phone'],
+            'Email' => $validated['email'],
+            'Indirizzo' => $validated['address'],
+            'Citta' => $validated['city'],
+            'CAP' => $validated['postal_code'],
+            'Paese' => $validated['country'],
+            'Note' => $validated['notes'],
+        ]);
 
         return redirect()->route('admin.suppliers.show', $supplier)
             ->with('success', 'Supplier updated successfully!');
@@ -166,11 +186,9 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier): RedirectResponse
     {
         // Check if supplier has any parts
-        $partsCount = $supplier->parts()->count();
-
-        if ($partsCount > 0) {
+        if ($supplier->parts()->count() > 0) {
             return redirect()->route('admin.suppliers.index')
-                ->with('error', 'Cannot delete supplier that has parts assigned.');
+                ->with('error', 'Cannot delete supplier that has associated parts.');
         }
 
         $supplier->delete();

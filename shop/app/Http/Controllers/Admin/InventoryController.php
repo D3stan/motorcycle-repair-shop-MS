@@ -18,24 +18,24 @@ class InventoryController extends Controller
     public function index(): Response
     {
         $parts = Part::with('supplier')
-            ->orderBy('category')
-            ->orderBy('name')
+            ->orderBy('Categoria')
+            ->orderBy('Nome')
             ->paginate(20);
 
         $partsData = $parts->through(function ($part) {
             return [
-                'id' => $part->id,
-                'part_code' => $part->part_code,
-                'brand' => $part->brand,
-                'name' => $part->name,
-                'description' => $part->description,
-                'supplier_price' => (float) $part->supplier_price,
-                'selling_price' => (float) $part->selling_price,
-                'category' => $part->category,
-                'stock_quantity' => $part->stock_quantity,
-                'minimum_stock' => $part->minimum_stock,
-                'supplier_id' => $part->supplier_id,
-                'supplier_name' => $part->supplier->name,
+                'id' => $part->CodiceRicambio,
+                'part_code' => $part->CodiceRicambio,
+                'brand' => $part->Marca,
+                'name' => $part->Nome,
+                'description' => $part->Descrizione,
+                'supplier_price' => (float) $part->PrezzoFornitore,
+                'selling_price' => (float) $part->PrezzoVendita,
+                'category' => $part->Categoria,
+                'stock_quantity' => $part->QuantitaDisponibile,
+                'minimum_stock' => $part->ScortaMinima,
+                'supplier_id' => $part->CodiceFornitore,
+                'supplier_name' => $part->supplier->Nome,
                 'is_low_stock' => $part->isLowStock(),
                 'created_at' => $part->created_at->format('Y-m-d'),
             ];
@@ -51,11 +51,11 @@ class InventoryController extends Controller
      */
     public function create(): Response
     {
-        $suppliers = Supplier::orderBy('name')->get()->map(function ($supplier) {
+        $suppliers = Supplier::orderBy('Nome')->get()->map(function ($supplier) {
             return [
-                'id' => $supplier->id,
-                'name' => $supplier->name,
-                'supplier_code' => $supplier->supplier_code,
+                'id' => $supplier->CodiceFornitore,
+                'name' => $supplier->Nome,
+                'supplier_code' => $supplier->CodiceFornitore,
             ];
         });
 
@@ -70,7 +70,7 @@ class InventoryController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'part_code' => 'required|string|max:255|unique:parts,part_code',
+            'part_code' => 'required|string|max:255|unique:RICAMBI,CodiceRicambio',
             'brand' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -79,10 +79,21 @@ class InventoryController extends Controller
             'category' => 'required|string|max:255',
             'stock_quantity' => 'required|integer|min:0',
             'minimum_stock' => 'required|integer|min:0',
-            'supplier_id' => 'required|exists:suppliers,id',
+            'supplier_id' => 'required|exists:FORNITORI,CodiceFornitore',
         ]);
 
-        $part = Part::create($validated);
+        $part = Part::create([
+            'CodiceRicambio' => $validated['part_code'],
+            'Marca' => $validated['brand'],
+            'Nome' => $validated['name'],
+            'Descrizione' => $validated['description'],
+            'PrezzoFornitore' => $validated['supplier_price'],
+            'PrezzoVendita' => $validated['selling_price'],
+            'Categoria' => $validated['category'],
+            'QuantitaDisponibile' => $validated['stock_quantity'],
+            'ScortaMinima' => $validated['minimum_stock'],
+            'CodiceFornitore' => $validated['supplier_id'],
+        ]);
 
         return redirect()->route('admin.inventory.show', $part)
             ->with('success', 'Part created successfully!');
@@ -96,18 +107,18 @@ class InventoryController extends Controller
         $inventory->load(['supplier', 'motorcycleModels', 'workOrders.user']);
 
         $partData = [
-            'id' => $inventory->id,
-            'part_code' => $inventory->part_code,
-            'brand' => $inventory->brand,
-            'name' => $inventory->name,
-            'description' => $inventory->description,
-            'supplier_price' => (float) $inventory->supplier_price,
-            'selling_price' => (float) $inventory->selling_price,
-            'category' => $inventory->category,
-            'stock_quantity' => $inventory->stock_quantity,
-            'minimum_stock' => $inventory->minimum_stock,
-            'supplier_id' => $inventory->supplier_id,
-            'supplier_name' => $inventory->supplier->name,
+            'id' => $inventory->CodiceRicambio,
+            'part_code' => $inventory->CodiceRicambio,
+            'brand' => $inventory->Marca,
+            'name' => $inventory->Nome,
+            'description' => $inventory->Descrizione,
+            'supplier_price' => (float) $inventory->PrezzoFornitore,
+            'selling_price' => (float) $inventory->PrezzoVendita,
+            'category' => $inventory->Categoria,
+            'stock_quantity' => $inventory->QuantitaDisponibile,
+            'minimum_stock' => $inventory->ScortaMinima,
+            'supplier_id' => $inventory->CodiceFornitore,
+            'supplier_name' => $inventory->supplier->Nome,
             'is_low_stock' => $inventory->isLowStock(),
             'created_at' => $inventory->created_at->format('Y-m-d H:i'),
         ];
@@ -115,25 +126,22 @@ class InventoryController extends Controller
         // Format compatible motorcycle models
         $compatibleModels = $inventory->motorcycleModels->map(function ($model) {
             return [
-                'id' => $model->id,
-                'brand' => $model->brand,
-                'name' => $model->name,
-                'model_code' => $model->model_code,
-                'engine_size' => $model->engine_size,
-                'segment' => $model->segment,
+                'id' => $model->CodiceModello,
+                'brand' => $model->Marca,
+                'name' => $model->Nome,
+                'model_code' => $model->CodiceModello,
+                'engine_size' => $model->Cilindrata,
+                'segment' => $model->Segmento,
             ];
         });
 
         // Format usage in work orders
-        $workOrderUsage = $inventory->workOrders->map(function ($workOrder) {
+        $workOrdersUsage = $inventory->workOrders->map(function ($workOrder) {
             return [
-                'id' => $workOrder->id,
-                'description' => $workOrder->description,
-                'status' => $workOrder->status,
+                'id' => $workOrder->CodiceIntervento,
+                'description' => $workOrder->Note,
+                'status' => $workOrder->Stato,
                 'customer' => $workOrder->user->first_name . ' ' . $workOrder->user->last_name,
-                'quantity' => $workOrder->pivot->quantity,
-                'unit_price' => (float) $workOrder->pivot->unit_price,
-                'total_price' => (float) $workOrder->pivot->total_price,
                 'created_at' => $workOrder->created_at->format('Y-m-d'),
             ];
         });
@@ -141,7 +149,7 @@ class InventoryController extends Controller
         return Inertia::render('admin/inventory/show', [
             'part' => $partData,
             'compatibleModels' => $compatibleModels,
-            'workOrderUsage' => $workOrderUsage,
+            'workOrdersUsage' => $workOrdersUsage,
         ]);
     }
 
@@ -150,27 +158,27 @@ class InventoryController extends Controller
      */
     public function edit(Part $inventory): Response
     {
-        $suppliers = Supplier::orderBy('name')->get()->map(function ($supplier) {
+        $suppliers = Supplier::orderBy('Nome')->get()->map(function ($supplier) {
             return [
-                'id' => $supplier->id,
-                'name' => $supplier->name,
-                'supplier_code' => $supplier->supplier_code,
+                'id' => $supplier->CodiceFornitore,
+                'name' => $supplier->Nome,
+                'supplier_code' => $supplier->CodiceFornitore,
             ];
         });
 
         return Inertia::render('admin/inventory/edit', [
             'part' => [
-                'id' => $inventory->id,
-                'part_code' => $inventory->part_code,
-                'brand' => $inventory->brand,
-                'name' => $inventory->name,
-                'description' => $inventory->description,
-                'supplier_price' => (float) $inventory->supplier_price,
-                'selling_price' => (float) $inventory->selling_price,
-                'category' => $inventory->category,
-                'stock_quantity' => $inventory->stock_quantity,
-                'minimum_stock' => $inventory->minimum_stock,
-                'supplier_id' => $inventory->supplier_id,
+                'id' => $inventory->CodiceRicambio,
+                'part_code' => $inventory->CodiceRicambio,
+                'brand' => $inventory->Marca,
+                'name' => $inventory->Nome,
+                'description' => $inventory->Descrizione,
+                'supplier_price' => (float) $inventory->PrezzoFornitore,
+                'selling_price' => (float) $inventory->PrezzoVendita,
+                'category' => $inventory->Categoria,
+                'stock_quantity' => $inventory->QuantitaDisponibile,
+                'minimum_stock' => $inventory->ScortaMinima,
+                'supplier_id' => $inventory->CodiceFornitore,
             ],
             'suppliers' => $suppliers,
         ]);
@@ -182,7 +190,7 @@ class InventoryController extends Controller
     public function update(Request $request, Part $inventory): RedirectResponse
     {
         $validated = $request->validate([
-            'part_code' => 'required|string|max:255|unique:parts,part_code,' . $inventory->id,
+            'part_code' => 'required|string|max:255|unique:RICAMBI,CodiceRicambio,' . $inventory->CodiceRicambio . ',CodiceRicambio',
             'brand' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -191,10 +199,21 @@ class InventoryController extends Controller
             'category' => 'required|string|max:255',
             'stock_quantity' => 'required|integer|min:0',
             'minimum_stock' => 'required|integer|min:0',
-            'supplier_id' => 'required|exists:suppliers,id',
+            'supplier_id' => 'required|exists:FORNITORI,CodiceFornitore',
         ]);
 
-        $inventory->update($validated);
+        $inventory->update([
+            'CodiceRicambio' => $validated['part_code'],
+            'Marca' => $validated['brand'],
+            'Nome' => $validated['name'],
+            'Descrizione' => $validated['description'],
+            'PrezzoFornitore' => $validated['supplier_price'],
+            'PrezzoVendita' => $validated['selling_price'],
+            'Categoria' => $validated['category'],
+            'QuantitaDisponibile' => $validated['stock_quantity'],
+            'ScortaMinima' => $validated['minimum_stock'],
+            'CodiceFornitore' => $validated['supplier_id'],
+        ]);
 
         return redirect()->route('admin.inventory.show', $inventory)
             ->with('success', 'Part updated successfully!');
@@ -206,9 +225,7 @@ class InventoryController extends Controller
     public function destroy(Part $inventory): RedirectResponse
     {
         // Check if part is used in any work orders
-        $workOrdersCount = $inventory->workOrders()->count();
-
-        if ($workOrdersCount > 0) {
+        if ($inventory->workOrders()->count() > 0) {
             return redirect()->route('admin.inventory.index')
                 ->with('error', 'Cannot delete part that is used in work orders.');
         }
