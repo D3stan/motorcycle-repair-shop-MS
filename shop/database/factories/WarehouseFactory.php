@@ -28,11 +28,7 @@ class WarehouseFactory extends Factory
         ];
 
         return [
-            'warehouse_code' => fake()->unique()->regexify('WH[0-9]{3}'),
-            'name' => fake()->randomElement($locations),
-            'location' => fake()->optional()->streetAddress(),
-            'description' => fake()->optional()->sentence(),
-            'is_active' => fake()->boolean(90), // 90% chance of being active
+            'CodiceMagazzino' => fake()->unique()->regexify('WH[0-9]{3}'),
         ];
     }
 } 

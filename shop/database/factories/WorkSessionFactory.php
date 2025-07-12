@@ -19,27 +19,23 @@ class WorkSessionFactory extends Factory
     {
         $startTime = fake()->dateTimeBetween('-6 months', '-1 day');
         $hoursWorked = fake()->randomFloat(2, 0.5, 8);
-        $endTime = (clone $startTime)->modify("+{$hoursWorked} hours");
 
         return [
-            'session_code' => fake()->unique()->regexify('SES[0-9]{6}'),
-            'motorcycle_id' => Motorcycle::factory(),
-            'start_time' => $startTime,
-            'end_time' => fake()->boolean(80) ? $endTime : null, // 80% completed sessions
-            'hours_worked' => $hoursWorked,
-            'notes' => fake()->optional()->sentence(),
-            'session_type' => fake()->randomElement(['maintenance', 'dyno', 'diagnosis', 'repair', 'inspection']),
+            'CodiceSessione' => fake()->unique()->regexify('SES[0-9]{6}'),
+            'NumTelaio' => Motorcycle::factory(),
+            'DataInizio' => $startTime,
+            'OreImpiegate' => $hoursWorked,
+            'Note' => fake()->optional()->sentence(),
         ];
     }
 
     /**
-     * Create an active session (no end time).
+     * Create an active session.
      */
     public function active(): static
     {
         return $this->state(fn (array $attributes) => [
-            'end_time' => null,
-            'start_time' => fake()->dateTimeBetween('-8 hours', '-1 hour'),
+            'DataInizio' => fake()->dateTimeBetween('-8 hours', '-1 hour'),
         ]);
     }
 } 

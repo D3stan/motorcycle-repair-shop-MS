@@ -26,7 +26,7 @@ class UserFactory extends Factory
         return [
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),
-            'tax_code' => fake()->unique()->regexify('[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]'), // Italian tax code format
+            'CF' => fake()->unique()->regexify('[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]'), // Italian tax code format
             'phone' => fake()->unique()->phoneNumber(),
             'email' => fake()->unique()->safeEmail(),
             'type' => fake()->randomElement(['customer', 'mechanic', 'admin']),

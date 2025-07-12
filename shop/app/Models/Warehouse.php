@@ -11,37 +11,40 @@ class Warehouse extends Model
     use HasFactory;
 
     /**
+     * The table associated with the model.
+     */
+    protected $table = 'MAGAZZINI';
+
+    /**
+     * The primary key for the model.
+     */
+    protected $primaryKey = 'CodiceMagazzino';
+
+    /**
+     * The "type" of the primary key ID.
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'warehouse_code',
-        'name',
-        'location',
-        'description',
-        'is_active',
+        'CodiceMagazzino',
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'is_active' => 'boolean',
-        ];
-    }
-
-    /**
-     * Get the parts stored in this warehouse.
+     * Get the parts stored in this warehouse (STOCCAGGI relationship).
      */
     public function parts(): BelongsToMany
     {
-        return $this->belongsToMany(Part::class, 'warehouse_parts')
-            ->withPivot('quantity')
+        return $this->belongsToMany(Part::class, 'STOCCAGGI', 'CodiceMagazzino', 'CodiceRicambio')
             ->withTimestamps();
     }
 } 

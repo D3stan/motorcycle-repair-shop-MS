@@ -23,7 +23,7 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name',
         'last_name',
-        'tax_code',
+        'CF',  // Codice Fiscale - used for Italian business logic
         'phone',
         'email',
         'type',
@@ -55,27 +55,27 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the motorcycles for this user.
+     * Get the motorcycles for this user (POSSESSIONE relationship via CF).
      */
     public function motorcycles(): HasMany
     {
-        return $this->hasMany(Motorcycle::class);
+        return $this->hasMany(Motorcycle::class, 'CF', 'CF');
     }
 
     /**
-     * Get the appointments for this user.
+     * Get the appointments for this user (CREAZIONE relationship via CF).
      */
     public function appointments(): HasMany
     {
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Appointment::class, 'CF', 'CF');
     }
 
     /**
-     * Get the invoices for this user.
+     * Get the invoices for this user (INTESTAZIONE relationship via CF).
      */
     public function invoices(): HasMany
     {
-        return $this->hasMany(Invoice::class);
+        return $this->hasMany(Invoice::class, 'CF', 'CF');
     }
 
     /**
@@ -86,20 +86,21 @@ class User extends Authenticatable
         return $this->hasManyThrough(
             WorkOrder::class,
             Motorcycle::class,
-            'user_id',        // Foreign key on motorcycles table...
-            'motorcycle_id',  // Foreign key on work_orders table...
-            'id',             // Local key on users table...
-            'id'              // Local key on motorcycles table...
+            'CF',             // Foreign key on MOTO table...
+            'NumTelaio',      // Foreign key on INTERVENTI table...
+            'CF',             // Local key on users table...
+            'NumTelaio'       // Local key on MOTO table...
         );
     }
 
     /**
-     * Temporary shim: mechanics can view work orders related to their sessions.
-     * Currently returns the same as workOrders until assignment mechanism is rebuilt.
+     * Get work orders assigned to this mechanic (SVOLGIMENTI relationship).
      */
-    public function assignedWorkOrders(): HasManyThrough
+    public function assignedWorkOrders(): BelongsToMany
     {
-        return $this->workOrders();
+        return $this->belongsToMany(WorkOrder::class, 'SVOLGIMENTI', 'CF', 'CodiceIntervento')
+            ->withTimestamps()
+            ->where('users.type', 'mechanic');
     }
 
     /**
@@ -135,12 +136,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the work sessions this mechanic participated in.
+     * Get the work sessions this mechanic participated in (AFFIANCAMENTI relationship).
      */
     public function workSessions(): BelongsToMany
     {
-        return $this->belongsToMany(WorkSession::class, 'mechanic_sessions')
-            ->withPivot('role')
-            ->withTimestamps();
+        return $this->belongsToMany(WorkSession::class, 'AFFIANCAMENTI', 'CF', 'CodiceSessione')
+            ->withTimestamps()
+            ->where('users.type', 'mechanic');
     }
 }

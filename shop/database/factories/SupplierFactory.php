@@ -30,15 +30,10 @@ class SupplierFactory extends Factory
         ];
 
         return [
-            'supplier_code' => fake()->unique()->regexify('SUP[0-9]{4}'),
-            'name' => fake()->randomElement($companies),
-            'phone' => fake()->phoneNumber(),
-            'email' => fake()->unique()->companyEmail(),
-            'address' => fake()->streetAddress(),
-            'city' => fake()->city(),
-            'postal_code' => fake()->postcode(),
-            'country' => fake()->randomElement(['Italy', 'Germany', 'France', 'Spain', 'UK']),
-            'notes' => fake()->optional()->sentence(),
+            'CodiceFornitore' => fake()->unique()->regexify('SUP[0-9]{4}'),
+            'Nome' => fake()->randomElement($companies),
+            'Telefono' => fake()->phoneNumber(),
+            'Email' => fake()->unique()->companyEmail(),
         ];
     }
 } 

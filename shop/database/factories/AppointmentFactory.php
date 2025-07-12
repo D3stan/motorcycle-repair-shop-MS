@@ -18,16 +18,18 @@ class AppointmentFactory extends Factory
      */
     public function definition(): array
     {
-        $appointmentDate = fake()->dateTimeBetween('-6 months', '-1 day');
+        $appointmentDate = fake()->dateTimeBetween('now', '+3 months');
+        $appointmentTime = fake()->time('H:i:s');
         
         return [
-            'user_id' => User::factory()->customer(),
-            'motorcycle_id' => Motorcycle::factory(),
-            'appointment_date' => $appointmentDate->format('Y-m-d'),
-            'appointment_time' => fake()->time('H:i:s'),
-            'type' => fake()->randomElement(['maintenance', 'dyno_testing']),
-            'status' => fake()->randomElement(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']),
-            'notes' => fake()->optional()->sentence(),
+            'CodiceAppuntamento' => fake()->unique()->regexify('APP[0-9]{6}'),
+            'DataAppuntamento' => $appointmentDate,
+            'Ora' => $appointmentDate->format('Y-m-d') . ' ' . $appointmentTime,
+            'Tipo' => fake()->randomElement(['maintenance', 'repair', 'inspection', 'consultation']),
+            'Stato' => fake()->randomElement(['scheduled', 'confirmed', 'completed', 'cancelled']),
+            'Note' => fake()->optional()->sentence(),
+            'CF' => User::factory()->customer(),
+            'NumTelaio' => Motorcycle::factory(),
         ];
     }
 

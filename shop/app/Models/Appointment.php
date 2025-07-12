@@ -6,11 +6,30 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-// Removed HasMany import as work order linkage is no longer persisted
 
 class Appointment extends Model
 {
     use HasFactory;
+
+    /**
+     * The table associated with the model.
+     */
+    protected $table = 'APPUNTAMENTI';
+
+    /**
+     * The primary key for the model.
+     */
+    protected $primaryKey = 'CodiceAppuntamento';
+
+    /**
+     * The "type" of the primary key ID.
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = false;
 
     /**
      * The attributes that are mass assignable.
@@ -18,13 +37,14 @@ class Appointment extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
-        'motorcycle_id',
-        'appointment_date',
-        'appointment_time',
-        'type',
-        'status',
-        'notes',
+        'CodiceAppuntamento',
+        'DataAppuntamento',
+        'Ora',
+        'Tipo',
+        'Stato',
+        'Note',
+        'CF',
+        'NumTelaio',
     ];
 
     /**
@@ -35,24 +55,25 @@ class Appointment extends Model
     protected function casts(): array
     {
         return [
-            'appointment_date' => 'date',
+            'DataAppuntamento' => 'date',
+            'Ora' => 'datetime',
         ];
     }
 
     /**
-     * Get the user that owns the appointment.
+     * Get the user that owns the appointment (CREAZIONE relationship).
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'CF', 'CF');
     }
 
     /**
-     * Get the motorcycle for this appointment.
+     * Get the motorcycle for this appointment (RELATIVO relationship).
      */
     public function motorcycle(): BelongsTo
     {
-        return $this->belongsTo(Motorcycle::class);
+        return $this->belongsTo(Motorcycle::class, 'NumTelaio', 'NumTelaio');
     }
 
     /**
@@ -60,7 +81,7 @@ class Appointment extends Model
      */
     public function workOrders(): HasMany
     {
-        return $this->hasMany(WorkOrder::class, 'motorcycle_id', 'motorcycle_id');
+        return $this->hasMany(WorkOrder::class, 'NumTelaio', 'NumTelaio');
     }
 
     /**
@@ -71,6 +92,4 @@ class Appointment extends Model
     {
         return $this->workOrders()->exists();
     }
-
-    // workOrders relation removed: appointments no longer persistently linked to work orders
 } 

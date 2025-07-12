@@ -13,18 +13,36 @@ class WorkSession extends Model
     use HasFactory;
 
     /**
+     * The table associated with the model.
+     */
+    protected $table = 'SESSIONI';
+
+    /**
+     * The primary key for the model.
+     */
+    protected $primaryKey = 'CodiceSessione';
+
+    /**
+     * The "type" of the primary key ID.
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'session_code',
-        'motorcycle_id',
-        'start_time',
-        'end_time',
-        'hours_worked',
-        'notes',
-        'session_type',
+        'CodiceSessione',
+        'DataInizio',
+        'OreImpiegate',
+        'Note',
+        'NumTelaio',
     ];
 
     /**
@@ -35,9 +53,8 @@ class WorkSession extends Model
     protected function casts(): array
     {
         return [
-            'start_time' => 'datetime',
-            'end_time' => 'datetime',
-            'hours_worked' => 'decimal:2',
+            'DataInizio' => 'datetime',
+            'OreImpiegate' => 'decimal:2',
         ];
     }
 
@@ -46,16 +63,15 @@ class WorkSession extends Model
      */
     public function motorcycle(): BelongsTo
     {
-        return $this->belongsTo(Motorcycle::class);
+        return $this->belongsTo(Motorcycle::class, 'NumTelaio', 'NumTelaio');
     }
 
     /**
-     * Get the mechanics working on this session.
+     * Get the mechanics working on this session (AFFIANCAMENTI relationship).
      */
     public function mechanics(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'mechanic_sessions')
-            ->withPivot('role')
+        return $this->belongsToMany(User::class, 'AFFIANCAMENTI', 'CodiceSessione', 'CF')
             ->withTimestamps()
             ->where('users.type', 'mechanic');
     }
@@ -65,25 +81,6 @@ class WorkSession extends Model
      */
     public function invoice(): HasOne
     {
-        return $this->hasOne(Invoice::class);
-    }
-
-    /**
-     * Calculate the duration of the session.
-     */
-    public function getDurationAttribute(): ?float
-    {
-        if ($this->start_time && $this->end_time) {
-            return $this->start_time->diffInHours($this->end_time, true);
-        }
-        return null;
-    }
-
-    /**
-     * Check if the session is currently active.
-     */
-    public function isActive(): bool
-    {
-        return $this->start_time && !$this->end_time;
+        return $this->hasOne(Invoice::class, 'CodiceSessione', 'CodiceSessione');
     }
 } 

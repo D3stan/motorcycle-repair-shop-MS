@@ -34,16 +34,12 @@ class PartFactory extends Factory
         $supplierPrice = fake()->randomFloat(2, 10, 500);
 
         return [
-            'part_code' => fake()->unique()->regexify('PRT[0-9]{6}'),
-            'brand' => fake()->randomElement(['OEM', 'Bosch', 'Brembo', 'Ohlins', 'NGK', 'Akrapovic', 'K&N']),
-            'name' => $partType,
-            'description' => fake()->optional()->sentence(),
-            'supplier_price' => $supplierPrice,
-            'selling_price' => $supplierPrice * fake()->randomFloat(2, 1.2, 2.5), // 20-150% markup
-            'category' => $category,
-            'stock_quantity' => fake()->numberBetween(0, 100),
-            'minimum_stock' => fake()->numberBetween(1, 10),
-            'supplier_id' => Supplier::factory(),
+            'CodiceRicambio' => fake()->unique()->regexify('PRT[0-9]{6}'),
+            'Marca' => fake()->randomElement(['OEM', 'Bosch', 'Brembo', 'Ohlins', 'NGK', 'Akrapovic', 'K&N']),
+            'Nome' => $partType,
+            'Descrizione' => fake()->optional()->sentence(),
+            'PrezzoFornitore' => $supplierPrice,
+            'CodiceFornitore' => Supplier::factory(),
         ];
     }
 } 
