@@ -681,44 +681,16 @@ Mostra al proprietario l’avanzamento degli interventi sulla propria moto.
 # Progettazione dell'applicazione
 
 ## Descrizione dell'architettura dell'applicazione realizzata
-####! **Stack tecnologico**
-  - Backend: Laravel 12 con Eloquent ORM e adapter Inertia.js
-  - Front-end: React 18 + TypeScript servito via Inertia.js
-  - Build: Vite, Tailwind CSS e componenti shadcn/ui
-  - Database: MySQL 8 (InnoDB) gestito tramite migration e seeders
-  - Autenticazione: Laravel Breeze + Sanctum con gestione ruoli/policy
+L'applicativo si basa su un'architettura **MVC** (Model-View-Controller) implementata con **Laravel**, un full-stack framework basato su **PHP**.
+In particolare si ha la seguente struttura:
+- **Backend**: Laravel 12 con Eloquent ORM
+- **Frontend**: React 18 + TypeScript servito via Inertia.js
+- **Database**: MySQL 8 (InnoDB) gestito tramite migration e seeders 
 
-####! **Architettura a livelli**
-  1. Presentazione – SPA Inertia/React (layouts, componenti, hook)
-  2. Routing HTTP – file `routes/*.php` che instradano verso i Controller
-  3. Controller – orchestrano validazione, logica di dominio e risposta Inertia/JSON
-  4. Validazione – FormRequest dedicati in `app/Http/Requests`
-  5. Business Logic – metodi nei Model + eventuali Service class
-  6. Persistenza – Eloquent ORM, migration, factory, seeder
+!(350x_)[MVC](imgs/mvc.png "Architettura")
 
-####! **Flussi chiave**
-  - Autenticazione → sessione Sanctum → redirect a dashboard
-  - CRUD (clienti, moto, ricambi, lavori) tramite Controller ↔ pagine Inertia
-  - Dashboard admin: query aggregate (KPI) restituite come JSON a grafici React
-  - Notifiche: Event & Listener con coda Redis per email e aggiornamenti stato
-
-####! **Frontend**
-  - Struttura modulare: `resources/js/layouts`, `components`, `hooks`
-  - Stato globale minimo: Inertia condivide props server-side
-
-####! **Backend extra**
-  - Queue worker (Redis) per task asincroni (invio email, generazione PDF)
-  - Policy & Gate per controllo accesso (cliente, meccanico, admin)
-
-####! **Deployment & CI/CD**
-  - Docker multi-stage (PHP-FPM + Nginx, Node per build asset)
-  - GitHub Actions: lint JS/PHP, test PHPUnit/Pest, build, deploy su VPS
-  - Backup giornaliero di database e storage
-
-####! **Sicurezza & Performance**
-  - CSRF, rate-limiting, hashing Bcrypt, validazione input lato server
-  - Cache config/session/route su Redis
-  - Ottimizzazione query (index, eager-loading vs lazy) per evitare N+1
+Laravel fornisce degli _starter kit_ per la logica di base e un setup iniziale per funzionare _out of the box_.
+Per questo motivo il database risulta popolato con tabelle non facenti parte dell'analisi di questo documento ma che servono per funzioni già implementate di default, come il salvataggio della sessione di login.
 
 ## Guida utente
 
