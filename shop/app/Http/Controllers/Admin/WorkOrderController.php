@@ -32,13 +32,13 @@ class WorkOrderController extends Controller
         ->orderBy('created_at', 'desc')
         ->get();
 
-        // Get work sessions (SESSIONI)
+        // Get work sessions (SESSIONI) - only those with valid relationships
         $workSessions = WorkSession::with([
-            'motorcycle.motorcycleModel',
-            'motorcycle.user',
-            'mechanics',
-            'invoice'
-        ])
+                'motorcycle.motorcycleModel',
+                'motorcycle.user',
+                'mechanics',
+                'invoice'
+            ])
         ->orderBy('created_at', 'desc')
         ->get();
 
@@ -112,12 +112,19 @@ class WorkOrderController extends Controller
         $workItems = $allWorkSorted->slice(($currentPage - 1) * $perPage, $perPage)->values();
 
         // Create pagination data
+        $total = $allWorkSorted->count();
+        $lastPage = ceil($total / $perPage);
+        
         $paginatedData = [
             'data' => $workItems,
-            'current_page' => $currentPage,
-            'per_page' => $perPage,
-            'total' => $allWorkSorted->count(),
-            'last_page' => ceil($allWorkSorted->count() / $perPage),
+            'meta' => [
+                'current_page' => $currentPage,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => $lastPage,
+                'from' => ($currentPage - 1) * $perPage + 1,
+                'to' => min($currentPage * $perPage, $total),
+            ],
         ];
 
         // Get combined statistics

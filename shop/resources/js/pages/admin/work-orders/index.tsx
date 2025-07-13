@@ -252,6 +252,24 @@ export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
                         )}
                     </CardContent>
                 </Card>
+
+                {/* Pagination */}
+                {workOrders.meta && workOrders.meta.last_page > 1 && (
+                    <div className="flex justify-center space-x-2">
+                        {Array.from({ length: workOrders.meta.last_page }, (_, i) => i + 1).map((page) => (
+                            <Button
+                                key={page}
+                                variant={workOrders.meta.current_page === page ? "default" : "outline"}
+                                size="sm"
+                                asChild
+                            >
+                                <Link href={`/admin/work-orders?page=${page}`}>
+                                    {page}
+                                </Link>
+                            </Button>
+                        ))}
+                    </div>
+                )}
             </div>
         </AppLayout>
     );
