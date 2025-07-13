@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('CF')->unique(); // Codice Fiscale - used for Italian business logic
-            $table->string('phone');
+            $table->string('CF')->nullable()->unique();
+            $table->string('phone')->nullable();
             $table->string('email')->unique();
             $table->enum('type', ['customer', 'mechanic', 'admin'])->default('customer');
             $table->timestamp('email_verified_at')->nullable();

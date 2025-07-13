@@ -43,6 +43,8 @@ class Part extends Model
         'Descrizione',
         'PrezzoFornitore',
         'CodiceFornitore',
+        'QuantitaDisponibile',
+        'ScortaMinima',
     ];
 
     /**
@@ -91,5 +93,13 @@ class Part extends Model
     {
         return $this->belongsToMany(Warehouse::class, 'STOCCAGGI', 'CodiceRicambio', 'CodiceMagazzino')
             ->withTimestamps();
+    }
+
+    /**
+     * Check if the part is low on stock.
+     */
+    public function isLowStock(): bool
+    {
+        return $this->QuantitaDisponibile < $this->ScortaMinima;
     }
 } 

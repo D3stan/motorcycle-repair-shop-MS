@@ -492,6 +492,7 @@ RICAMBI (
   .text {CodiceRicambio} decoration:{underline},
   Marca,
   Nome,
+  Categoria,
   Descrizione[0–1],
   PrezzoFornitore,
   .text {CodiceFornitore} decoration:{underline}: FORNITORI
@@ -502,6 +503,8 @@ MAGAZZINI (
 STOCCAGGI (
   .text {CodiceMagazzino} decoration:{underline}: MAGAZZINI,
   .text {CodiceRicambio} decoration:{underline}: RICAMBI
+  Quantità
+  QuantitàMinima
 )  
 APPARTENENZE (
   .text {CodiceRicambio} decoration:{underline}: RICAMBI,

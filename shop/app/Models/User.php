@@ -99,8 +99,7 @@ class User extends Authenticatable
     public function assignedWorkOrders(): BelongsToMany
     {
         return $this->belongsToMany(WorkOrder::class, 'SVOLGIMENTI', 'CF', 'CodiceIntervento')
-            ->withTimestamps()
-            ->where('users.type', 'mechanic');
+            ->withTimestamps();
     }
 
     /**
@@ -141,7 +140,6 @@ class User extends Authenticatable
     public function workSessions(): BelongsToMany
     {
         return $this->belongsToMany(WorkSession::class, 'AFFIANCAMENTI', 'CF', 'CodiceSessione')
-            ->withTimestamps()
-            ->where('users.type', 'mechanic');
+            ->withTimestamps();
     }
 }

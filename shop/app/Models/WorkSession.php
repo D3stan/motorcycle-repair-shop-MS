@@ -75,8 +75,7 @@ class WorkSession extends Model
     public function mechanics(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'AFFIANCAMENTI', 'CodiceSessione', 'CF')
-            ->withTimestamps()
-            ->where('users.type', 'mechanic');
+            ->withTimestamps();
     }
 
     /**

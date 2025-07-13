@@ -13,17 +13,16 @@ return new class extends Migration
     {
         Schema::create('SESSIONI', function (Blueprint $table) {
             $table->string('CodiceSessione')->primary();
-            $table->datetime('DataInizio');
-            $table->datetime('DataFine')->nullable();
-            $table->enum('Stato', ['pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
+            $table->date('Data');
             $table->decimal('OreImpiegate', 5, 2)->default(0);
+            $table->enum('Stato', ['pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
             $table->text('Note')->nullable();
             $table->string('NumTelaio');
             $table->timestamps();
 
             $table->foreign('NumTelaio')->references('NumTelaio')->on('MOTO')->onDelete('cascade');
-            $table->index(['NumTelaio', 'DataInizio']);
-            $table->index('DataInizio');
+            $table->index(['NumTelaio', 'Data']);
+            $table->index('Data');
             $table->index('Stato');
         });
     }
