@@ -29,7 +29,7 @@ interface Props {
     }>;
 }
 
-export default function InventoryShow({ part, compatibleModels, workOrderUsage }: Props) {
+export default function InventoryShow({ part, compatibleModels = [], workOrderUsage = [] }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Admin Dashboard',
