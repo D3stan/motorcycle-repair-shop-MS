@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type AdminFinancialAnalytics, type AdminInvoiceStatistics, type AdminInvoice, type AdminTopCustomer } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { DollarSign, FileText, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Clock, Users } from 'lucide-react';
+import { DollarSign, FileText, TrendingUp, TrendingDown, AlertTriangle, Clock, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

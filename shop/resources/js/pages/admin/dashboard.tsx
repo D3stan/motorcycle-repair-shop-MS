@@ -57,8 +57,6 @@ export default function AdminDashboard({
     totalCustomersCount,
     recentWorkOrders,
     recentAppointments,
-    workOrdersByStatus,
-    monthlyRevenue,
     lowStockParts
 }: AdminDashboardProps) {
     return (

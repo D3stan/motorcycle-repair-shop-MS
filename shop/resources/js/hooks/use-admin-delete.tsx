@@ -5,7 +5,7 @@ interface UseAdminDeleteOptions {
     routeName?: string;
     confirmMessage?: string;
     onSuccess?: () => void;
-    onError?: (error: any) => void;
+    onError?: (error: Record<string, string>) => void;
 }
 
 export function useAdminDelete(options: UseAdminDeleteOptions = {}) {

@@ -4,7 +4,7 @@ import AdminActionButtons from '@/components/admin/AdminActionButtons';
 import { StatusBadge, CountBadge } from '@/components/admin/AdminBadge';
 import { useAdminDelete } from '@/hooks/use-admin-delete';
 import { type BreadcrumbItem, type AdminCustomer } from '@/types';
-import { Users, Bike, Calendar, FileText } from 'lucide-react';
+import { Users, Bike, FileText } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,8 +20,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     customers: {
         data: AdminCustomer[];
-        links?: any[];
-        meta?: any;
+        links: any[];
+        meta: any;
     };
 }
 

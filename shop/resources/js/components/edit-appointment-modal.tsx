@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -40,13 +40,13 @@ interface AppointmentFormData {
     appointment_time: string;
     type: 'maintenance' | 'dyno_testing';
     notes: string;
-    [key: string]: any;
+    [key: string]: string | number | 'maintenance' | 'dyno_testing';
 }
 
-export default function EditAppointmentModal({ open, onOpenChange, appointment, motorcycles }: EditAppointmentModalProps) {
+export default function EditAppointmentModal({ open, onOpenChange, appointment }: EditAppointmentModalProps) {
     const [selectedType, setSelectedType] = useState<'maintenance' | 'dyno_testing' | ''>('');
 
-    const { data, setData, put, processing, errors, reset } = useForm<AppointmentFormData>({
+    const { data, setData, put, processing, errors } = useForm<AppointmentFormData>({
         appointment_date: '',
         appointment_time: '',
         type: 'maintenance',

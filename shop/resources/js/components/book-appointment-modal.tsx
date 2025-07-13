@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -25,7 +25,7 @@ interface AppointmentFormData {
     Ora: string;
     Tipo: 'maintenance' | 'dyno_testing';
     Note: string;
-    [key: string]: any;
+    [key: string]: string | number | 'maintenance' | 'dyno_testing';
 }
 
 export default function BookAppointmentModal({ open, onOpenChange, motorcycles }: BookAppointmentModalProps) {
