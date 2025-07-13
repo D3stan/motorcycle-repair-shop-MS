@@ -195,13 +195,20 @@ class DatabaseSeeder extends Seeder
 
         // Scenario 1: Invoice for work order only (60% of completed work orders)
         $workOrderOnlyInvoices = $completedWorkOrders->random(min($completedWorkOrders->count(), (int)($completedWorkOrders->count() * 0.6)));
-        $workOrderOnlyInvoices->each(function ($workOrder) use ($motorcycles, &$invoices) {
+        $workOrderOnlyInvoices->each(function ($workOrder, $index) use ($motorcycles, &$invoices) {
             $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
             if ($motorcycle) {
+                // Mix of current month and recent months invoices
+                $isCurrentMonth = $index < 3 || fake()->boolean(40); // First 3 + 40% chance for current month
+                $invoiceDate = $isCurrentMonth 
+                    ? fake()->dateTimeBetween(now()->startOfMonth(), now())
+                    : fake()->dateTimeBetween('-3 months', now());
+                    
                 $invoice = Invoice::factory()->create([
                     'CF' => $motorcycle->CF,
                     'CodiceIntervento' => $workOrder->CodiceIntervento,
                     'CodiceSessione' => null,
+                    'Data' => $invoiceDate,
                 ]);
                 $invoices->push($invoice);
             }
@@ -209,13 +216,20 @@ class DatabaseSeeder extends Seeder
 
         // Scenario 2: Invoice for work session only (40% of completed work sessions)
         $workSessionOnlyInvoices = $completedWorkSessions->random(min($completedWorkSessions->count(), (int)($completedWorkSessions->count() * 0.4)));
-        $workSessionOnlyInvoices->each(function ($workSession) use ($motorcycles, &$invoices) {
+        $workSessionOnlyInvoices->each(function ($workSession, $index) use ($motorcycles, &$invoices) {
             $motorcycle = $motorcycles->where('NumTelaio', $workSession->NumTelaio)->first();
             if ($motorcycle) {
+                // Mix of current month and recent months invoices
+                $isCurrentMonth = $index < 2 || fake()->boolean(40); // First 2 + 40% chance for current month
+                $invoiceDate = $isCurrentMonth 
+                    ? fake()->dateTimeBetween(now()->startOfMonth(), now())
+                    : fake()->dateTimeBetween('-3 months', now());
+                    
                 $invoice = Invoice::factory()->create([
                     'CF' => $motorcycle->CF,
                     'CodiceIntervento' => null,
                     'CodiceSessione' => $workSession->CodiceSessione,
+                    'Data' => $invoiceDate,
                 ]);
                 $invoices->push($invoice);
             }
@@ -227,20 +241,45 @@ class DatabaseSeeder extends Seeder
         $remainingWorkSessions = $completedWorkSessions->diff($workSessionOnlyInvoices);
         
         $combinedInvoices = collect();
-        $remainingWorkOrders->each(function ($workOrder) use ($remainingWorkSessions, $motorcycles, &$invoices, &$combinedInvoices) {
+        $remainingWorkOrders->each(function ($workOrder, $index) use ($remainingWorkSessions, $motorcycles, &$invoices, &$combinedInvoices) {
             // Find a work session for the same motorcycle
             $matchingSession = $remainingWorkSessions->where('NumTelaio', $workOrder->NumTelaio)->first();
             if ($matchingSession && fake()->boolean(30)) { // 30% chance of combined invoice
                 $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
                 if ($motorcycle) {
+                    // Mix of current month and recent months invoices
+                    $isCurrentMonth = $index < 1 || fake()->boolean(30); // First 1 + 30% chance for current month
+                    $invoiceDate = $isCurrentMonth 
+                        ? fake()->dateTimeBetween(now()->startOfMonth(), now())
+                        : fake()->dateTimeBetween('-3 months', now());
+                        
                     $invoice = Invoice::factory()->create([
                         'CF' => $motorcycle->CF,
                         'CodiceIntervento' => $workOrder->CodiceIntervento,
                         'CodiceSessione' => $matchingSession->CodiceSessione,
+                        'Data' => $invoiceDate,
                     ]);
                     $invoices->push($invoice);
                     $combinedInvoices->push(['workOrder' => $workOrder, 'session' => $matchingSession]);
                 }
+            }
+        });
+
+        // Create some guaranteed current month invoices for better demo data
+        $customers->take(5)->each(function ($customer) use ($motorcycles, &$invoices) {
+            $customerMotorcycles = $motorcycles->where('CF', $customer->CF);
+            if ($customerMotorcycles->isNotEmpty()) {
+                $motorcycle = $customerMotorcycles->first();
+                
+                // Create a guaranteed current month invoice
+                $invoice = Invoice::factory()->create([
+                    'CF' => $customer->CF,
+                    'CodiceIntervento' => null,
+                    'CodiceSessione' => null,
+                    'Data' => fake()->dateTimeBetween(now()->startOfMonth(), now()),
+                    'Importo' => fake()->randomFloat(2, 200, 1500), // Higher amounts for visibility
+                ]);
+                $invoices->push($invoice);
             }
         });
 
