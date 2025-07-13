@@ -204,9 +204,7 @@ class DatabaseSeeder extends Seeder
                     ? fake()->dateTimeBetween(now()->startOfMonth(), now())
                     : fake()->dateTimeBetween('-3 months', now());
                     
-                $invoice = Invoice::factory()->create([
-                    'CF' => $motorcycle->CF,
-                    'CodiceIntervento' => $workOrder->CodiceIntervento,
+                $invoice = Invoice::factory()->forWorkOrder($workOrder)->create([
                     'CodiceSessione' => null,
                     'Data' => $invoiceDate,
                 ]);
@@ -253,9 +251,7 @@ class DatabaseSeeder extends Seeder
                         ? fake()->dateTimeBetween(now()->startOfMonth(), now())
                         : fake()->dateTimeBetween('-3 months', now());
                         
-                    $invoice = Invoice::factory()->create([
-                        'CF' => $motorcycle->CF,
-                        'CodiceIntervento' => $workOrder->CodiceIntervento,
+                    $invoice = Invoice::factory()->forWorkOrder($workOrder)->create([
                         'CodiceSessione' => $matchingSession->CodiceSessione,
                         'Data' => $invoiceDate,
                     ]);
@@ -273,12 +269,9 @@ class DatabaseSeeder extends Seeder
         $remainingCompletedWorkOrders->take(3)->each(function ($workOrder, $index) use ($motorcycles, &$invoices) {
             $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
             if ($motorcycle) {
-                $invoice = Invoice::factory()->create([
-                    'CF' => $motorcycle->CF,
-                    'CodiceIntervento' => $workOrder->CodiceIntervento,
+                $invoice = Invoice::factory()->forWorkOrder($workOrder)->create([
                     'CodiceSessione' => null,
                     'Data' => fake()->dateTimeBetween(now()->startOfMonth(), now()),
-                    'Importo' => fake()->randomFloat(2, 200, 1500),
                 ]);
                 $invoices->push($invoice);
             }

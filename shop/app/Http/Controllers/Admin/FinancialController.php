@@ -221,8 +221,6 @@ class FinancialController extends Controller
                 'work_type' => $workType,
                 'issue_date' => $invoice->Data->format('Y-m-d'),
                 'due_date' => null, // No due date in simplified schema
-                'subtotal' => (float) $invoice->Importo,
-                'tax_amount' => 0.0, // Not using separate tax amount
                 'total_amount' => (float) $invoice->Importo,
                 'status' => 'paid', // All invoices considered paid in simplified schema
                 'paid_at' => $invoice->Data->format('Y-m-d'),
@@ -249,8 +247,6 @@ class FinancialController extends Controller
             'invoice_number' => $invoice->CodiceFattura,
             'issue_date' => $invoice->Data->format('Y-m-d'),
             'due_date' => null, // No due date in simplified schema
-            'subtotal' => (float) $invoice->Importo,
-            'tax_amount' => 0.0, // Not using separate tax amount
             'total_amount' => (float) $invoice->Importo,
             'status' => 'paid', // All invoices considered paid in simplified schema
             'paid_at' => $invoice->Data->format('Y-m-d H:i'),
@@ -276,6 +272,15 @@ class FinancialController extends Controller
                 $workOrderStatus = 'in_progress';
             }
             
+            // Calculate parts cost from the relationship
+            $partsTotal = $invoice->workOrder->parts->sum(function ($part) {
+                return $part->pivot->Quantita * $part->pivot->Prezzo;
+            });
+            
+            // Calculate labor cost (total - parts = labor)
+            $totalAmount = (float) $invoice->Importo;
+            $laborCost = $totalAmount - $partsTotal;
+            
             $workData = [
                 'id' => $invoice->workOrder->CodiceIntervento,
                 'type' => 'maintenance',
@@ -283,9 +288,9 @@ class FinancialController extends Controller
                 'status' => $workOrderStatus,
                 'started_at' => $invoice->workOrder->DataInizio?->format('Y-m-d'),
                 'completed_at' => $invoice->workOrder->DataFine?->format('Y-m-d'),
-                'labor_cost' => 0.0, // Not using separate labor cost
-                'parts_cost' => 0.0, // Not using separate parts cost
-                'total_cost' => (float) $invoice->Importo,
+                'labor_cost' => $laborCost,
+                'parts_cost' => $partsTotal,
+                'total_cost' => $totalAmount,
                 'motorcycle' => [
                     'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca,
                     'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome,
@@ -339,6 +344,233 @@ class FinancialController extends Controller
             'customer' => $customer,
             'workOrder' => $workData, // Keep name for compatibility
         ]);
+    }
+
+    /**
+     * Show the invoice creation form with available work orders.
+     */
+    public function create(): Response
+    {
+        // Get completed work orders that don't have invoices yet
+        $availableWorkOrders = WorkOrder::with(['motorcycle.motorcycleModel', 'motorcycle.user', 'parts'])
+            ->whereNotNull('DataFine') // Only completed work orders
+            ->whereDoesntHave('invoice') // That don't have invoices yet
+            ->orderBy('DataFine', 'desc')
+            ->get()
+            ->map(function ($workOrder) {
+                // Calculate costs for each work order
+                $partsTotal = $workOrder->parts->sum(function ($part) {
+                    return $part->pivot->Quantita * $part->pivot->Prezzo;
+                });
+                
+                $laborHours = $workOrder->OreImpiegate ?? 0;
+                $defaultHourlyRate = 40;
+                $laborCost = $laborHours * $defaultHourlyRate;
+                $totalCost = $partsTotal + $laborCost;
+
+                return [
+                    'id' => $workOrder->CodiceIntervento,
+                    'description' => $workOrder->Note,
+                    'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
+                    'labor_hours' => $laborHours,
+                    'labor_cost' => $laborCost,
+                    'parts_cost' => $partsTotal,
+                    'total_cost' => $totalCost,
+                    'motorcycle' => [
+                        'brand' => $workOrder->motorcycle->motorcycleModel->Marca,
+                        'model' => $workOrder->motorcycle->motorcycleModel->Nome,
+                        'plate' => $workOrder->motorcycle->Targa,
+                        'vin' => $workOrder->motorcycle->NumTelaio,
+                    ],
+                    'customer' => [
+                        'id' => $workOrder->motorcycle->user->id,
+                        'name' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
+                        'email' => $workOrder->motorcycle->user->email,
+                        'cf' => $workOrder->motorcycle->user->CF,
+                    ],
+                ];
+            });
+
+        return Inertia::render('admin/financial/invoice-create-select', [
+            'availableWorkOrders' => $availableWorkOrders->values()->all(),
+            'defaultHourlyRate' => 40,
+        ]);
+    }
+
+    /**
+     * Store a newly created invoice.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'work_order_id' => 'required|exists:INTERVENTI,CodiceIntervento',
+            'hourly_rate' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Get the work order
+        $workOrder = WorkOrder::with(['motorcycle.user', 'parts'])->findOrFail($validated['work_order_id']);
+
+        // Ensure work order is completed and doesn't have an invoice
+        if (!$workOrder->DataFine) {
+            return back()->with('error', 'Can only create invoices for completed work orders.');
+        }
+
+        if ($workOrder->invoice) {
+            return back()->with('error', 'Invoice already exists for this work order.');
+        }
+
+        // Calculate costs with custom hourly rate
+        $partsTotal = $workOrder->parts->sum(function ($part) {
+            return $part->pivot->Quantita * $part->pivot->Prezzo;
+        });
+        
+        $laborHours = $workOrder->OreImpiegate ?? 0;
+        $hourlyRate = $validated['hourly_rate'];
+        $laborCost = $laborHours * $hourlyRate;
+        $totalAmount = $partsTotal + $laborCost;
+
+        // Generate unique invoice code
+        $invoiceCode = 'INV' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        
+        // Ensure the code is unique
+        while (Invoice::where('CodiceFattura', $invoiceCode)->exists()) {
+            $invoiceCode = 'INV' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        }
+
+        // Create invoice
+        $invoice = Invoice::create([
+            'CodiceFattura' => $invoiceCode,
+            'Importo' => $totalAmount,
+            'Data' => now()->toDateString(),
+            'Note' => $validated['notes'] ?? "Invoice for work order {$workOrder->CodiceIntervento}",
+            'CF' => $workOrder->motorcycle->user->CF,
+            'CodiceIntervento' => $workOrder->CodiceIntervento,
+        ]);
+
+        return redirect("/admin/financial/invoices/{$invoice->CodiceFattura}")
+            ->with('success', 'Invoice created successfully!');
+    }
+
+    /**
+     * Show the invoice creation form for a completed work order.
+     */
+    public function createInvoice(WorkOrder $workOrder): Response
+    {
+        // Ensure work order is completed
+        if (!$workOrder->DataFine) {
+            return back()->with('error', 'Can only create invoices for completed work orders.');
+        }
+
+        // Check if invoice already exists
+        if ($workOrder->invoice) {
+            return back()->with('error', 'Invoice already exists for this work order.');
+        }
+
+        // Load relationships
+        $workOrder->load(['motorcycle.motorcycleModel', 'motorcycle.user', 'parts']);
+
+        // Calculate costs
+        $partsTotal = $workOrder->parts->sum(function ($part) {
+            return $part->pivot->Quantita * $part->pivot->Prezzo;
+        });
+        
+        $laborHours = $workOrder->OreImpiegate ?? 0;
+        $defaultHourlyRate = 40; // Default rate
+        $laborCost = $laborHours * $defaultHourlyRate;
+        $totalCost = $partsTotal + $laborCost;
+
+        $workOrderData = [
+            'id' => $workOrder->CodiceIntervento,
+            'description' => $workOrder->Note,
+            'started_at' => $workOrder->DataInizio?->format('Y-m-d'),
+            'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
+            'labor_hours' => $laborHours,
+            'labor_cost' => $laborCost,
+            'parts_cost' => $partsTotal,
+            'total_cost' => $totalCost,
+            'motorcycle' => [
+                'brand' => $workOrder->motorcycle->motorcycleModel->Marca,
+                'model' => $workOrder->motorcycle->motorcycleModel->Nome,
+                'plate' => $workOrder->motorcycle->Targa,
+                'vin' => $workOrder->motorcycle->NumTelaio,
+            ],
+            'customer' => [
+                'id' => $workOrder->motorcycle->user->id,
+                'name' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
+                'email' => $workOrder->motorcycle->user->email,
+                'cf' => $workOrder->motorcycle->user->CF,
+            ],
+        ];
+
+        $partsBreakdown = $workOrder->parts->map(function ($part) {
+            return [
+                'name' => $part->Nome,
+                'quantity' => (int) $part->pivot->Quantita,
+                'unit_price' => (float) $part->pivot->Prezzo,
+                'total_price' => (float) ($part->pivot->Quantita * $part->pivot->Prezzo),
+            ];
+        });
+
+        return Inertia::render('admin/financial/invoice-create', [
+            'workOrder' => $workOrderData,
+            'partsBreakdown' => $partsBreakdown->values()->all(),
+            'defaultHourlyRate' => $defaultHourlyRate,
+        ]);
+    }
+
+    /**
+     * Store a newly created invoice.
+     */
+    public function storeInvoice(Request $request, WorkOrder $workOrder): RedirectResponse
+    {
+        $validated = $request->validate([
+            'hourly_rate' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Ensure work order is completed and doesn't have an invoice
+        if (!$workOrder->DataFine) {
+            return back()->with('error', 'Can only create invoices for completed work orders.');
+        }
+
+        if ($workOrder->invoice) {
+            return back()->with('error', 'Invoice already exists for this work order.');
+        }
+
+        // Load relationships
+        $workOrder->load(['motorcycle.user', 'parts']);
+
+        // Calculate costs with custom hourly rate
+        $partsTotal = $workOrder->parts->sum(function ($part) {
+            return $part->pivot->Quantita * $part->pivot->Prezzo;
+        });
+        
+        $laborHours = $workOrder->OreImpiegate ?? 0;
+        $hourlyRate = $validated['hourly_rate'];
+        $laborCost = $laborHours * $hourlyRate;
+        $totalAmount = $partsTotal + $laborCost;
+
+        // Generate unique invoice code
+        $invoiceCode = 'INV' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        
+        // Ensure the code is unique
+        while (Invoice::where('CodiceFattura', $invoiceCode)->exists()) {
+            $invoiceCode = 'INV' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        }
+
+        // Create invoice
+        $invoice = Invoice::create([
+            'CodiceFattura' => $invoiceCode,
+            'Importo' => $totalAmount,
+            'Data' => now()->toDateString(),
+            'Note' => $validated['notes'] ?? "Invoice for work order {$workOrder->CodiceIntervento}",
+            'CF' => $workOrder->motorcycle->user->CF,
+            'CodiceIntervento' => $workOrder->CodiceIntervento,
+        ]);
+
+        return redirect()->route('admin.financial.invoices.show', $invoice->CodiceFattura)
+            ->with('success', 'Invoice created successfully!');
     }
 
     /**

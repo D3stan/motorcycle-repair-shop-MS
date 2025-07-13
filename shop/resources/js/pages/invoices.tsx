@@ -17,17 +17,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 interface Invoice {
-    id: number;
+    id: string;
     invoice_number: string;
     issue_date: string;
     due_date: string;
     status: 'pending' | 'paid' | 'overdue' | 'cancelled';
-    subtotal: number;
-    tax_amount: number;
     total_amount: number;
     paid_at: string | null;
     work_order: {
-        id: number;
+        id: string;
         description: string;
         motorcycle: {
             brand: string;

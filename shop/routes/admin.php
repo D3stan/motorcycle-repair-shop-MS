@@ -41,8 +41,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('financial')->name('financial.')->group(function () {
         Route::get('/', [FinancialController::class, 'index'])->name('index');
         Route::get('/invoices', [FinancialController::class, 'invoices'])->name('invoices');
+        Route::get('/invoices/create', [FinancialController::class, 'create'])->name('invoices.create');
+        Route::post('/invoices', [FinancialController::class, 'store'])->name('invoices.store');
         Route::get('/invoices/{invoice}', [FinancialController::class, 'showInvoice'])->name('invoices.show');
         Route::patch('/invoices/{invoice}/mark-as-paid', [FinancialController::class, 'markAsPaid'])->name('invoices.mark-as-paid');
+        Route::get('/work-orders/{workOrder}/create-invoice', [FinancialController::class, 'createInvoice'])->name('work-orders.create-invoice');
+        Route::post('/work-orders/{workOrder}/create-invoice', [FinancialController::class, 'storeInvoice'])->name('work-orders.store-invoice');
     });
     
     // Schedule Management

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice {{ $invoice->invoice_number }}</title>
+    <title>Invoice {{ $invoice->CodiceFattura }}</title>
     <style>
         * {
             margin: 0;
@@ -212,23 +212,21 @@
     <div class="invoice-details">
         <div class="invoice-from">
             <div class="section-title">Invoice Details</div>
-            <div class="detail-row"><strong>Invoice #:</strong> {{ $invoice->invoice_number }}</div>
-            <div class="detail-row"><strong>Issue Date:</strong> {{ $invoice->issue_date->format('d/m/Y') }}</div>
-            <div class="detail-row"><strong>Due Date:</strong> {{ $invoice->due_date->format('d/m/Y') }}</div>
+            <div class="detail-row"><strong>Invoice #:</strong> {{ $invoice->CodiceFattura }}</div>
+            <div class="detail-row"><strong>Issue Date:</strong> {{ $invoice->Data->format('d/m/Y') }}</div>
+            <div class="detail-row"><strong>Due Date:</strong> {{ $invoice->Data->format('d/m/Y') }}</div>
             <div class="detail-row">
                 <strong>Status:</strong> 
-                <span class="status-badge status-{{ $invoice->status }}">{{ ucfirst($invoice->status) }}</span>
+                <span class="status-badge status-paid">Paid</span>
             </div>
-            @if($invoice->paid_at)
-                <div class="detail-row"><strong>Paid Date:</strong> {{ $invoice->paid_at->format('d/m/Y') }}</div>
-            @endif
+            <div class="detail-row"><strong>Paid Date:</strong> {{ $invoice->Data->format('d/m/Y') }}</div>
         </div>
         
         <div class="invoice-to">
             <div class="section-title">Bill To / Fatturato a</div>
             <div class="detail-row"><strong>{{ $user->first_name }} {{ $user->last_name }}</strong></div>
-            @if($user->tax_code)
-                <div class="detail-row">Tax Code: {{ $user->tax_code }}</div>
+            @if($user->CF)
+                <div class="detail-row">Tax Code: {{ $user->CF }}</div>
             @endif
             <div class="detail-row">Email: {{ $user->email }}</div>
             @if($user->phone)
@@ -240,17 +238,17 @@
     <div class="work-details">
         <div class="motorcycle-info">
             <div class="section-title">Motorcycle Details / Dettagli Motociclo</div>
-            <div class="detail-row"><strong>Make & Model:</strong> {{ $motorcycle->motorcycleModel->brand }} {{ $motorcycle->motorcycleModel->name }}</div>
-            <div class="detail-row"><strong>Year:</strong> {{ $motorcycle->registration_year }}</div>
-            <div class="detail-row"><strong>License Plate:</strong> {{ $motorcycle->license_plate }}</div>
-            @if($motorcycle->vin)
-                <div class="detail-row"><strong>VIN:</strong> {{ $motorcycle->vin }}</div>
+            <div class="detail-row"><strong>Make & Model:</strong> {{ $motorcycle->motorcycleModel->Marca }} {{ $motorcycle->motorcycleModel->Nome }}</div>
+            <div class="detail-row"><strong>Year:</strong> {{ $motorcycle->AnnoImmatricolazione }}</div>
+            <div class="detail-row"><strong>License Plate:</strong> {{ $motorcycle->Targa }}</div>
+            @if($motorcycle->NumTelaio)
+                <div class="detail-row"><strong>VIN:</strong> {{ $motorcycle->NumTelaio }}</div>
             @endif
         </div>
 
         <div class="section-title">Work Description / Descrizione Lavoro</div>
         <p style="margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 3px;">
-            {{ $workOrder->description }}
+            {{ $workOrder->Note ?? 'Motorcycle repair service' }}
         </p>
     </div>
 
@@ -265,22 +263,22 @@
         </thead>
         <tbody>
             <!-- Labor costs -->
-            @if($workOrder->labor_cost > 0)
+            @if($workOrder->OreImpiegate > 0)
                 <tr>
-                    <td>Labor / Manodopera</td>
-                    <td>1</td>
-                    <td class="text-right">€{{ number_format($workOrder->labor_cost, 2) }}</td>
-                    <td class="text-right">€{{ number_format($workOrder->labor_cost, 2) }}</td>
+                    <td>Labor / Manodopera ({{ $workOrder->OreImpiegate }} hours)</td>
+                    <td>{{ $workOrder->OreImpiegate }}</td>
+                    <td class="text-right">€50.00</td>
+                    <td class="text-right">€{{ number_format($workOrder->OreImpiegate * 50, 2) }}</td>
                 </tr>
             @endif
             
             <!-- Parts -->
             @foreach($parts as $part)
                 <tr>
-                    <td>{{ $part->name }}</td>
-                    <td>{{ $part->pivot->quantity }}</td>
-                    <td class="text-right">€{{ number_format($part->pivot->unit_price, 2) }}</td>
-                    <td class="text-right">€{{ number_format($part->pivot->total_price, 2) }}</td>
+                    <td>{{ $part->Nome }}</td>
+                    <td>{{ $part->pivot->Quantita }}</td>
+                    <td class="text-right">€{{ number_format($part->pivot->Prezzo, 2) }}</td>
+                    <td class="text-right">€{{ number_format($part->pivot->Quantita * $part->pivot->Prezzo, 2) }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -290,15 +288,15 @@
         <table>
             <tr>
                 <td class="total-label">Subtotal / Subtotale:</td>
-                <td class="total-amount">€{{ number_format($invoice->subtotal, 2) }}</td>
+                <td class="total-amount">€{{ number_format($invoice->Importo, 2) }}</td>
             </tr>
             <tr>
                 <td class="total-label">VAT 22% / IVA 22%:</td>
-                <td class="total-amount">€{{ number_format($invoice->tax_amount, 2) }}</td>
+                <td class="total-amount">€0.00</td>
             </tr>
             <tr class="grand-total">
                 <td class="total-label">Total / Totale:</td>
-                <td class="total-amount">€{{ number_format($invoice->total_amount, 2) }}</td>
+                <td class="total-amount">€{{ number_format($invoice->Importo, 2) }}</td>
             </tr>
         </table>
     </div>
@@ -306,11 +304,7 @@
     <div class="payment-info">
         <div class="section-title">Payment Information / Informazioni di Pagamento</div>
         <p>Payment due within 30 days from issue date. / Pagamento dovuto entro 30 giorni dalla data di emissione.</p>
-        @if($invoice->status === 'paid')
-            <p><strong>This invoice has been paid. / Questa fattura è stata pagata.</strong></p>
-        @elseif($invoice->status === 'overdue')
-            <p style="color: #d32f2f;"><strong>This invoice is overdue. / Questa fattura è scaduta.</strong></p>
-        @endif
+        <p><strong>This invoice has been paid. / Questa fattura è stata pagata.</strong></p>
     </div>
 
     <div class="footer">

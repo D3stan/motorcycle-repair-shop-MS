@@ -13,7 +13,7 @@ import {
     type AdminWorkOrderInvoice
 } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, Trash2, Users, Bike, Calendar, FileText, Wrench, Euro } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Users, Bike, Calendar, FileText, Wrench } from 'lucide-react';
 
 interface Props {
     workOrder: AdminWorkOrderDetails;
@@ -380,14 +380,6 @@ export default function WorkOrderShow({
                                 View Customer
                             </Link>
                         </Button>
-                        {!invoice && workOrder.status === 'completed' && (
-                            <Button asChild variant="outline">
-                                <Link href={`/admin/invoices/create?work_order=${workOrder.id}`}>
-                                    <Euro className="mr-2 h-4 w-4" />
-                                    Create Invoice
-                                </Link>
-                            </Button>
-                        )}
                     </CardContent>
                 </Card>
             </div>

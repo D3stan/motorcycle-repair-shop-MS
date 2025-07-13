@@ -14,7 +14,7 @@ interface Motorcycle {
 }
 
 interface Appointment {
-    id: number;
+    id: string;
     appointment_date: string;
     appointment_time: string;
     type: string;
@@ -24,7 +24,7 @@ interface Appointment {
         brand: string;
         model: string;
         plate: string;
-    };
+    } | null;
     notes: string;
 }
 
@@ -139,17 +139,19 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Current Motorcycle Display */}
-                        <div className="space-y-2">
-                            <Label className="text-base font-medium">Motorcycle</Label>
-                            <div className="p-3 bg-muted rounded-lg">
-                                <p className="font-medium">
-                                    {appointment.motorcycle.brand} {appointment.motorcycle.model}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    License Plate: {appointment.motorcycle.plate}
-                                </p>
+                        {appointment.motorcycle && (
+                            <div className="space-y-2">
+                                <Label className="text-base font-medium">Motorcycle</Label>
+                                <div className="p-3 bg-muted rounded-lg">
+                                    <p className="font-medium">
+                                        {appointment.motorcycle.brand} {appointment.motorcycle.model}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        License Plate: {appointment.motorcycle.plate}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Service Type Selection */}
                         <div className="space-y-3">

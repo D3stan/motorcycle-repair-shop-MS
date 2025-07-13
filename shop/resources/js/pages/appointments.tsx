@@ -21,7 +21,7 @@ interface Motorcycle {
 }
 
 interface Appointment {
-    id: number;
+    id: string;
     appointment_date: string;
     appointment_time: string;
     type: string;
@@ -31,7 +31,7 @@ interface Appointment {
         brand: string;
         model: string;
         plate: string;
-    };
+    } | null;
     notes: string;
 }
 
@@ -109,7 +109,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                 <Card key={appointment.id}>
                                     <CardHeader>
                                         <CardTitle className="flex items-center justify-between">
-                                            <span>{appointment.motorcycle.brand} {appointment.motorcycle.model}</span>
+                                            <span>{appointment.motorcycle ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model}` : appointment.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
                                                 {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                                             </span>
@@ -120,7 +120,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="text-sm">
-                                            <p><strong>Motorcycle:</strong> {appointment.motorcycle.plate}</p>
+                                            {appointment.motorcycle && <p><strong>Motorcycle:</strong> {appointment.motorcycle.plate}</p>}
                                             {appointment.notes && <p><strong>Notes:</strong> {appointment.notes}</p>}
                                         </div>
                                         
@@ -175,7 +175,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-1">
                                                 <p className="font-medium">
-                                                    {appointment.motorcycle.brand} {appointment.motorcycle.model} • {appointment.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                    {appointment.motorcycle ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model} • ` : ''}{appointment.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                                                 </p>
                                                 <p className="text-sm text-muted-foreground">
                                                     {appointment.appointment_date} at {appointment.appointment_time}

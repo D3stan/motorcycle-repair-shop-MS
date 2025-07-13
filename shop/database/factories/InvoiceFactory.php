@@ -37,12 +37,31 @@ class InvoiceFactory extends Factory
      */
     public function forWorkOrder(WorkOrder $workOrder): static
     {
-        $amount = fake()->randomFloat(2, 100, 2000);
+        // Load the work order with parts to calculate proper amount
+        $workOrder->load('parts');
+        
+        // Calculate parts cost
+        $partsTotal = $workOrder->parts->sum(function ($part) {
+            return $part->pivot->Quantita * $part->pivot->Prezzo;
+        });
+        
+        // Calculate labor cost (40 EUR/hour)
+        $laborHours = $workOrder->OreImpiegate ?? 0;
+        $hourlyRate = 40;
+        $laborCost = $laborHours * $hourlyRate;
+        
+        // Total amount
+        $totalAmount = $partsTotal + $laborCost;
+        
+        // Ensure minimum amount if calculation results in 0
+        if ($totalAmount <= 0) {
+            $totalAmount = fake()->randomFloat(2, 100, 500);
+        }
 
         return $this->state([
-            'CF' => $workOrder->user->CF,
+            'CF' => $workOrder->motorcycle->CF,
             'CodiceIntervento' => $workOrder->CodiceIntervento,
-            'Importo' => $amount,
+            'Importo' => $totalAmount,
         ]);
     }
 } 

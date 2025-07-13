@@ -22,30 +22,35 @@ class InvoiceController extends Controller
         // Get user's invoices with related data
         $invoices = $user->invoices()
             ->with(['workOrder.motorcycle.motorcycleModel'])
-            ->orderBy('DataEmissione', 'desc')
+            ->whereNotNull('CodiceIntervento') // Only get invoices with work orders
+            ->orderBy('Data', 'desc')
             ->get()
             ->map(function ($invoice) {
+                // Ensure work order exists
+                if (!$invoice->workOrder || !$invoice->workOrder->motorcycle) {
+                    return null;
+                }
+                
                 return [
                     'id' => $invoice->CodiceFattura,
                     'invoice_number' => $invoice->CodiceFattura,
                     'issue_date' => $invoice->Data->format('Y-m-d'),
-                    'due_date' => null, // No due date in simplified schema
+                    'due_date' => $invoice->Data->format('Y-m-d'), // Use issue date as due date for compatibility
                     'status' => 'paid', // All invoices considered paid in simplified schema
-                    'subtotal' => (float) $invoice->Importo,
-                    'tax_amount' => 0.0, // Not using separate tax amount
                     'total_amount' => (float) $invoice->Importo,
                     'paid_at' => $invoice->Data->format('Y-m-d'),
                     'work_order' => [
                         'id' => $invoice->workOrder->CodiceIntervento,
-                        'description' => $invoice->workOrder->Note,
+                        'description' => $invoice->workOrder->Note ?? 'N/A',
                         'motorcycle' => [
-                            'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca,
-                            'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome,
-                            'plate' => $invoice->workOrder->motorcycle->Targa,
+                            'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca ?? 'Unknown',
+                            'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome ?? 'Unknown',
+                            'plate' => $invoice->workOrder->motorcycle->Targa ?? 'N/A',
                         ],
                     ],
                 ];
-            });
+            })
+            ->filter(); // Remove null entries
 
         // Calculate summary statistics
         $totalOutstanding = $invoices->where('status', '!=', 'paid')->sum('total_amount');
@@ -87,6 +92,11 @@ class InvoiceController extends Controller
             'workOrder.motorcycle.motorcycleModel',
             'workOrder.parts'
         ]);
+
+        // Ensure work order exists
+        if (!$invoice->workOrder) {
+            abort(404, 'Invoice work order not found.');
+        }
 
         // Generate PDF
         $pdf = Pdf::loadView('invoices.pdf', [

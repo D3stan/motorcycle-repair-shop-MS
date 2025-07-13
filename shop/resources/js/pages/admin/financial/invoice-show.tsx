@@ -12,8 +12,6 @@ interface Invoice {
     invoice_number: string;
     issue_date: string;
     due_date: string;
-    subtotal: number;
-    tax_amount: number;
     total_amount: number;
     status: string;
     paid_at: string | null;
@@ -25,7 +23,6 @@ interface Customer {
     name: string;
     email: string;
     phone: string | null;
-    tax_code: string | null;
 }
 
 interface WorkOrder {
@@ -183,19 +180,6 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Euro className="h-4 w-4" />
-                                Tax
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {formatCurrency(invoice.tax_amount)}
-                            </div>
-                        </CardContent>
-                    </Card>
 
                     <Card>
                         <CardHeader className="pb-2">
@@ -273,12 +257,6 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                                     <div className="flex justify-between">
                                         <span className="text-sm font-medium text-muted-foreground">Phone:</span>
                                         <span>{customer.phone}</span>
-                                    </div>
-                                )}
-                                {customer.tax_code && (
-                                    <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Tax Code:</span>
-                                        <span>{customer.tax_code}</span>
                                     </div>
                                 )}
                             </div>

@@ -33,8 +33,6 @@ interface WorkOrder {
         issue_date: string;
         due_date: string;
         status: string;
-        subtotal: number;
-        tax_amount: number;
         total_amount: number;
     } | null;
     notes: string;
@@ -267,8 +265,6 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
                                         <p><strong>Invoice #:</strong> {workOrder.invoice.invoice_number}</p>
                                         <p><strong>Issue Date:</strong> {formatDate(workOrder.invoice.issue_date)}</p>
                                         <p><strong>Due Date:</strong> {formatDate(workOrder.invoice.due_date)}</p>
-                                        <p><strong>Subtotal:</strong> {formatCurrency(workOrder.invoice.subtotal)}</p>
-                                        <p><strong>Tax:</strong> {formatCurrency(workOrder.invoice.tax_amount)}</p>
                                         <p><strong>Total:</strong> {formatCurrency(workOrder.invoice.total_amount)}</p>
                                     </div>
                                     <Button asChild variant="outline" size="sm" className="w-full">

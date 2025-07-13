@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, Calendar, Clock, Settings, Zap } from 'lucide-react';
 
 interface Appointment {
-    id: number;
+    id: string;
     appointment_date: string;
     appointment_time: string;
     type: string;
@@ -14,7 +14,7 @@ interface Appointment {
         brand: string;
         model: string;
         plate: string;
-    };
+    } | null;
     notes: string;
 }
 
@@ -122,14 +122,16 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
                                     <span>{formatTime(appointment.appointment_time)}</span>
                                 </div>
 
-                                <div className="pt-2 border-t">
-                                    <p className="font-medium text-sm">
-                                        {appointment.motorcycle.brand} {appointment.motorcycle.model}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                        License Plate: {appointment.motorcycle.plate}
-                                    </p>
-                                </div>
+                                {appointment.motorcycle && (
+                                    <div className="pt-2 border-t">
+                                        <p className="font-medium text-sm">
+                                            {appointment.motorcycle.brand} {appointment.motorcycle.model}
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            License Plate: {appointment.motorcycle.plate}
+                                        </p>
+                                    </div>
+                                )}
 
                                 {appointment.notes && (
                                     <div className="pt-2 border-t">

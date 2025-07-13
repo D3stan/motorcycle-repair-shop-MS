@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
+import { route } from 'ziggy-js';
 import { FileText, Eye, DollarSign, Clock, AlertTriangle, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -32,8 +33,6 @@ interface Invoice {
     motorcycle: string;
     issue_date: string;
     due_date: string;
-    subtotal: number;
-    tax_amount: number;
     total_amount: number;
     status: string;
     paid_at: string | null;
@@ -137,6 +136,12 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                         <h1 className="text-3xl font-bold">Invoices</h1>
                         <p className="text-muted-foreground">Manage and track all invoices</p>
                     </div>
+                    <Button asChild>
+                        <Link href="/admin/financial/invoices/create">
+                            <FileText className="mr-2 h-4 w-4" />
+                            Create Invoice
+                        </Link>
+                    </Button>
                 </div>
 
                 {/* Filters */}
@@ -274,10 +279,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                                     {formatCurrency(invoice.total_amount)}
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
-                                                    Subtotal: {formatCurrency(invoice.subtotal)}
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Tax: {formatCurrency(invoice.tax_amount)}
+                                                    Total: {formatCurrency(invoice.total_amount)}
                                                 </div>
                                             </div>
                                             
