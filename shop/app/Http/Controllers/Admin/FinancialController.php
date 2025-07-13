@@ -145,9 +145,28 @@ class FinancialController extends Controller
         $query = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel', 'workSession.motorcycle.motorcycleModel']);
         
         // Apply filters
-        if ($request->filled('status')) {
-            // Status filtering simplified - all invoices considered paid
-            // No filtering needed since no status field in schema
+        if ($request->filled('work_type') && $request->work_type !== 'all') {
+            if ($request->work_type === 'maintenance') {
+                // Filter for invoices linked to work orders (maintenance)
+                $query->whereNotNull('CodiceIntervento')->whereNull('CodiceSessione');
+            } elseif ($request->work_type === 'session') {
+                // Filter for invoices linked to work sessions
+                $query->whereNotNull('CodiceSessione')->whereNull('CodiceIntervento');
+            } elseif ($request->work_type === 'combined') {
+                // Filter for invoices linked to both work orders and sessions
+                $query->whereNotNull('CodiceIntervento')->whereNotNull('CodiceSessione');
+            }
+        }
+        
+        // Legacy status filter support (for backward compatibility)
+        if ($request->filled('status') && $request->status !== 'all') {
+            // In our simplified schema, all invoices are considered "paid"
+            // We only filter when user specifically selects "pending" or "overdue" to show no results
+            if ($request->status === 'pending' || $request->status === 'overdue') {
+                // Show no results for pending/overdue since all invoices are paid in our schema
+                $query->whereRaw('1 = 0');
+            }
+            // For "paid" status, we don't need to filter since all invoices are paid
         }
         
         if ($request->filled('search')) {
@@ -214,7 +233,7 @@ class FinancialController extends Controller
 
         return Inertia::render('admin/financial/invoices', [
             'invoices' => $invoicesData,
-            'filters' => $request->only(['status', 'search', 'date_from', 'date_to']),
+            'filters' => $request->only(['status', 'work_type', 'search', 'date_from', 'date_to']),
         ]);
     }
 

@@ -49,6 +49,7 @@ interface Props {
     };
     filters: {
         status?: string;
+        work_type?: string;
         search?: string;
         date_from?: string;
         date_to?: string;
@@ -58,16 +59,18 @@ interface Props {
 export default function InvoicesIndex({ invoices, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status && filters.status !== '' ? filters.status : 'all');
+    const [workType, setWorkType] = useState(filters.work_type && filters.work_type !== '' ? filters.work_type : 'all');
     const [dateFrom, setDateFrom] = useState(filters.date_from || '');
     const [dateTo, setDateTo] = useState(filters.date_to || '');
     const [initialLoad, setInitialLoad] = useState(true);
 
-    // Auto-apply filters when status changes
+    // Auto-apply filters when status or work type changes
     useEffect(() => {
         if (!initialLoad) {
             router.get('/admin/financial/invoices', {
                 search,
                 status: status === 'all' ? '' : status,
+                work_type: workType === 'all' ? '' : workType,
                 date_from: dateFrom,
                 date_to: dateTo,
             }, {
@@ -76,12 +79,13 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
         } else {
             setInitialLoad(false);
         }
-    }, [status]);
+    }, [status, workType]);
 
     const handleSearch = () => {
         router.get('/admin/financial/invoices', {
             search,
             status: status === 'all' ? '' : status,
+            work_type: workType === 'all' ? '' : workType,
             date_from: dateFrom,
             date_to: dateTo,
         }, {
@@ -92,6 +96,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
     const clearFilters = () => {
         setSearch('');
         setStatus('all');
+        setWorkType('all');
         setDateFrom('');
         setDateTo('');
         router.get('/admin/financial/invoices');
@@ -141,7 +146,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                         <CardDescription>Search and filter invoices</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid gap-4 md:grid-cols-5">
+                        <div className="grid gap-4 md:grid-cols-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Search</label>
                                 <div className="relative">
@@ -165,6 +170,20 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                         <SelectItem value="paid">Paid</SelectItem>
                                         <SelectItem value="pending">Pending</SelectItem>
                                         <SelectItem value="overdue">Overdue</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Work Type</label>
+                                <Select value={workType} onValueChange={setWorkType}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All types" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All types</SelectItem>
+                                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                                        <SelectItem value="session">Session</SelectItem>
+                                        <SelectItem value="combined">Combined</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
