@@ -21,8 +21,8 @@ class ScheduleController extends Controller
         $upcomingWorkOrders = $user->assignedWorkOrders()
             ->with(['motorcycle.motorcycleModel', 'motorcycle.user'])
             ->where('Stato', '!=', 'completed')
-            ->where('created_at', '>=', now()->startOfWeek())
-            ->orderBy('created_at', 'asc')
+            ->where('INTERVENTI.created_at', '>=', now()->startOfWeek())
+            ->orderBy('INTERVENTI.created_at', 'asc')
             ->get();
 
         return Inertia::render('mechanic/Schedule', [
