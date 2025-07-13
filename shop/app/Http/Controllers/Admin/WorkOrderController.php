@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\WorkOrder;
+use App\Models\WorkSession;
 use App\Models\User;
 use App\Models\Motorcycle;
 use App\Models\Appointment;
@@ -17,10 +18,11 @@ use Inertia\Response;
 class WorkOrderController extends Controller
 {
     /**
-     * Display a listing of work orders.
+     * Display a listing of work orders and work sessions.
      */
     public function index(): Response
     {
+        // Get work orders (INTERVENTI)
         $workOrders = WorkOrder::with([
             'user',
             'motorcycle.motorcycleModel',
@@ -28,11 +30,27 @@ class WorkOrderController extends Controller
             'invoice'
         ])
         ->orderBy('created_at', 'desc')
-        ->paginate(20);
+        ->get();
 
-        $workOrdersData = $workOrders->through(function ($workOrder) {
-            return [
+        // Get work sessions (SESSIONI)
+        $workSessions = WorkSession::with([
+            'motorcycle.motorcycleModel',
+            'motorcycle.user',
+            'mechanics',
+            'invoice'
+        ])
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+        // Combine and format both types
+        $allWork = collect();
+
+        // Add work orders
+        $workOrders->each(function ($workOrder) use ($allWork) {
+            $allWork->push([
                 'id' => $workOrder->CodiceIntervento,
+                'type' => 'work_order',
+                'type_label' => 'Work Order',
                 'description' => $workOrder->Note,
                 'status' => $workOrder->Stato,
                 'started_at' => $workOrder->DataInizio?->format('Y-m-d'),
@@ -49,23 +67,72 @@ class WorkOrderController extends Controller
                         'assigned_at' => $mechanic->pivot->created_at ? Carbon::parse($mechanic->pivot->created_at)->format('Y-m-d H:i') : null,
                     ];
                 }),
-                'appointment_id' => null, // Appointments not linked to work orders in simplified schema
                 'total_cost' => $workOrder->invoice ? (float) $workOrder->invoice->Importo : 0.0,
                 'created_at' => $workOrder->created_at->format('Y-m-d H:i'),
-            ];
+                'work_type' => $workOrder->Tipo,
+                'cause' => $workOrder->Causa,
+                'name' => $workOrder->Nome,
+            ]);
         });
 
-        // Get statistics using Stato column
+        // Add work sessions
+        $workSessions->each(function ($workSession) use ($allWork) {
+            $allWork->push([
+                'id' => $workSession->CodiceSessione,
+                'type' => 'work_session',
+                'type_label' => 'Work Session',
+                'description' => $workSession->Note ?? 'Work session',
+                'status' => $workSession->Stato,
+                'started_at' => $workSession->Data->format('Y-m-d'),
+                'completed_at' => null, // Sessions use single date field
+                'hours_worked' => $workSession->OreImpiegate ? (float) $workSession->OreImpiegate : 0.0,
+                'customer' => $workSession->motorcycle->user->first_name . ' ' . $workSession->motorcycle->user->last_name,
+                'customer_email' => $workSession->motorcycle->user->email,
+                'motorcycle' => $workSession->motorcycle->motorcycleModel->Marca . ' ' . $workSession->motorcycle->motorcycleModel->Nome,
+                'motorcycle_plate' => $workSession->motorcycle->Targa,
+                'mechanics' => $workSession->mechanics->map(function ($mechanic) {
+                    return [
+                        'id' => $mechanic->id,
+                        'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
+                        'assigned_at' => $mechanic->pivot->created_at ? Carbon::parse($mechanic->pivot->created_at)->format('Y-m-d H:i') : null,
+                    ];
+                }),
+                'total_cost' => $workSession->invoice ? (float) $workSession->invoice->Importo : 0.0,
+                'created_at' => $workSession->created_at->format('Y-m-d H:i'),
+                'work_type' => 'session',
+                'cause' => null,
+                'name' => 'Work Session',
+            ]);
+        });
+
+        // Sort by creation date and paginate manually
+        $allWorkSorted = $allWork->sortByDesc('created_at')->values();
+        $currentPage = request()->get('page', 1);
+        $perPage = 20;
+        $workItems = $allWorkSorted->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+        // Create pagination data
+        $paginatedData = [
+            'data' => $workItems,
+            'current_page' => $currentPage,
+            'per_page' => $perPage,
+            'total' => $allWorkSorted->count(),
+            'last_page' => ceil($allWorkSorted->count() / $perPage),
+        ];
+
+        // Get combined statistics
         $statistics = [
-            'total' => WorkOrder::count(),
-            'pending' => WorkOrder::where('Stato', 'pending')->count(),
-            'in_progress' => WorkOrder::where('Stato', 'in_progress')->count(),
-            'completed' => WorkOrder::where('Stato', 'completed')->count(),
-            'cancelled' => WorkOrder::where('Stato', 'cancelled')->count(),
+            'total' => WorkOrder::count() + WorkSession::count(),
+            'pending' => WorkOrder::where('Stato', 'pending')->count() + WorkSession::where('Stato', 'pending')->count(),
+            'in_progress' => WorkOrder::where('Stato', 'in_progress')->count() + WorkSession::where('Stato', 'in_progress')->count(),
+            'completed' => WorkOrder::where('Stato', 'completed')->count() + WorkSession::where('Stato', 'completed')->count(),
+            'cancelled' => WorkOrder::where('Stato', 'cancelled')->count() + WorkSession::where('Stato', 'cancelled')->count(),
+            'work_orders_count' => WorkOrder::count(),
+            'work_sessions_count' => WorkSession::count(),
         ];
 
         return Inertia::render('admin/work-orders/index', [
-            'workOrders' => $workOrdersData,
+            'workOrders' => $paginatedData,
             'statistics' => $statistics,
         ]);
     }
@@ -218,91 +285,148 @@ class WorkOrderController extends Controller
     }
 
     /**
-     * Display the specified work order.
+     * Display the specified work order or work session.
      */
-    public function show(WorkOrder $workOrder): Response
+    public function show(Request $request, string $id): Response
     {
-        $workOrder->load([
-            'user',
-            'motorcycle.motorcycleModel',
-            'mechanics',
-            'parts',
-            'invoice'
-        ]);
+        $type = $request->get('type', 'work_order');
+        
+        if ($type === 'work_session') {
+            $workSession = WorkSession::with([
+                'motorcycle.motorcycleModel',
+                'motorcycle.user',
+                'mechanics',
+                'invoice'
+            ])->where('CodiceSessione', $id)->firstOrFail();
 
-        $workOrderData = [
-            'id' => $workOrder->CodiceIntervento,
-            'description' => $workOrder->Note,
-            'status' => $workOrder->DataFine ? 'completed' : ($workOrder->DataInizio ? 'in_progress' : 'pending'),
-            'started_at' => $workOrder->DataInizio?->format('Y-m-d H:i'),
-            'completed_at' => $workOrder->DataFine?->format('Y-m-d H:i'),
-            'hours_worked' => $workOrder->OreImpiegate ? (float) $workOrder->OreImpiegate : 0.0,
-            'km_motorcycle' => $workOrder->KmMoto,
-            'work_type' => $workOrder->Tipo,
-            'cause' => $workOrder->Causa,
-            'name' => $workOrder->Nome,
-            'notes' => $workOrder->Note,
-            'total_cost' => $workOrder->invoice ? (float) $workOrder->invoice->Importo : 0.0,
-            'labor_cost' => 0.0, // Labor cost not tracked separately in simplified schema
-            'parts_cost' => $workOrder->parts->sum(fn($part) => $part->pivot->Quantita * $part->pivot->Prezzo),
-            'created_at' => $workOrder->created_at->format('Y-m-d H:i'),
-        ];
-
-        $customer = [
-            'id' => $workOrder->user->id,
-            'name' => $workOrder->user->first_name . ' ' . $workOrder->user->last_name,
-            'email' => $workOrder->user->email,
-            'phone' => $workOrder->user->phone,
-            'CF' => $workOrder->user->CF,
-        ];
-
-        $motorcycle = [
-            'id' => $workOrder->motorcycle->NumTelaio,
-            'brand' => $workOrder->motorcycle->motorcycleModel->Marca,
-            'model' => $workOrder->motorcycle->motorcycleModel->Nome,
-            'year' => $workOrder->motorcycle->AnnoImmatricolazione,
-            'plate' => $workOrder->motorcycle->Targa,
-            'vin' => $workOrder->motorcycle->NumTelaio,
-        ];
-
-        $mechanics = $workOrder->mechanics->map(function ($mechanic) {
-            return [
-                'id' => $mechanic->id,
-                'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
-                'email' => $mechanic->email,
-                'CF' => $mechanic->CF,
-                'assigned_at' => $mechanic->pivot->created_at ? Carbon::parse($mechanic->pivot->created_at)->format('Y-m-d H:i') : null,
+            $workData = [
+                'id' => $workSession->CodiceSessione,
+                'type' => 'work_session',
+                'type_label' => 'Work Session',
+                'description' => $workSession->Note ?? 'Work session',
+                'status' => $workSession->Stato,
+                'started_at' => $workSession->Data->format('Y-m-d'),
+                'completed_at' => null,
+                'hours_worked' => $workSession->OreImpiegate ? (float) $workSession->OreImpiegate : 0.0,
+                'total_cost' => $workSession->invoice ? (float) $workSession->invoice->Importo : 0.0,
+                'created_at' => $workSession->created_at->format('Y-m-d H:i'),
+                'work_type' => 'session',
+                'name' => 'Work Session',
             ];
-        });
 
-        $parts = $workOrder->parts->map(function ($part) {
-            return [
-                'id' => $part->CodiceRicambio,
-                'name' => $part->Nome,
-                'brand' => $part->Marca,
-                'quantity' => $part->pivot->Quantita,
-                'unit_price' => (float) $part->pivot->Prezzo,
-                'total_price' => (float) ($part->pivot->Quantita * $part->pivot->Prezzo),
+            $customer = [
+                'id' => $workSession->motorcycle->user->id,
+                'name' => $workSession->motorcycle->user->first_name . ' ' . $workSession->motorcycle->user->last_name,
+                'email' => $workSession->motorcycle->user->email,
+                'phone' => $workSession->motorcycle->user->phone,
+                'CF' => $workSession->motorcycle->user->CF,
             ];
-        });
 
-        // Appointment relationship not available in simplified schema
-        $appointment = null;
+            $motorcycle = [
+                'id' => $workSession->motorcycle->NumTelaio,
+                'brand' => $workSession->motorcycle->motorcycleModel->Marca,
+                'model' => $workSession->motorcycle->motorcycleModel->Nome,
+                'year' => $workSession->motorcycle->AnnoImmatricolazione,
+                'plate' => $workSession->motorcycle->Targa,
+                'vin' => $workSession->motorcycle->NumTelaio,
+            ];
 
-        $invoice = $workOrder->invoice ? [
-            'id' => $workOrder->invoice->CodiceFattura,
-            'invoice_number' => $workOrder->invoice->CodiceFattura,
-            'status' => $workOrder->invoice->Stato,
-            'total_amount' => (float) $workOrder->invoice->Importo,
-        ] : null;
+            $mechanics = $workSession->mechanics->map(function ($mechanic) {
+                return [
+                    'id' => $mechanic->id,
+                    'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
+                    'email' => $mechanic->email,
+                    'CF' => $mechanic->CF,
+                    'assigned_at' => $mechanic->pivot->created_at ? Carbon::parse($mechanic->pivot->created_at)->format('Y-m-d H:i') : null,
+                ];
+            });
+
+            $parts = collect(); // Work sessions don't have parts
+
+            $invoice = $workSession->invoice ? [
+                'id' => $workSession->invoice->CodiceFattura,
+                'invoice_number' => $workSession->invoice->CodiceFattura,
+                'total_amount' => (float) $workSession->invoice->Importo,
+            ] : null;
+
+        } else {
+            $workOrder = WorkOrder::with([
+                'user',
+                'motorcycle.motorcycleModel',
+                'mechanics',
+                'parts',
+                'invoice'
+            ])->where('CodiceIntervento', $id)->firstOrFail();
+
+            $workData = [
+                'id' => $workOrder->CodiceIntervento,
+                'type' => 'work_order',
+                'type_label' => 'Work Order',
+                'description' => $workOrder->Note,
+                'status' => $workOrder->Stato,
+                'started_at' => $workOrder->DataInizio?->format('Y-m-d H:i'),
+                'completed_at' => $workOrder->DataFine?->format('Y-m-d H:i'),
+                'hours_worked' => $workOrder->OreImpiegate ? (float) $workOrder->OreImpiegate : 0.0,
+                'km_motorcycle' => $workOrder->KmMoto,
+                'work_type' => $workOrder->Tipo,
+                'cause' => $workOrder->Causa,
+                'name' => $workOrder->Nome,
+                'total_cost' => $workOrder->invoice ? (float) $workOrder->invoice->Importo : 0.0,
+                'parts_cost' => $workOrder->parts->sum(fn($part) => $part->pivot->Quantita * $part->pivot->Prezzo),
+                'created_at' => $workOrder->created_at->format('Y-m-d H:i'),
+            ];
+
+            $customer = [
+                'id' => $workOrder->user->id,
+                'name' => $workOrder->user->first_name . ' ' . $workOrder->user->last_name,
+                'email' => $workOrder->user->email,
+                'phone' => $workOrder->user->phone,
+                'CF' => $workOrder->user->CF,
+            ];
+
+            $motorcycle = [
+                'id' => $workOrder->motorcycle->NumTelaio,
+                'brand' => $workOrder->motorcycle->motorcycleModel->Marca,
+                'model' => $workOrder->motorcycle->motorcycleModel->Nome,
+                'year' => $workOrder->motorcycle->AnnoImmatricolazione,
+                'plate' => $workOrder->motorcycle->Targa,
+                'vin' => $workOrder->motorcycle->NumTelaio,
+            ];
+
+            $mechanics = $workOrder->mechanics->map(function ($mechanic) {
+                return [
+                    'id' => $mechanic->id,
+                    'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
+                    'email' => $mechanic->email,
+                    'CF' => $mechanic->CF,
+                    'assigned_at' => $mechanic->pivot->created_at ? Carbon::parse($mechanic->pivot->created_at)->format('Y-m-d H:i') : null,
+                ];
+            });
+
+            $parts = $workOrder->parts->map(function ($part) {
+                return [
+                    'id' => $part->CodiceRicambio,
+                    'name' => $part->Nome,
+                    'brand' => $part->Marca,
+                    'quantity' => $part->pivot->Quantita,
+                    'unit_price' => (float) $part->pivot->Prezzo,
+                    'total_price' => (float) ($part->pivot->Quantita * $part->pivot->Prezzo),
+                ];
+            });
+
+            $invoice = $workOrder->invoice ? [
+                'id' => $workOrder->invoice->CodiceFattura,
+                'invoice_number' => $workOrder->invoice->CodiceFattura,
+                'total_amount' => (float) $workOrder->invoice->Importo,
+            ] : null;
+        }
 
         return Inertia::render('admin/work-orders/show', [
-            'workOrder' => $workOrderData,
+            'workOrder' => $workData,
             'customer' => $customer,
             'motorcycle' => $motorcycle,
             'mechanics' => $mechanics,
             'parts' => $parts,
-            'appointment' => $appointment,
             'invoice' => $invoice,
         ]);
     }

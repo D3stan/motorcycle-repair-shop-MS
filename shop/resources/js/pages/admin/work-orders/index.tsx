@@ -51,8 +51,8 @@ export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Work Orders</h1>
-                        <p className="text-muted-foreground">Manage all work orders and assignments</p>
+                        <h1 className="text-3xl font-bold">Work Orders & Sessions</h1>
+                        <p className="text-muted-foreground">Manage all work orders and work sessions</p>
                     </div>
                     <Button asChild>
                         <Link href="/admin/work-orders/create">
@@ -63,18 +63,18 @@ export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid auto-rows-min gap-4 md:grid-cols-5">
+                <div className="grid auto-rows-min gap-4 md:grid-cols-6">
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base">Total Orders</CardTitle>
-                            <CardDescription>All work orders</CardDescription>
+                            <CardTitle className="text-base">Total Work</CardTitle>
+                            <CardDescription>Orders & Sessions</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold mb-2">
                                 {statistics.total}
                             </div>
-                            <div className="text-sm text-muted-foreground">
-                                Total created
+                            <div className="text-xs text-muted-foreground">
+                                {statistics.work_orders_count || 0} orders / {statistics.work_sessions_count || 0} sessions
                             </div>
                         </CardContent>
                     </Card>
@@ -140,40 +140,49 @@ export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
                     </Card>
                 </div>
 
-                {/* Work Orders List */}
+                {/* Work Orders & Sessions List */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Work Orders</CardTitle>
+                        <CardTitle>Work Orders & Sessions</CardTitle>
                         <CardDescription>
-                            Manage all work orders and mechanic assignments
+                            Manage all work orders and work sessions with mechanic assignments
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         {workOrders.data.length > 0 ? (
                             <div className="space-y-4">
-                                {workOrders.data.map((workOrder) => (
-                                    <div key={workOrder.id} className="flex items-center justify-between border-b pb-4 last:border-b-0">
+                                {workOrders.data.map((workItem) => (
+                                    <div key={workItem.id} className="flex items-center justify-between border-b pb-4 last:border-b-0">
                                         <div className="flex items-center space-x-4">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                                                <Wrench className="h-5 w-5 text-blue-600" />
+                                            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                                                workItem.type === 'work_order' ? 'bg-blue-100' : 'bg-green-100'
+                                            }`}>
+                                                <Wrench className={`h-5 w-5 ${
+                                                    workItem.type === 'work_order' ? 'text-blue-600' : 'text-green-600'
+                                                }`} />
                                             </div>
                                             <div>
                                                 <div className="flex items-center space-x-2">
                                                     <div className="font-medium">
-                                                        #{workOrder.id}
+                                                        #{workItem.id}
                                                     </div>
-                                                    <Badge className={getStatusBadge(workOrder.status)}>
-                                                        {workOrder.status.replace('_', ' ')}
+                                                    <Badge variant="outline" className={
+                                                        workItem.type === 'work_order' ? 'border-blue-200 text-blue-700' : 'border-green-200 text-green-700'
+                                                    }>
+                                                        {workItem.type_label}
+                                                    </Badge>
+                                                    <Badge className={getStatusBadge(workItem.status)}>
+                                                        {workItem.status.replace('_', ' ')}
                                                     </Badge>
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
-                                                    {workOrder.description}
+                                                    {workItem.description}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    Customer: {workOrder.customer} • {workOrder.motorcycle}
+                                                    Customer: {workItem.customer} • {workItem.motorcycle}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    Created: {workOrder.created_at}
+                                                    Created: {workItem.created_at}
                                                 </div>
                                             </div>
                                         </div>
@@ -181,40 +190,44 @@ export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
                                         <div className="flex items-center space-x-4">
                                             <div className="text-right">
                                                 <div className="text-sm font-medium">
-                                                    €{(workOrder.total_cost || 0).toFixed(2)}
+                                                    €{(workItem.total_cost || 0).toFixed(2)}
                                                 </div>
                                                 <div className="flex items-center space-x-1 text-xs text-muted-foreground">
                                                     <Users className="h-3 w-3" />
                                                     <span>
-                                                        {workOrder.mechanics.length} mechanic{workOrder.mechanics.length !== 1 ? 's' : ''}
+                                                        {workItem.mechanics.length} mechanic{workItem.mechanics.length !== 1 ? 's' : ''}
                                                     </span>
                                                 </div>
-                                                {workOrder.mechanics.length > 0 && (
+                                                {workItem.mechanics.length > 0 && (
                                                     <div className="text-xs text-muted-foreground">
-                                                        {workOrder.mechanics.map(m => m.name).join(', ')}
+                                                        {workItem.mechanics.map(m => m.name).join(', ')}
                                                     </div>
                                                 )}
                                             </div>
                                             
                                             <div className="flex items-center space-x-2">
                                                 <Button variant="ghost" size="sm" asChild>
-                                                    <Link href={`/admin/work-orders/${workOrder.id}`}>
+                                                    <Link href={`/admin/work-orders/${workItem.id}?type=${workItem.type}`}>
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" asChild>
-                                                    <Link href={`/admin/work-orders/${workOrder.id}/edit`}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="sm" 
-                                                    onClick={() => handleDelete(workOrder.id)}
-                                                    className="text-red-600 hover:text-red-700"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                {workItem.type === 'work_order' && (
+                                                    <>
+                                                        <Button variant="ghost" size="sm" asChild>
+                                                            <Link href={`/admin/work-orders/${workItem.id}/edit`}>
+                                                                <Edit className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="sm" 
+                                                            onClick={() => handleDelete(workItem.id)}
+                                                            className="text-red-600 hover:text-red-700"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -223,7 +236,7 @@ export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
                         ) : (
                             <div className="text-center py-8">
                                 <Wrench className="mx-auto h-12 w-12 text-muted-foreground" />
-                                <h3 className="mt-2 text-sm font-medium">No work orders</h3>
+                                <h3 className="mt-2 text-sm font-medium">No work orders or sessions</h3>
                                 <p className="mt-1 text-sm text-muted-foreground">
                                     Get started by creating a new work order.
                                 </p>

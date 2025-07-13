@@ -156,19 +156,25 @@ export interface AdminStaffStatistics {
 // Admin Work Order interfaces
 export interface AdminWorkOrder {
     id: number;
+    type: 'work_order' | 'work_session';
+    type_label: string;
     description: string;
     status: string;
     started_at?: string;
     completed_at?: string;
+    hours_worked: number;
     total_cost: number;
-    labor_cost: number;
-    parts_cost: number;
+    labor_cost?: number;
+    parts_cost?: number;
     customer: string;
     customer_email: string;
     motorcycle: string;
     motorcycle_plate: string;
     mechanics: AdminWorkOrderMechanic[];
     appointment_id?: number;
+    work_type?: string;
+    cause?: string;
+    name?: string;
     created_at: string;
     assigned_at?: string;
     pivot_started_at?: string;
@@ -179,6 +185,7 @@ export interface AdminWorkOrder {
 export interface AdminWorkOrderMechanic {
     id: number;
     name: string;
+    email?: string;
     assigned_at?: string;
     started_at?: string;
     completed_at?: string;
@@ -186,13 +193,19 @@ export interface AdminWorkOrderMechanic {
 
 export interface AdminWorkOrderDetails {
     id: number;
+    type: 'work_order' | 'work_session';
+    type_label: string;
     description: string;
     status: string;
     started_at?: string;
     completed_at?: string;
+    hours_worked: number;
     total_cost: number;
-    labor_cost: number;
-    parts_cost: number;
+    labor_cost?: number;
+    parts_cost?: number;
+    work_type?: string;
+    cause?: string;
+    name?: string;
     notes?: string;
     created_at: string;
 }
@@ -241,6 +254,8 @@ export interface AdminWorkOrderStatistics {
     in_progress: number;
     completed: number;
     cancelled: number;
+    work_orders_count?: number;
+    work_sessions_count?: number;
 }
 
 // Form interfaces for creating/editing

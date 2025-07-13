@@ -40,11 +40,11 @@ export default function WorkOrderShow({
             href: '/dashboard',
         },
         {
-            title: 'Work Orders',
+            title: 'Work Orders & Sessions',
             href: '/admin/work-orders',
         },
         {
-            title: `Work Order #${workOrder.id}`,
+            title: `${workOrder.type_label} #${workOrder.id}`,
             href: `/admin/work-orders/${workOrder.id}`,
         },
     ];
@@ -67,37 +67,50 @@ export default function WorkOrderShow({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Work Order #${workOrder.id}`} />
+            <Head title={`${workOrder.type_label} #${workOrder.id}`} />
             
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Work Order #{workOrder.id}</h1>
-                        <p className="text-muted-foreground">Work order details and progress</p>
+                        <div className="flex items-center space-x-3">
+                            <h1 className="text-3xl font-bold">{workOrder.type_label} #{workOrder.id}</h1>
+                            <Badge variant="outline" className={
+                                workOrder.type === 'work_order' ? 'border-blue-200 text-blue-700' : 'border-green-200 text-green-700'
+                            }>
+                                {workOrder.type_label}
+                            </Badge>
+                        </div>
+                        <p className="text-muted-foreground">
+                            {workOrder.type === 'work_order' ? 'Work order details and progress' : 'Work session details and progress'}
+                        </p>
                     </div>
                     <div className="flex items-center space-x-2">
                         <Button variant="outline" asChild>
                             <Link href="/admin/work-orders">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                Back to Work Orders
+                                Back to Work Orders & Sessions
                             </Link>
                         </Button>
-                        <Button variant="outline" asChild>
-                            <Link href={`/admin/work-orders/${workOrder.id}/edit`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                            </Link>
-                        </Button>
-                        <Button variant="destructive" onClick={handleDelete}>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </Button>
+                        {workOrder.type === 'work_order' && (
+                            <>
+                                <Button variant="outline" asChild>
+                                    <Link href={`/admin/work-orders/${workOrder.id}/edit`}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Edit
+                                    </Link>
+                                </Button>
+                                <Button variant="destructive" onClick={handleDelete}>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
 
                 {/* Status and Summary */}
-                <div className="grid auto-rows-min gap-4 md:grid-cols-4">
+                <div className={`grid auto-rows-min gap-4 ${workOrder.type === 'work_order' ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Status</CardTitle>
@@ -122,25 +135,27 @@ export default function WorkOrderShow({
 
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base">Labor Cost</CardTitle>
+                            <CardTitle className="text-base">Hours Worked</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="text-lg font-medium">
-                                €{(workOrder.labor_cost || 0).toFixed(2)}
+                                {workOrder.hours_worked} hours
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-base">Parts Cost</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-lg font-medium">
-                                €{(workOrder.parts_cost || 0).toFixed(2)}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    {workOrder.type === 'work_order' && (
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-base">Parts Cost</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-lg font-medium">
+                                    €{(workOrder.parts_cost || 0).toFixed(2)}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
                 <div className="grid gap-4 lg:grid-cols-2">

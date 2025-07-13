@@ -39,8 +39,7 @@ class WorkSession extends Model
      */
     protected $fillable = [
         'CodiceSessione',
-        'DataInizio',
-        'DataFine',
+        'Data',
         'Stato',
         'OreImpiegate',
         'Note',
@@ -55,8 +54,7 @@ class WorkSession extends Model
     protected function casts(): array
     {
         return [
-            'DataInizio' => 'datetime',
-            'DataFine' => 'datetime',
+            'Data' => 'date',
             'OreImpiegate' => 'decimal:2',
         ];
     }
