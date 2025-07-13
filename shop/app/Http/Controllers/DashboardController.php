@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\Invoice;
 use App\Models\WorkOrder;
+use App\Models\WorkSession;
 use App\Models\User;
 use App\Models\Motorcycle;
 use App\Models\Part;
@@ -143,8 +144,10 @@ class DashboardController extends Controller
             ->whereYear('Data', now()->year)
             ->sum('Importo');
 
-        // Active work orders count (use Stato column)
+        // Active work orders and sessions count (use Stato column)
         $activeWorkOrdersCount = WorkOrder::whereIn('Stato', ['pending', 'in_progress'])->count();
+        $activeWorkSessionsCount = WorkSession::whereIn('Stato', ['pending', 'in_progress'])->count();
+        $totalActiveWork = $activeWorkOrdersCount + $activeWorkSessionsCount;
 
         // Future appointments count (since no status field in schema)
         $pendingAppointmentsCount = Appointment::where('DataAppuntamento', '>=', now()->toDateString())->count();
@@ -152,22 +155,52 @@ class DashboardController extends Controller
         // Total customers count
         $totalCustomersCount = User::where('type', 'customer')->count();
 
-        // Recent work orders
-        $recentWorkOrders = WorkOrder::with(['motorcycle.user', 'motorcycle.motorcycleModel', 'mechanics'])
+        // Recent work orders and sessions combined
+        $recentWorkOrders = collect();
+        
+        // Get recent work orders
+        WorkOrder::with(['motorcycle.user', 'motorcycle.motorcycleModel', 'mechanics'])
             ->orderBy('created_at', 'desc')
-            ->limit(5)
+            ->limit(3)
             ->get()
-            ->map(function ($workOrder) {
-                return [
+            ->each(function ($workOrder) use ($recentWorkOrders) {
+                $recentWorkOrders->push([
                     'id' => $workOrder->CodiceIntervento,
+                    'type' => 'maintenance',
                     'customer' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
                     'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
                     'description' => $workOrder->Note,
                     'status' => $workOrder->Stato,
-                    'created_at' => $workOrder->created_at->format('Y-m-d H:i'),
+                    'created_at' => $workOrder->created_at,
+                    'formatted_date' => $workOrder->created_at->format('Y-m-d H:i'),
                     'mechanics' => $workOrder->mechanics->pluck('first_name')->implode(', '),
-                ];
+                ]);
             });
+            
+        // Get recent work sessions
+        WorkSession::with(['motorcycle.user', 'motorcycle.motorcycleModel', 'mechanics'])
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get()
+            ->each(function ($workSession) use ($recentWorkOrders) {
+                $recentWorkOrders->push([
+                    'id' => $workSession->CodiceSessione,
+                    'type' => 'session',
+                    'customer' => $workSession->motorcycle->user->first_name . ' ' . $workSession->motorcycle->user->last_name,
+                    'motorcycle' => $workSession->motorcycle->motorcycleModel->Marca . ' ' . $workSession->motorcycle->motorcycleModel->Nome,
+                    'description' => $workSession->Note ?? 'Work session',
+                    'status' => $workSession->Stato,
+                    'created_at' => $workSession->created_at,
+                    'formatted_date' => $workSession->created_at->format('Y-m-d H:i'),
+                    'mechanics' => $workSession->mechanics->pluck('first_name')->implode(', '),
+                ]);
+            });
+            
+        // Sort by creation date and take top 5
+        $recentWorkOrders = $recentWorkOrders->sortByDesc('created_at')->take(5)->values()->map(function ($item) {
+            unset($item['created_at']); // Remove the Carbon object, keep formatted_date
+            return $item;
+        });
 
         // Recent appointments (simplified schema)
         $recentAppointments = Appointment::with(['user'])
@@ -185,17 +218,26 @@ class DashboardController extends Controller
                 ];
             });
 
-        // Work orders by status (use Stato column)
+        // Work orders and sessions by status (use Stato column)
         $totalWorkOrders = WorkOrder::count();
+        $totalWorkSessions = WorkSession::count();
+        
         $pendingWorkOrders = WorkOrder::where('Stato', 'pending')->count();
+        $pendingWorkSessions = WorkSession::where('Stato', 'pending')->count();
+        
         $inProgressWorkOrders = WorkOrder::where('Stato', 'in_progress')->count();
+        $inProgressWorkSessions = WorkSession::where('Stato', 'in_progress')->count();
+        
         $completedWorkOrders = WorkOrder::where('Stato', 'completed')->count();
+        $completedWorkSessions = WorkSession::where('Stato', 'completed')->count();
 
         $workOrdersByStatus = [
-            'pending' => $pendingWorkOrders,
-            'in_progress' => $inProgressWorkOrders,
-            'completed' => $completedWorkOrders,
+            'pending' => $pendingWorkOrders + $pendingWorkSessions,
+            'in_progress' => $inProgressWorkOrders + $inProgressWorkSessions,
+            'completed' => $completedWorkOrders + $completedWorkSessions,
         ];
+        
+        $totalWork = $totalWorkOrders + $totalWorkSessions;
 
         // Monthly revenue data (last 6 months)
         $monthlyRevenue = collect();
@@ -217,7 +259,7 @@ class DashboardController extends Controller
         return Inertia::render('admin/dashboard', [
             'userType' => 'admin',
             'currentMonthRevenue' => $currentMonthRevenue,
-            'activeWorkOrdersCount' => $activeWorkOrdersCount,
+            'activeWorkOrdersCount' => $totalActiveWork,
             'pendingAppointmentsCount' => $pendingAppointmentsCount,
             'totalCustomersCount' => $totalCustomersCount,
             'recentWorkOrders' => $recentWorkOrders,
@@ -225,6 +267,9 @@ class DashboardController extends Controller
             'workOrdersByStatus' => $workOrdersByStatus,
             'monthlyRevenue' => $monthlyRevenue,
             'lowStockParts' => $lowStockParts,
+            'totalWork' => $totalWork,
+            'totalWorkOrders' => $totalWorkOrders,
+            'totalWorkSessions' => $totalWorkSessions,
         ]);
     }
 

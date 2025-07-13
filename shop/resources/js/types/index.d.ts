@@ -385,6 +385,7 @@ export interface AdminInvoice {
     customer: string;
     customer_email: string;
     motorcycle: string;
+    work_type: string;
     issue_date: string;
     due_date: string;
     subtotal: number;

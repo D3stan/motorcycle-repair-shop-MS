@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\WorkOrder;
+use App\Models\WorkSession;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -62,19 +63,36 @@ class FinancialController extends Controller
         $outstandingPayments = 0;
             
         // Recent invoices
-        $recentInvoices = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel'])
+        $recentInvoices = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel', 'workSession.motorcycle.motorcycleModel'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get()
             ->map(function ($invoice) {
+                // Determine motorcycle info based on whether it's linked to work order or session
+                $motorcycle = null;
+                $workType = 'Unknown';
+                
+                if ($invoice->workOrder && $invoice->workOrder->motorcycle) {
+                    $motorcycle = $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
+                                 $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
+                                 $invoice->workOrder->motorcycle->Targa . ')';
+                    $workType = 'Maintenance';
+                } elseif ($invoice->workSession && $invoice->workSession->motorcycle) {
+                    $motorcycle = $invoice->workSession->motorcycle->motorcycleModel->Marca . ' ' . 
+                                 $invoice->workSession->motorcycle->motorcycleModel->Nome . ' (' . 
+                                 $invoice->workSession->motorcycle->Targa . ')';
+                    $workType = 'Session';
+                } else {
+                    $motorcycle = 'N/A';
+                }
+                
                 return [
                     'id' => $invoice->CodiceFattura,
                     'invoice_number' => $invoice->CodiceFattura,
                     'customer' => $invoice->user->first_name . ' ' . $invoice->user->last_name,
                     'customer_email' => $invoice->user->email,
-                    'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
-                                   $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
-                                   $invoice->workOrder->motorcycle->Targa . ')',
+                    'motorcycle' => $motorcycle,
+                    'work_type' => $workType,
                     'issue_date' => $invoice->Data->format('Y-m-d'),
                     'due_date' => null, // No due date in simplified schema
                     'total_amount' => (float) $invoice->Importo,
@@ -124,7 +142,7 @@ class FinancialController extends Controller
      */
     public function invoices(Request $request): Response
     {
-        $query = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel']);
+        $query = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel', 'workSession.motorcycle.motorcycleModel']);
         
         // Apply filters
         if ($request->filled('status')) {
@@ -157,14 +175,31 @@ class FinancialController extends Controller
             ->withQueryString();
             
         $invoicesData = $invoices->through(function ($invoice) {
+            // Determine motorcycle info based on whether it's linked to work order or session
+            $motorcycle = null;
+            $workType = 'Unknown';
+            
+            if ($invoice->workOrder && $invoice->workOrder->motorcycle) {
+                $motorcycle = $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
+                             $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
+                             $invoice->workOrder->motorcycle->Targa . ')';
+                $workType = 'Maintenance';
+            } elseif ($invoice->workSession && $invoice->workSession->motorcycle) {
+                $motorcycle = $invoice->workSession->motorcycle->motorcycleModel->Marca . ' ' . 
+                             $invoice->workSession->motorcycle->motorcycleModel->Nome . ' (' . 
+                             $invoice->workSession->motorcycle->Targa . ')';
+                $workType = 'Session';
+            } else {
+                $motorcycle = 'N/A';
+            }
+            
             return [
                 'id' => $invoice->CodiceFattura,
                 'invoice_number' => $invoice->CodiceFattura,
                 'customer' => $invoice->user->first_name . ' ' . $invoice->user->last_name,
                 'customer_email' => $invoice->user->email,
-                'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
-                               $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
-                               $invoice->workOrder->motorcycle->Targa . ')',
+                'motorcycle' => $motorcycle,
+                'work_type' => $workType,
                 'issue_date' => $invoice->Data->format('Y-m-d'),
                 'due_date' => null, // No due date in simplified schema
                 'subtotal' => (float) $invoice->Importo,
@@ -188,7 +223,7 @@ class FinancialController extends Controller
      */
     public function showInvoice(Invoice $invoice): Response
     {
-        $invoice->load(['user', 'workOrder.motorcycle.motorcycleModel', 'workOrder.parts', 'workOrder.mechanics']);
+        $invoice->load(['user', 'workOrder.motorcycle.motorcycleModel', 'workOrder.parts', 'workOrder.mechanics', 'workSession.motorcycle.motorcycleModel', 'workSession.mechanics']);
         
         $invoiceData = [
             'id' => $invoice->CodiceFattura,
@@ -211,36 +246,79 @@ class FinancialController extends Controller
             'tax_code' => $invoice->user->CF,
         ];
         
-        // Determine work order status based on dates
-        $workOrderStatus = 'pending';
-        if ($invoice->workOrder->DataInizio && $invoice->workOrder->DataFine) {
-            $workOrderStatus = 'completed';
-        } elseif ($invoice->workOrder->DataInizio) {
-            $workOrderStatus = 'in_progress';
-        }
+        $workData = null;
         
-        $workOrder = [
-            'id' => $invoice->workOrder->CodiceIntervento,
-            'description' => $invoice->workOrder->Note,
-            'status' => $workOrderStatus,
-            'started_at' => $invoice->workOrder->DataInizio?->format('Y-m-d'),
-            'completed_at' => $invoice->workOrder->DataFine?->format('Y-m-d'),
-            'labor_cost' => 0.0, // Not using separate labor cost
-            'parts_cost' => 0.0, // Not using separate parts cost
-            'total_cost' => (float) $invoice->Importo,
-            'motorcycle' => [
-                'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca,
-                'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome,
-                'year' => $invoice->workOrder->motorcycle->AnnoImmatricolazione,
-                'plate' => $invoice->workOrder->motorcycle->Targa,
-                'vin' => $invoice->workOrder->motorcycle->NumTelaio,
-            ],
-        ];
+        if ($invoice->workOrder && $invoice->workOrder->motorcycle) {
+            // Determine work order status based on dates
+            $workOrderStatus = 'pending';
+            if ($invoice->workOrder->DataInizio && $invoice->workOrder->DataFine) {
+                $workOrderStatus = 'completed';
+            } elseif ($invoice->workOrder->DataInizio) {
+                $workOrderStatus = 'in_progress';
+            }
+            
+            $workData = [
+                'id' => $invoice->workOrder->CodiceIntervento,
+                'type' => 'maintenance',
+                'description' => $invoice->workOrder->Note,
+                'status' => $workOrderStatus,
+                'started_at' => $invoice->workOrder->DataInizio?->format('Y-m-d'),
+                'completed_at' => $invoice->workOrder->DataFine?->format('Y-m-d'),
+                'labor_cost' => 0.0, // Not using separate labor cost
+                'parts_cost' => 0.0, // Not using separate parts cost
+                'total_cost' => (float) $invoice->Importo,
+                'motorcycle' => [
+                    'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca,
+                    'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome,
+                    'year' => $invoice->workOrder->motorcycle->AnnoImmatricolazione,
+                    'plate' => $invoice->workOrder->motorcycle->Targa,
+                    'vin' => $invoice->workOrder->motorcycle->NumTelaio,
+                ],
+            ];
+        } elseif ($invoice->workSession && $invoice->workSession->motorcycle) {
+            $workData = [
+                'id' => $invoice->workSession->CodiceSessione,
+                'type' => 'session',
+                'description' => $invoice->workSession->Note ?? 'Work session',
+                'status' => $invoice->workSession->Stato,
+                'started_at' => $invoice->workSession->Data->format('Y-m-d'),
+                'completed_at' => null, // Sessions don't have end dates
+                'labor_cost' => 0.0, // Not using separate labor cost
+                'parts_cost' => 0.0, // Sessions don't use parts
+                'total_cost' => (float) $invoice->Importo,
+                'motorcycle' => [
+                    'brand' => $invoice->workSession->motorcycle->motorcycleModel->Marca,
+                    'model' => $invoice->workSession->motorcycle->motorcycleModel->Nome,
+                    'year' => $invoice->workSession->motorcycle->AnnoImmatricolazione,
+                    'plate' => $invoice->workSession->motorcycle->Targa,
+                    'vin' => $invoice->workSession->motorcycle->NumTelaio,
+                ],
+            ];
+        } else {
+            $workData = [
+                'id' => 'N/A',
+                'type' => 'unknown',
+                'description' => 'Invoice not linked to work order or session',
+                'status' => 'unknown',
+                'started_at' => null,
+                'completed_at' => null,
+                'labor_cost' => 0.0,
+                'parts_cost' => 0.0,
+                'total_cost' => (float) $invoice->Importo,
+                'motorcycle' => [
+                    'brand' => 'N/A',
+                    'model' => 'N/A',
+                    'year' => null,
+                    'plate' => 'N/A',
+                    'vin' => 'N/A',
+                ],
+            ];
+        }
 
         return Inertia::render('admin/financial/invoice-show', [
             'invoice' => $invoiceData,
             'customer' => $customer,
-            'workOrder' => $workOrder,
+            'workOrder' => $workData, // Keep name for compatibility
         ]);
     }
 

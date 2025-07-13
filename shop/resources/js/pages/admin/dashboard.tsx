@@ -19,11 +19,12 @@ interface AdminDashboardProps {
     totalCustomersCount: number;
     recentWorkOrders: Array<{
         id: number;
+        type: string;
         customer: string;
         motorcycle: string;
         description: string;
         status: string;
-        created_at: string;
+        formatted_date: string;
         mechanics: string;
     }>;
     recentAppointments: Array<{
@@ -77,7 +78,7 @@ export default function AdminDashboard({
                                 €{Number(currentMonthRevenue || 0).toFixed(2)}
                             </div>
                             <div className="text-sm text-muted-foreground">
-                                From completed work orders
+                                From completed work & sessions
                             </div>
                         </CardContent>
                     </Card>
@@ -85,13 +86,13 @@ export default function AdminDashboard({
                     {/* Active Work Orders */}
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base">Active Work Orders</CardTitle>
-                            <CardDescription>Currently in progress</CardDescription>
+                            <CardTitle className="text-base">Active Work</CardTitle>
+                            <CardDescription>Orders & sessions in progress</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold mb-2">{activeWorkOrdersCount}</div>
                             <div className="text-sm text-muted-foreground">
-                                Pending & in progress
+                                Maintenance & sessions
                             </div>
                         </CardContent>
                     </Card>
@@ -131,8 +132,8 @@ export default function AdminDashboard({
                     <div className="lg:col-span-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Recent Work Orders</CardTitle>
-                                <CardDescription>Latest service requests and progress</CardDescription>
+                                <CardTitle>Recent Work Orders & Sessions</CardTitle>
+                                <CardDescription>Latest maintenance and sessions</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 {recentWorkOrders.length > 0 ? (
@@ -140,10 +141,19 @@ export default function AdminDashboard({
                                         {recentWorkOrders.map((workOrder) => (
                                             <div key={workOrder.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                                 <div className="space-y-1">
-                                                    <p className="text-sm font-medium">{workOrder.customer}</p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-medium">{workOrder.customer}</p>
+                                                        <span className={`px-2 py-1 text-xs rounded-full ${
+                                                            workOrder.type === 'maintenance' 
+                                                                ? 'bg-blue-100 text-blue-700' 
+                                                                : 'bg-green-100 text-green-700'
+                                                        }`}>
+                                                            {workOrder.type === 'maintenance' ? 'Maintenance' : 'Session'}
+                                                        </span>
+                                                    </div>
                                                     <p className="text-xs text-muted-foreground">{workOrder.motorcycle}</p>
                                                     <p className="text-xs text-muted-foreground">{workOrder.description}</p>
-                                                    <p className="text-xs text-muted-foreground">Created: {workOrder.created_at}</p>
+                                                    <p className="text-xs text-muted-foreground">Created: {workOrder.formatted_date}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="text-sm font-medium capitalize">{workOrder.status.replace('_', ' ')}</div>

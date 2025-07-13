@@ -169,18 +169,27 @@ export default function FinancialIndex({
                                         {recentInvoices.map((invoice) => (
                                             <div key={invoice.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                                 <div className="space-y-1">
-                                                    <p className="text-sm font-medium">
-                                                        <Link 
-                                                            href={`/admin/financial/invoices/${invoice.id}`}
-                                                            className="hover:underline"
-                                                        >
-                                                            {invoice.invoice_number}
-                                                        </Link>
-                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-sm font-medium">
+                                                            <Link 
+                                                                href={`/admin/financial/invoices/${invoice.id}`}
+                                                                className="hover:underline"
+                                                            >
+                                                                {invoice.invoice_number}
+                                                            </Link>
+                                                        </p>
+                                                        <Badge variant="outline" className={
+                                                            invoice.work_type === 'Maintenance' 
+                                                                ? 'border-blue-200 text-blue-700' 
+                                                                : 'border-green-200 text-green-700'
+                                                        }>
+                                                            {invoice.work_type}
+                                                        </Badge>
+                                                    </div>
                                                     <p className="text-xs text-muted-foreground">{invoice.customer}</p>
                                                     <p className="text-xs text-muted-foreground">{invoice.motorcycle}</p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        Due: {new Date(invoice.due_date).toLocaleDateString()}
+                                                        Issued: {new Date(invoice.issue_date).toLocaleDateString()}
                                                     </p>
                                                 </div>
                                                 <div className="text-right space-y-1">

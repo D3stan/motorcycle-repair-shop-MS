@@ -30,6 +30,7 @@ interface Customer {
 
 interface WorkOrder {
     id: number;
+    type: string;
     description: string;
     status: string;
     started_at: string | null;
@@ -297,14 +298,23 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                                 <div className="space-y-2">
                                     <div className="flex justify-between">
                                         <span className="text-sm font-medium text-muted-foreground">Work Order ID:</span>
-                                        <span className="font-medium">
-                                            <Link 
-                                                href={`/admin/work-orders/${workOrder.id}`}
-                                                className="hover:underline"
-                                            >
-                                                #{workOrder.id}
-                                            </Link>
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">
+                                                <Link 
+                                                    href={`/admin/work-orders/${workOrder.id}${workOrder.type === 'session' ? '?type=work_session' : ''}`}
+                                                    className="hover:underline"
+                                                >
+                                                    #{workOrder.id}
+                                                </Link>
+                                            </span>
+                                            <Badge variant="outline" className={
+                                                workOrder.type === 'maintenance' 
+                                                    ? 'border-blue-200 text-blue-700' 
+                                                    : 'border-green-200 text-green-700'
+                                            }>
+                                                {workOrder.type === 'maintenance' ? 'Maintenance' : 'Session'}
+                                            </Badge>
+                                        </div>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-sm font-medium text-muted-foreground">Status:</span>

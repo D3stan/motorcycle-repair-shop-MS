@@ -226,6 +226,13 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                                             {invoice.invoice_number}
                                                         </Link>
                                                     </div>
+                                                    <Badge variant="outline" className={
+                                                        invoice.work_type === 'Maintenance' 
+                                                            ? 'border-blue-200 text-blue-700' 
+                                                            : 'border-green-200 text-green-700'
+                                                    }>
+                                                        {invoice.work_type}
+                                                    </Badge>
                                                     {getStatusBadge(invoice)}
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
