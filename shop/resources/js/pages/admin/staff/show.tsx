@@ -1,10 +1,10 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminStaffDetails, type AdminStaffStatistics, type AdminWorkOrder } from '@/types';
+import { type AdminStaffDetails, type AdminStaffStatistics, type AdminWorkOrder, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, Trash2, Users, Wrench, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle, Clock, Edit, Trash2, Users, Wrench } from 'lucide-react';
 
 interface Props {
     staff: AdminStaffDetails;
@@ -47,12 +47,14 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${staff.first_name} ${staff.last_name} - Staff Details`} />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">{staff.first_name} {staff.last_name}</h1>
+                        <h1 className="text-3xl font-bold">
+                            {staff.first_name} {staff.last_name}
+                        </h1>
                         <p className="text-muted-foreground">Mechanic Details</p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -83,12 +85,8 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
                             <CardDescription>All assignments</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">
-                                {statistics.total_work_orders}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                                Ever assigned
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.total_work_orders}</div>
+                            <div className="text-muted-foreground text-sm">Ever assigned</div>
                         </CardContent>
                     </Card>
 
@@ -98,12 +96,8 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
                             <CardDescription>Currently working</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">
-                                {statistics.active_work_orders}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                                In progress
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.active_work_orders}</div>
+                            <div className="text-muted-foreground text-sm">In progress</div>
                         </CardContent>
                     </Card>
 
@@ -113,12 +107,8 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
                             <CardDescription>Finished orders</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">
-                                {statistics.completed_work_orders}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                                Successfully completed
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.completed_work_orders}</div>
+                            <div className="text-muted-foreground text-sm">Successfully completed</div>
                         </CardContent>
                     </Card>
 
@@ -128,12 +118,8 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
                             <CardDescription>Success percentage</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">
-                                {statistics.completion_rate}%
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                                Overall performance
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.completion_rate}%</div>
+                            <div className="text-muted-foreground text-sm">Overall performance</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -149,27 +135,29 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <div className="text-sm font-medium text-muted-foreground">Full Name</div>
-                                <div className="text-lg font-medium">{staff.first_name} {staff.last_name}</div>
+                                <div className="text-muted-foreground text-sm font-medium">Full Name</div>
+                                <div className="text-lg font-medium">
+                                    {staff.first_name} {staff.last_name}
+                                </div>
                             </div>
                             <div>
-                                <div className="text-sm font-medium text-muted-foreground">Email</div>
+                                <div className="text-muted-foreground text-sm font-medium">Email</div>
                                 <div>{staff.email}</div>
                             </div>
                             {staff.phone && (
                                 <div>
-                                    <div className="text-sm font-medium text-muted-foreground">Phone</div>
+                                    <div className="text-muted-foreground text-sm font-medium">Phone</div>
                                     <div>{staff.phone}</div>
                                 </div>
                             )}
                             {staff.tax_code && (
                                 <div>
-                                    <div className="text-sm font-medium text-muted-foreground">Tax Code</div>
+                                    <div className="text-muted-foreground text-sm font-medium">Tax Code</div>
                                     <div>{staff.tax_code}</div>
                                 </div>
                             )}
                             <div>
-                                <div className="text-sm font-medium text-muted-foreground">Member Since</div>
+                                <div className="text-muted-foreground text-sm font-medium">Member Since</div>
                                 <div>{staff.created_at}</div>
                             </div>
                         </CardContent>
@@ -192,9 +180,7 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium">Workload</span>
-                                <span className="text-sm">
-                                    {statistics.active_work_orders} active orders
-                                </span>
+                                <span className="text-sm">{statistics.active_work_orders} active orders</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-medium">Performance</span>
@@ -238,9 +224,7 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
                 <Card>
                     <CardHeader>
                         <CardTitle>Assigned Work Orders</CardTitle>
-                        <CardDescription>
-                            Work orders currently assigned to this mechanic
-                        </CardDescription>
+                        <CardDescription>Work orders currently assigned to this mechanic</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {assignedWorkOrders.length > 0 ? (
@@ -249,44 +233,29 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
                                     <div key={workOrder.id} className="flex items-center justify-between border-b pb-4 last:border-b-0">
                                         <div className="space-y-1">
                                             <div className="flex items-center space-x-2">
-                                                <Link 
-                                                    href={`/admin/work-orders/${workOrder.id}`}
-                                                    className="font-medium hover:underline"
-                                                >
+                                                <Link href={`/admin/work-orders/${workOrder.id}`} className="font-medium hover:underline">
                                                     #{workOrder.id}
                                                 </Link>
-                                                <Badge className={getStatusBadge(workOrder.status)}>
-                                                    {workOrder.status.replace('_', ' ')}
-                                                </Badge>
+                                                <Badge className={getStatusBadge(workOrder.status)}>{workOrder.status.replace('_', ' ')}</Badge>
                                             </div>
-                                            <p className="text-sm text-muted-foreground">
-                                                {workOrder.description}
-                                            </p>
-                                            <div className="text-xs text-muted-foreground">
+                                            <p className="text-muted-foreground text-sm">{workOrder.description}</p>
+                                            <div className="text-muted-foreground text-xs">
                                                 Customer: {workOrder.customer} • Motorcycle: {workOrder.motorcycle}
                                             </div>
-                                            <div className="text-xs text-muted-foreground">
-                                                Assigned: {workOrder.assigned_at || 'Not specified'}
-                                            </div>
+                                            <div className="text-muted-foreground text-xs">Assigned: {workOrder.assigned_at || 'Not specified'}</div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-sm font-medium">
-                                                €{workOrder.total_cost.toFixed(2)}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground">
-                                                {workOrder.created_at}
-                                            </div>
+                                            <div className="text-sm font-medium">€{workOrder.total_cost.toFixed(2)}</div>
+                                            <div className="text-muted-foreground text-xs">{workOrder.created_at}</div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8">
-                                <Wrench className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <div className="py-8 text-center">
+                                <Wrench className="text-muted-foreground mx-auto h-12 w-12" />
                                 <h3 className="mt-2 text-sm font-medium">No work orders assigned</h3>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    This mechanic doesn't have any work orders assigned yet.
-                                </p>
+                                <p className="text-muted-foreground mt-1 text-sm">This mechanic doesn't have any work orders assigned yet.</p>
                                 <div className="mt-6">
                                     <Button asChild>
                                         <Link href={`/admin/work-orders/create?mechanic=${staff.id}`}>
@@ -302,4 +271,4 @@ export default function StaffShow({ staff, assignedWorkOrders, statistics }: Pro
             </div>
         </AppLayout>
     );
-} 
+}

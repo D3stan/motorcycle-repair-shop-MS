@@ -302,8 +302,6 @@ export interface AdminPart {
     created_at: string;
 }
 
-
-
 export interface AdminSupplier {
     id: number;
     supplier_code: string;

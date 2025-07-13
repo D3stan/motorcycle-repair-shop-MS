@@ -101,51 +101,61 @@ export default function WorkOrders({ activeWorkOrders, completedWorkOrders }: Wo
                 {/* Active Work Orders */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-semibold">Active Work Orders</h2>
-                    
+
                     {activeWorkOrders.length > 0 ? (
                         <div className="grid gap-4">
                             {activeWorkOrders.map((workOrder) => (
                                 <Card key={workOrder.id}>
                                     <CardHeader>
                                         <CardTitle className="flex items-center justify-between">
-                                            <span>{workOrder.motorcycle.brand} {workOrder.motorcycle.model}</span>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(workOrder.status)}`}>
+                                            <span>
+                                                {workOrder.motorcycle.brand} {workOrder.motorcycle.model}
+                                            </span>
+                                            <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(workOrder.status)}`}>
                                                 {workOrder.status.charAt(0).toUpperCase() + workOrder.status.slice(1).replace('_', ' ')}
                                             </span>
                                         </CardTitle>
-                                        <CardDescription>
-                                            {workOrder.description}
-                                        </CardDescription>
+                                        <CardDescription>{workOrder.description}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div className="grid md:grid-cols-2 gap-4 text-sm">
+                                        <div className="grid gap-4 text-sm md:grid-cols-2">
                                             <div>
-                                                <p><strong>Motorcycle:</strong> {workOrder.motorcycle.plate}</p>
+                                                <p>
+                                                    <strong>Motorcycle:</strong> {workOrder.motorcycle.plate}
+                                                </p>
                                                 {workOrder.appointment && (
-                                                    <p><strong>Appointment:</strong> {workOrder.appointment.appointment_date} ({workOrder.appointment.type})</p>
+                                                    <p>
+                                                        <strong>Appointment:</strong> {workOrder.appointment.appointment_date} (
+                                                        {workOrder.appointment.type})
+                                                    </p>
                                                 )}
-                                                <p><strong>Started:</strong> {formatDateTime(workOrder.started_at)}</p>
+                                                <p>
+                                                    <strong>Started:</strong> {formatDateTime(workOrder.started_at)}
+                                                </p>
                                             </div>
                                             <div>
-                                                <p><strong>Labor Cost:</strong> {formatCurrency(workOrder.labor_cost)}</p>
-                                                <p><strong>Parts Cost:</strong> {formatCurrency(workOrder.parts_cost)}</p>
-                                                <p><strong>Total Cost:</strong> {formatCurrency(workOrder.total_cost)}</p>
+                                                <p>
+                                                    <strong>Labor Cost:</strong> {formatCurrency(workOrder.labor_cost)}
+                                                </p>
+                                                <p>
+                                                    <strong>Parts Cost:</strong> {formatCurrency(workOrder.parts_cost)}
+                                                </p>
+                                                <p>
+                                                    <strong>Total Cost:</strong> {formatCurrency(workOrder.total_cost)}
+                                                </p>
                                             </div>
                                         </div>
-                                        
+
                                         {workOrder.notes && (
                                             <div className="text-sm">
-                                                <p><strong>Notes:</strong> {workOrder.notes}</p>
+                                                <p>
+                                                    <strong>Notes:</strong> {workOrder.notes}
+                                                </p>
                                             </div>
                                         )}
-                                        
+
                                         <div className="flex gap-2">
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                onClick={() => handleViewDetails(workOrder.id)}
-                                                className="flex-1"
-                                            >
+                                            <Button variant="outline" size="sm" onClick={() => handleViewDetails(workOrder.id)} className="flex-1">
                                                 View Details
                                             </Button>
                                         </div>
@@ -156,7 +166,7 @@ export default function WorkOrders({ activeWorkOrders, completedWorkOrders }: Wo
                     ) : (
                         <Card className="border-dashed">
                             <CardContent className="flex flex-col items-center justify-center py-12">
-                                <h3 className="text-lg font-semibold mb-2">No active work orders</h3>
+                                <h3 className="mb-2 text-lg font-semibold">No active work orders</h3>
                                 <p className="text-muted-foreground mb-4 text-center">
                                     All your repairs are up to date! Book an appointment if you need service.
                                 </p>
@@ -171,54 +181,51 @@ export default function WorkOrders({ activeWorkOrders, completedWorkOrders }: Wo
                 {/* Completed Work Orders */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-semibold">Completed Work Orders</h2>
-                    
+
                     {completedWorkOrders.length > 0 ? (
                         <div className="space-y-3">
                             {completedWorkOrders.map((workOrder) => (
                                 <Card key={workOrder.id}>
                                     <CardContent className="pt-6">
                                         <div className="flex items-start justify-between">
-                                            <div className="space-y-2 flex-1">
+                                            <div className="flex-1 space-y-2">
                                                 <div className="flex items-center gap-2">
                                                     <p className="font-medium">
                                                         {workOrder.motorcycle.brand} {workOrder.motorcycle.model} • {workOrder.description}
                                                     </p>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(workOrder.status)}`}>
+                                                    <span
+                                                        className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(workOrder.status)}`}
+                                                    >
                                                         Completed
                                                     </span>
                                                 </div>
-                                                
-                                                <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+
+                                                <div className="text-muted-foreground grid gap-4 text-sm md:grid-cols-2">
                                                     <div>
                                                         <p>Completed: {formatDateTime(workOrder.completed_at)}</p>
-                                                        {workOrder.appointment && (
-                                                            <p>Appointment: {workOrder.appointment.appointment_date}</p>
-                                                        )}
+                                                        {workOrder.appointment && <p>Appointment: {workOrder.appointment.appointment_date}</p>}
                                                     </div>
                                                     <div>
                                                         <p>Total Cost: {formatCurrency(workOrder.total_cost)}</p>
                                                         {workOrder.invoice && (
                                                             <div className="flex items-center gap-2">
                                                                 <span>Invoice: {workOrder.invoice.invoice_number}</span>
-                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getInvoiceStatusColor(workOrder.invoice.status)}`}>
-                                                                    {workOrder.invoice.status.charAt(0).toUpperCase() + workOrder.invoice.status.slice(1)}
+                                                                <span
+                                                                    className={`rounded-full px-2 py-1 text-xs font-medium ${getInvoiceStatusColor(workOrder.invoice.status)}`}
+                                                                >
+                                                                    {workOrder.invoice.status.charAt(0).toUpperCase() +
+                                                                        workOrder.invoice.status.slice(1)}
                                                                 </span>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
-                                                
-                                                {workOrder.notes && (
-                                                    <p className="text-sm text-muted-foreground">{workOrder.notes}</p>
-                                                )}
+
+                                                {workOrder.notes && <p className="text-muted-foreground text-sm">{workOrder.notes}</p>}
                                             </div>
-                                            
+
                                             <div className="ml-4">
-                                                <Button 
-                                                    variant="outline" 
-                                                    size="sm"
-                                                    onClick={() => handleViewDetails(workOrder.id)}
-                                                >
+                                                <Button variant="outline" size="sm" onClick={() => handleViewDetails(workOrder.id)}>
                                                     View Details
                                                 </Button>
                                             </div>
@@ -230,9 +237,7 @@ export default function WorkOrders({ activeWorkOrders, completedWorkOrders }: Wo
                     ) : (
                         <Card>
                             <CardContent className="flex flex-col items-center justify-center py-8">
-                                <p className="text-muted-foreground text-center">
-                                    No completed work orders yet.
-                                </p>
+                                <p className="text-muted-foreground text-center">No completed work orders yet.</p>
                             </CardContent>
                         </Card>
                     )}
@@ -246,20 +251,20 @@ export default function WorkOrders({ activeWorkOrders, completedWorkOrders }: Wo
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{activeWorkOrders.length}</div>
-                            <p className="text-sm text-muted-foreground">in progress</p>
+                            <p className="text-muted-foreground text-sm">in progress</p>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Completed</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{completedWorkOrders.length}</div>
-                            <p className="text-sm text-muted-foreground">total orders</p>
+                            <p className="text-muted-foreground text-sm">total orders</p>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Total Spent</CardTitle>
@@ -268,11 +273,11 @@ export default function WorkOrders({ activeWorkOrders, completedWorkOrders }: Wo
                             <div className="text-2xl font-bold">
                                 {formatCurrency(completedWorkOrders.reduce((sum, order) => sum + order.total_cost, 0))}
                             </div>
-                            <p className="text-sm text-muted-foreground">on repairs</p>
+                            <p className="text-muted-foreground text-sm">on repairs</p>
                         </CardContent>
                     </Card>
                 </div>
             </div>
         </AppLayout>
     );
-} 
+}

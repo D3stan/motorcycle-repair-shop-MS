@@ -1,26 +1,25 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { 
-    Calendar, 
-    Clock, 
-    User, 
-    Settings, 
-    Phone,
-    Mail,
-    FileText,
+import {
     ArrowLeft,
+    Calendar,
+    Clock,
+    DollarSign,
     Edit,
-    Trash2,
-    Plus,
     ExternalLink,
-    MapPin,
     Hash,
+    Mail,
+    MapPin,
+    Phone,
+    Plus,
+    Settings,
+    Trash2,
+    User,
     Wrench,
-    DollarSign
 } from 'lucide-react';
 
 interface Appointment {
@@ -92,7 +91,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
             router.delete(`/admin/schedule/appointments/${appointment.id}`, {
                 onSuccess: () => {
                     router.visit('/admin/schedule/appointments');
-                }
+                },
             });
         }
     };
@@ -121,11 +120,23 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
     const getTypeBadge = (type: string) => {
         switch (type) {
             case 'maintenance':
-                return <Badge variant="outline" className="text-blue-600 border-blue-200">Maintenance</Badge>;
+                return (
+                    <Badge variant="outline" className="border-blue-200 text-blue-600">
+                        Maintenance
+                    </Badge>
+                );
             case 'dyno_testing':
-                return <Badge variant="outline" className="text-purple-600 border-purple-200">Dyno Testing</Badge>;
+                return (
+                    <Badge variant="outline" className="border-purple-200 text-purple-600">
+                        Dyno Testing
+                    </Badge>
+                );
             case 'inspection':
-                return <Badge variant="outline" className="text-orange-600 border-orange-200">Inspection</Badge>;
+                return (
+                    <Badge variant="outline" className="border-orange-200 text-orange-600">
+                        Inspection
+                    </Badge>
+                );
             default:
                 return <Badge variant="outline">{type}</Badge>;
         }
@@ -136,7 +147,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
@@ -146,7 +157,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
         });
     };
 
@@ -159,7 +170,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                     <div className="flex items-center gap-4">
                         <Button asChild variant="outline" size="sm">
                             <Link href="/admin/schedule/appointments">
-                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                <ArrowLeft className="mr-2 h-4 w-4" />
                                 Back to Appointments
                             </Link>
                         </Button>
@@ -173,13 +184,13 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                     <div className="flex gap-2">
                         <Button asChild variant="outline">
                             <Link href={`/admin/schedule/appointments/${appointment.id}/edit`}>
-                                <Edit className="h-4 w-4 mr-2" />
+                                <Edit className="mr-2 h-4 w-4" />
                                 Edit
                             </Link>
                         </Button>
                         {workOrders.length === 0 && (
                             <Button variant="destructive" onClick={handleDelete}>
-                                <Trash2 className="h-4 w-4 mr-2" />
+                                <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
                             </Button>
                         )}
@@ -198,38 +209,38 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Date</label>
+                                    <label className="text-muted-foreground text-sm font-medium">Date</label>
                                     <p className="text-lg">{formatDate(appointment.appointment_date)}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Time</label>
-                                    <p className="text-lg flex items-center gap-2">
+                                    <label className="text-muted-foreground text-sm font-medium">Time</label>
+                                    <p className="flex items-center gap-2 text-lg">
                                         <Clock className="h-4 w-4" />
                                         {appointment.appointment_time}
                                     </p>
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Type</label>
+                                    <label className="text-muted-foreground text-sm font-medium">Type</label>
                                     <div className="mt-1">{getTypeBadge(appointment.type)}</div>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Status</label>
+                                    <label className="text-muted-foreground text-sm font-medium">Status</label>
                                     <div className="mt-1">{getStatusBadge(appointment.status)}</div>
                                 </div>
                             </div>
 
                             {appointment.notes && (
                                 <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Notes</label>
+                                    <label className="text-muted-foreground text-sm font-medium">Notes</label>
                                     <p className="mt-1 rounded-md text-sm">{appointment.notes}</p>
                                 </div>
                             )}
 
                             <div>
-                                <label className="text-sm font-medium text-muted-foreground">Created</label>
+                                <label className="text-muted-foreground text-sm font-medium">Created</label>
                                 <p className="text-sm">{formatDateTime(appointment.created_at)}</p>
                             </div>
                         </CardContent>
@@ -245,20 +256,20 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <label className="text-sm font-medium text-muted-foreground">Name</label>
+                                <label className="text-muted-foreground text-sm font-medium">Name</label>
                                 <p className="text-lg font-medium">{customer.name}</p>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 gap-4">
                                 <div className="flex items-center gap-2">
-                                    <Mail className="h-4 w-4 text-muted-foreground" />
+                                    <Mail className="text-muted-foreground h-4 w-4" />
                                     <a href={`mailto:${customer.email}`} className="text-blue-600 hover:underline">
                                         {customer.email}
                                     </a>
                                 </div>
                                 {customer.phone && (
                                     <div className="flex items-center gap-2">
-                                        <Phone className="h-4 w-4 text-muted-foreground" />
+                                        <Phone className="text-muted-foreground h-4 w-4" />
                                         <a href={`tel:${customer.phone}`} className="text-blue-600 hover:underline">
                                             {customer.phone}
                                         </a>
@@ -266,7 +277,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                                 )}
                                 {customer.tax_code && (
                                     <div className="flex items-center gap-2">
-                                        <Hash className="h-4 w-4 text-muted-foreground" />
+                                        <Hash className="text-muted-foreground h-4 w-4" />
                                         <span className="text-sm">{customer.tax_code}</span>
                                     </div>
                                 )}
@@ -275,7 +286,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                             <div className="flex gap-2 pt-2">
                                 <Button asChild variant="outline" size="sm">
                                     <Link href={`/admin/customers/${customer.id}`}>
-                                        <ExternalLink className="h-4 w-4 mr-2" />
+                                        <ExternalLink className="mr-2 h-4 w-4" />
                                         View Customer
                                     </Link>
                                 </Button>
@@ -295,38 +306,40 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <label className="text-sm font-medium text-muted-foreground">Vehicle</label>
-                                <p className="text-lg font-medium">{motorcycle.brand} {motorcycle.model}</p>
+                                <label className="text-muted-foreground text-sm font-medium">Vehicle</label>
+                                <p className="text-lg font-medium">
+                                    {motorcycle.brand} {motorcycle.model}
+                                </p>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Year</label>
+                                    <label className="text-muted-foreground text-sm font-medium">Year</label>
                                     <p>{motorcycle.year}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-muted-foreground">Engine Size</label>
+                                    <label className="text-muted-foreground text-sm font-medium">Engine Size</label>
                                     <p>{motorcycle.engine_size}</p>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 gap-4">
                                 <div className="flex items-center gap-2">
-                                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                                    <MapPin className="text-muted-foreground h-4 w-4" />
                                     <span className="font-medium">License Plate:</span>
                                     <span>{motorcycle.plate}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Hash className="h-4 w-4 text-muted-foreground" />
+                                    <Hash className="text-muted-foreground h-4 w-4" />
                                     <span className="font-medium">VIN:</span>
-                                    <span className="text-sm font-mono">{motorcycle.vin}</span>
+                                    <span className="font-mono text-sm">{motorcycle.vin}</span>
                                 </div>
                             </div>
 
                             <div className="flex gap-2 pt-2">
                                 <Button asChild variant="outline" size="sm">
                                     <Link href={`/admin/motorcycles/${motorcycle.id}`}>
-                                        <ExternalLink className="h-4 w-4 mr-2" />
+                                        <ExternalLink className="mr-2 h-4 w-4" />
                                         View Motorcycle
                                     </Link>
                                 </Button>
@@ -344,26 +357,24 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                                 </CardTitle>
                                 {workOrders.length === 0 && appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
                                     <Button onClick={handleCreateWorkOrder} size="sm">
-                                        <Plus className="h-4 w-4 mr-2" />
+                                        <Plus className="mr-2 h-4 w-4" />
                                         Create Work Order
                                     </Button>
                                 )}
                             </div>
-                            <CardDescription>
-                                Work orders associated with this appointment
-                            </CardDescription>
+                            <CardDescription>Work orders associated with this appointment</CardDescription>
                         </CardHeader>
                         <CardContent>
                             {workOrders.length > 0 ? (
                                 <div className="space-y-4">
                                     {workOrders.map((workOrder) => (
-                                        <div key={workOrder.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                                            <div className="flex items-center justify-between mb-2">
+                                        <div key={workOrder.id} className="rounded-lg border p-4 transition-colors hover:bg-gray-50">
+                                            <div className="mb-2 flex items-center justify-between">
                                                 <h4 className="font-medium">Work Order #{workOrder.id}</h4>
                                                 <Badge variant="outline">{workOrder.status}</Badge>
                                             </div>
-                                            <p className="text-sm text-muted-foreground mb-3">{workOrder.description}</p>
-                                            
+                                            <p className="text-muted-foreground mb-3 text-sm">{workOrder.description}</p>
+
                                             <div className="grid grid-cols-2 gap-4 text-sm">
                                                 {workOrder.started_at && (
                                                     <div>
@@ -376,18 +387,18 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             {workOrder.total_cost > 0 && (
-                                                <div className="flex items-center gap-2 mt-2 text-sm">
+                                                <div className="mt-2 flex items-center gap-2 text-sm">
                                                     <DollarSign className="h-4 w-4" />
                                                     <span className="font-medium">Total Cost: ${workOrder.total_cost.toFixed(2)}</span>
                                                 </div>
                                             )}
 
-                                            <div className="flex gap-2 mt-3">
+                                            <div className="mt-3 flex gap-2">
                                                 <Button asChild variant="outline" size="sm">
                                                     <Link href={`/admin/work-orders/${workOrder.id}`}>
-                                                        <ExternalLink className="h-4 w-4 mr-2" />
+                                                        <ExternalLink className="mr-2 h-4 w-4" />
                                                         View Details
                                                     </Link>
                                                 </Button>
@@ -396,8 +407,8 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-muted-foreground">
-                                    <Wrench className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <div className="text-muted-foreground py-6 text-center">
+                                    <Wrench className="mx-auto mb-2 h-8 w-8 opacity-50" />
                                     <p>No work orders created yet</p>
                                     {appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
                                         <p className="text-sm">Create a work order to track maintenance progress</p>
@@ -410,4 +421,4 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
             </div>
         </AppLayout>
     );
-} 
+}

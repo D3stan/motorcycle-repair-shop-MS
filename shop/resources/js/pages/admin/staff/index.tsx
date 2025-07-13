@@ -1,9 +1,9 @@
-import AdminListLayout from '@/components/admin/AdminListLayout';
 import AdminActionButtons from '@/components/admin/AdminActionButtons';
 import { StatusBadge } from '@/components/admin/AdminBadge';
+import AdminListLayout from '@/components/admin/AdminListLayout';
 import { useAdminDelete } from '@/hooks/use-admin-delete';
-import { type BreadcrumbItem, type AdminStaff } from '@/types';
-import { Users, Wrench, Clock } from 'lucide-react';
+import { type AdminStaff, type BreadcrumbItem } from '@/types';
+import { Clock, Users, Wrench } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -30,31 +30,32 @@ export default function StaffIndex({ staff }: Props) {
     // Prepare stats cards data
     const statsCards = [
         {
-            title: "Total Staff",
+            title: 'Total Staff',
             value: staff.data.length,
-            description: "Active mechanics",
+            description: 'Active mechanics',
             icon: Users,
         },
         {
-            title: "Active Work Orders",
+            title: 'Active Work Orders',
             value: staff.data.reduce((sum, s) => sum + s.active_work_orders_count, 0),
-            description: "Currently assigned",
+            description: 'Currently assigned',
             icon: Wrench,
         },
         {
-            title: "Total Assignments",
+            title: 'Total Assignments',
             value: staff.data.reduce((sum, s) => sum + s.assigned_work_orders_count, 0),
-            description: "All work orders",
+            description: 'All work orders',
             icon: Clock,
         },
         {
-            title: "Avg. Workload",
-            value: staff.data.length > 0 
-                ? Math.round(staff.data.reduce((sum, s) => sum + s.active_work_orders_count, 0) / staff.data.length * 10) / 10
-                : 0,
-            description: "Per mechanic",
+            title: 'Avg. Workload',
+            value:
+                staff.data.length > 0
+                    ? Math.round((staff.data.reduce((sum, s) => sum + s.active_work_orders_count, 0) / staff.data.length) * 10) / 10
+                    : 0,
+            description: 'Per mechanic',
             icon: Wrench,
-        }
+        },
     ];
 
     return (
@@ -72,10 +73,10 @@ export default function StaffIndex({ staff }: Props) {
             hasData={staff.data.length > 0}
             emptyStateProps={{
                 icon: Users,
-                title: "No staff members",
-                description: "Get started by adding a new staff member.",
-                createRoute: "/admin/staff/create",
-                createLabel: "Add Staff Member"
+                title: 'No staff members',
+                description: 'Get started by adding a new staff member.',
+                createRoute: '/admin/staff/create',
+                createLabel: 'Add Staff Member',
             }}
         >
             <div className="space-y-4">
@@ -89,43 +90,29 @@ export default function StaffIndex({ staff }: Props) {
                                 <div className="font-medium">
                                     {member.first_name} {member.last_name}
                                 </div>
-                                <div className="text-sm text-muted-foreground">
-                                    {member.email}
-                                </div>
-                                {member.phone && (
-                                    <div className="text-sm text-muted-foreground">
-                                        {member.phone}
-                                    </div>
-                                )}
+                                <div className="text-muted-foreground text-sm">{member.email}</div>
+                                {member.phone && <div className="text-muted-foreground text-sm">{member.phone}</div>}
                             </div>
                         </div>
-                        
+
                         <div className="flex items-center space-x-4">
                             <div className="text-right">
                                 <div className="flex items-center space-x-2">
-                                    <Wrench className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-sm font-medium">
-                                        {member.active_work_orders_count} active
-                                    </span>
+                                    <Wrench className="text-muted-foreground h-4 w-4" />
+                                    <span className="text-sm font-medium">{member.active_work_orders_count} active</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <Clock className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-sm text-muted-foreground">
-                                        {member.assigned_work_orders_count} total
-                                    </span>
+                                    <Clock className="text-muted-foreground h-4 w-4" />
+                                    <span className="text-muted-foreground text-sm">{member.assigned_work_orders_count} total</span>
                                 </div>
                             </div>
-                            
+
                             <StatusBadge status={member.active_work_orders_count > 0 ? 'Active' : 'Available'} />
-                            
+
                             <AdminActionButtons
                                 itemId={member.id}
                                 basePath="/admin/staff"
-                                onDelete={(id) => handleDelete(
-                                    id, 
-                                    `/admin/staff/${id}`, 
-                                    'Are you sure you want to delete this staff member?'
-                                )}
+                                onDelete={(id) => handleDelete(id, `/admin/staff/${id}`, 'Are you sure you want to delete this staff member?')}
                             />
                         </div>
                     </div>
@@ -133,4 +120,4 @@ export default function StaffIndex({ staff }: Props) {
             </div>
         </AdminListLayout>
     );
-} 
+}

@@ -6,7 +6,7 @@ export function useInitials() {
         if (!fullName || typeof fullName !== 'string') {
             return '';
         }
-        
+
         const names = fullName.trim().split(' ');
 
         if (names.length === 0) return '';

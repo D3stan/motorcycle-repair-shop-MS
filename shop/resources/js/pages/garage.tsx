@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm, router } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -72,7 +72,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
     };
 
     const handleEditMotorcycle = (motorcycleId: number) => {
-        const motorcycle = motorcycles.find(m => m.id === motorcycleId);
+        const motorcycle = motorcycles.find((m) => m.id === motorcycleId);
         if (motorcycle) {
             setEditingMotorcycle(motorcycle);
             editForm.setData({
@@ -88,7 +88,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
 
     const handleRemoveMotorcycle = (motorcycleId: number) => {
         if (confirm('Are you sure you want to remove this motorcycle? This action cannot be undone.')) {
-            const motorcycle = motorcycles.find(m => m.id === motorcycleId);
+            const motorcycle = motorcycles.find((m) => m.id === motorcycleId);
             if (motorcycle) {
                 useForm().delete(route('garage.destroy', motorcycle.id));
             }
@@ -135,9 +135,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                         <h1 className="text-2xl font-semibold tracking-tight">My Garage</h1>
                         <p className="text-muted-foreground">Manage your motorcycles and view their service history</p>
                     </div>
-                    <Button onClick={handleAddMotorcycle}>
-                        Add New Motorcycle
-                    </Button>
+                    <Button onClick={handleAddMotorcycle}>Add New Motorcycle</Button>
                 </div>
 
                 {/* Add Motorcycle Modal */}
@@ -145,9 +143,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                     <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
                             <DialogTitle>Add New Motorcycle</DialogTitle>
-                            <DialogDescription>
-                                Add a new motorcycle to your garage. All fields are required.
-                            </DialogDescription>
+                            <DialogDescription>Add a new motorcycle to your garage. All fields are required.</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleAddSubmit} className="space-y-4">
                             <div className="space-y-2">
@@ -167,9 +163,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {addForm.errors.motorcycle_model_id && (
-                                    <p className="text-sm text-red-600">{addForm.errors.motorcycle_model_id}</p>
-                                )}
+                                {addForm.errors.motorcycle_model_id && <p className="text-sm text-red-600">{addForm.errors.motorcycle_model_id}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -180,9 +174,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                     onChange={(e) => addForm.setData('license_plate', e.target.value)}
                                     placeholder="Enter license plate"
                                 />
-                                {addForm.errors.license_plate && (
-                                    <p className="text-sm text-red-600">{addForm.errors.license_plate}</p>
-                                )}
+                                {addForm.errors.license_plate && <p className="text-sm text-red-600">{addForm.errors.license_plate}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -202,9 +194,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {addForm.errors.registration_year && (
-                                    <p className="text-sm text-red-600">{addForm.errors.registration_year}</p>
-                                )}
+                                {addForm.errors.registration_year && <p className="text-sm text-red-600">{addForm.errors.registration_year}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -216,9 +206,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                     placeholder="Enter VIN (Vehicle Identification Number)"
                                     maxLength={17}
                                 />
-                                {addForm.errors.vin && (
-                                    <p className="text-sm text-red-600">{addForm.errors.vin}</p>
-                                )}
+                                {addForm.errors.vin && <p className="text-sm text-red-600">{addForm.errors.vin}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -229,9 +217,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                     onChange={(e) => addForm.setData('notes', e.target.value)}
                                     placeholder="Additional notes about your motorcycle"
                                 />
-                                {addForm.errors.notes && (
-                                    <p className="text-sm text-red-600">{addForm.errors.notes}</p>
-                                )}
+                                {addForm.errors.notes && <p className="text-sm text-red-600">{addForm.errors.notes}</p>}
                             </div>
 
                             <div className="flex justify-end space-x-2">
@@ -251,9 +237,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                     <DialogContent className="sm:max-w-[425px]">
                         <DialogHeader>
                             <DialogTitle>Edit Motorcycle</DialogTitle>
-                            <DialogDescription>
-                                Update your motorcycle information. All fields are required.
-                            </DialogDescription>
+                            <DialogDescription>Update your motorcycle information. All fields are required.</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleEditSubmit} className="space-y-4">
                             <div className="space-y-2">
@@ -273,9 +257,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {editForm.errors.motorcycle_model_id && (
-                                    <p className="text-sm text-red-600">{editForm.errors.motorcycle_model_id}</p>
-                                )}
+                                {editForm.errors.motorcycle_model_id && <p className="text-sm text-red-600">{editForm.errors.motorcycle_model_id}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -286,9 +268,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                     onChange={(e) => editForm.setData('license_plate', e.target.value)}
                                     placeholder="Enter license plate"
                                 />
-                                {editForm.errors.license_plate && (
-                                    <p className="text-sm text-red-600">{editForm.errors.license_plate}</p>
-                                )}
+                                {editForm.errors.license_plate && <p className="text-sm text-red-600">{editForm.errors.license_plate}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -308,9 +288,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                {editForm.errors.registration_year && (
-                                    <p className="text-sm text-red-600">{editForm.errors.registration_year}</p>
-                                )}
+                                {editForm.errors.registration_year && <p className="text-sm text-red-600">{editForm.errors.registration_year}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -322,9 +300,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                     placeholder="Enter VIN (Vehicle Identification Number)"
                                     maxLength={17}
                                 />
-                                {editForm.errors.vin && (
-                                    <p className="text-sm text-red-600">{editForm.errors.vin}</p>
-                                )}
+                                {editForm.errors.vin && <p className="text-sm text-red-600">{editForm.errors.vin}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -335,9 +311,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                                     onChange={(e) => editForm.setData('notes', e.target.value)}
                                     placeholder="Additional notes about your motorcycle"
                                 />
-                                {editForm.errors.notes && (
-                                    <p className="text-sm text-red-600">{editForm.errors.notes}</p>
-                                )}
+                                {editForm.errors.notes && <p className="text-sm text-red-600">{editForm.errors.notes}</p>}
                             </div>
 
                             <div className="flex justify-end space-x-2">
@@ -358,41 +332,45 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                         <Card key={motorcycle.id} className="relative">
                             <CardHeader>
                                 <CardTitle className="flex items-center justify-between">
-                                    <span>{motorcycle.brand} {motorcycle.model}</span>
-                                    <span className="text-sm font-normal text-muted-foreground">{motorcycle.year}</span>
+                                    <span>
+                                        {motorcycle.brand} {motorcycle.model}
+                                    </span>
+                                    <span className="text-muted-foreground text-sm font-normal">{motorcycle.year}</span>
                                 </CardTitle>
-                                <CardDescription>
-                                    Plate: {motorcycle.plate}
-                                </CardDescription>
+                                <CardDescription>Plate: {motorcycle.plate}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="text-sm">
-                                    <p><strong>VIN:</strong> {motorcycle.vin}</p>
-                                    {motorcycle.color && <p><strong>Color:</strong> {motorcycle.color}</p>}
-                                    {motorcycle.engine_size && <p><strong>Engine:</strong> {motorcycle.engine_size}cc</p>}
-                                    {motorcycle.notes && <p><strong>Notes:</strong> {motorcycle.notes}</p>}
+                                    <p>
+                                        <strong>VIN:</strong> {motorcycle.vin}
+                                    </p>
+                                    {motorcycle.color && (
+                                        <p>
+                                            <strong>Color:</strong> {motorcycle.color}
+                                        </p>
+                                    )}
+                                    {motorcycle.engine_size && (
+                                        <p>
+                                            <strong>Engine:</strong> {motorcycle.engine_size}cc
+                                        </p>
+                                    )}
+                                    {motorcycle.notes && (
+                                        <p>
+                                            <strong>Notes:</strong> {motorcycle.notes}
+                                        </p>
+                                    )}
                                 </div>
-                                
+
                                 <div className="flex flex-col gap-2">
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm"
-                                        onClick={() => handleViewHistory(motorcycle.id)}
-                                        className="w-full"
-                                    >
+                                    <Button variant="outline" size="sm" onClick={() => handleViewHistory(motorcycle.id)} className="w-full">
                                         View Service History
                                     </Button>
                                     <div className="flex gap-2">
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm"
-                                            onClick={() => handleEditMotorcycle(motorcycle.id)}
-                                            className="flex-1"
-                                        >
+                                        <Button variant="outline" size="sm" onClick={() => handleEditMotorcycle(motorcycle.id)} className="flex-1">
                                             Edit
                                         </Button>
-                                        <Button 
-                                            variant="destructive" 
+                                        <Button
+                                            variant="destructive"
                                             size="sm"
                                             onClick={() => handleRemoveMotorcycle(motorcycle.id)}
                                             className="flex-1"
@@ -410,13 +388,11 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                 {motorcycles.length === 0 && (
                     <Card className="border-dashed">
                         <CardContent className="flex flex-col items-center justify-center py-12">
-                            <h3 className="text-lg font-semibold mb-2">No motorcycles in your garage</h3>
+                            <h3 className="mb-2 text-lg font-semibold">No motorcycles in your garage</h3>
                             <p className="text-muted-foreground mb-4 text-center">
                                 Add your first motorcycle to start managing your service history and appointments.
                             </p>
-                            <Button onClick={handleAddMotorcycle}>
-                                Add Your First Motorcycle
-                            </Button>
+                            <Button onClick={handleAddMotorcycle}>Add Your First Motorcycle</Button>
                         </CardContent>
                     </Card>
                 )}
@@ -431,7 +407,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                             <div className="text-2xl font-bold">{motorcycles.length}</div>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Pending Services</CardTitle>
@@ -440,7 +416,7 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
                             <div className="text-2xl font-bold">{pendingServicesCount}</div>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Last Service</CardTitle>
@@ -453,4 +429,4 @@ export default function Garage({ motorcycles, motorcycleModels, pendingServicesC
             </div>
         </AppLayout>
     );
-} 
+}

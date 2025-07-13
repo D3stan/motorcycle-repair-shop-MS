@@ -4,20 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminPart, type SupplierOption } from '@/types';
+import { type AdminPart, type BreadcrumbItem, type SupplierOption } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Package } from 'lucide-react';
+import { ArrowLeft, Package, Save } from 'lucide-react';
 
-const categories = [
-    'Engine',
-    'Brake',
-    'Suspension',
-    'Electrical',
-    'Body',
-    'Transmission',
-    'Exhaust',
-    'Fuel System',
-];
+const categories = ['Engine', 'Brake', 'Suspension', 'Electrical', 'Body', 'Transmission', 'Exhaust', 'Fuel System'];
 
 interface Props {
     part: AdminPart;
@@ -88,7 +79,7 @@ export default function InventoryEdit({ part, suppliers }: Props) {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 {/* Part Code */}
                                 <div className="space-y-2">
                                     <Label htmlFor="part_code">Part Code *</Label>
@@ -99,39 +90,21 @@ export default function InventoryEdit({ part, suppliers }: Props) {
                                         onChange={(e) => setData('part_code', e.target.value)}
                                         required
                                     />
-                                    {errors.part_code && (
-                                        <p className="text-sm text-red-600">{errors.part_code}</p>
-                                    )}
+                                    {errors.part_code && <p className="text-sm text-red-600">{errors.part_code}</p>}
                                 </div>
 
                                 {/* Brand */}
                                 <div className="space-y-2">
                                     <Label htmlFor="brand">Brand *</Label>
-                                    <Input
-                                        id="brand"
-                                        type="text"
-                                        value={data.brand}
-                                        onChange={(e) => setData('brand', e.target.value)}
-                                        required
-                                    />
-                                    {errors.brand && (
-                                        <p className="text-sm text-red-600">{errors.brand}</p>
-                                    )}
+                                    <Input id="brand" type="text" value={data.brand} onChange={(e) => setData('brand', e.target.value)} required />
+                                    {errors.brand && <p className="text-sm text-red-600">{errors.brand}</p>}
                                 </div>
 
                                 {/* Name */}
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Part Name *</Label>
-                                    <Input
-                                        id="name"
-                                        type="text"
-                                        value={data.name}
-                                        onChange={(e) => setData('name', e.target.value)}
-                                        required
-                                    />
-                                    {errors.name && (
-                                        <p className="text-sm text-red-600">{errors.name}</p>
-                                    )}
+                                    <Input id="name" type="text" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
+                                    {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
                                 </div>
 
                                 {/* Category */}
@@ -149,9 +122,7 @@ export default function InventoryEdit({ part, suppliers }: Props) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.category && (
-                                        <p className="text-sm text-red-600">{errors.category}</p>
-                                    )}
+                                    {errors.category && <p className="text-sm text-red-600">{errors.category}</p>}
                                 </div>
 
                                 {/* Supplier */}
@@ -169,9 +140,7 @@ export default function InventoryEdit({ part, suppliers }: Props) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.supplier_id && (
-                                        <p className="text-sm text-red-600">{errors.supplier_id}</p>
-                                    )}
+                                    {errors.supplier_id && <p className="text-sm text-red-600">{errors.supplier_id}</p>}
                                 </div>
 
                                 {/* Supplier Price */}
@@ -186,9 +155,7 @@ export default function InventoryEdit({ part, suppliers }: Props) {
                                         onChange={(e) => setData('supplier_price', e.target.value)}
                                         required
                                     />
-                                    {errors.supplier_price && (
-                                        <p className="text-sm text-red-600">{errors.supplier_price}</p>
-                                    )}
+                                    {errors.supplier_price && <p className="text-sm text-red-600">{errors.supplier_price}</p>}
                                 </div>
                             </div>
 
@@ -197,14 +164,12 @@ export default function InventoryEdit({ part, suppliers }: Props) {
                                 <Label htmlFor="description">Description</Label>
                                 <textarea
                                     id="description"
-                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
                                     placeholder="Optional description of the part"
                                 />
-                                {errors.description && (
-                                    <p className="text-sm text-red-600">{errors.description}</p>
-                                )}
+                                {errors.description && <p className="text-sm text-red-600">{errors.description}</p>}
                             </div>
 
                             {/* Submit Button */}
@@ -223,4 +188,4 @@ export default function InventoryEdit({ part, suppliers }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

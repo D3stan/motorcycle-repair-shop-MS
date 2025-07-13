@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import BookAppointmentModal from '@/components/book-appointment-modal';
+import CancelAppointmentModal from '@/components/cancel-appointment-modal';
+import EditAppointmentModal from '@/components/edit-appointment-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import BookAppointmentModal from '@/components/book-appointment-modal';
-import EditAppointmentModal from '@/components/edit-appointment-modal';
-import CancelAppointmentModal from '@/components/cancel-appointment-modal';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -69,7 +69,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
     };
 
     const handleEditAppointment = (appointmentId: number) => {
-        const appointment = upcomingAppointments.find(apt => apt.id === appointmentId);
+        const appointment = upcomingAppointments.find((apt) => apt.id === appointmentId);
         if (appointment) {
             setSelectedAppointment(appointment);
             setIsEditModalOpen(true);
@@ -77,7 +77,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
     };
 
     const handleCancelAppointment = (appointmentId: number) => {
-        const appointment = upcomingAppointments.find(apt => apt.id === appointmentId);
+        const appointment = upcomingAppointments.find((apt) => apt.id === appointmentId);
         if (appointment) {
             setSelectedAppointment(appointment);
             setIsCancelModalOpen(true);
@@ -94,39 +94,50 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                         <h1 className="text-2xl font-semibold tracking-tight">Appointments</h1>
                         <p className="text-muted-foreground">Manage your motorcycle service appointments</p>
                     </div>
-                    <Button onClick={handleBookAppointment}>
-                        Book New Appointment
-                    </Button>
+                    <Button onClick={handleBookAppointment}>Book New Appointment</Button>
                 </div>
 
                 {/* Upcoming Appointments */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-semibold">Upcoming Appointments</h2>
-                    
+
                     {upcomingAppointments.length > 0 ? (
                         <div className="grid gap-4 md:grid-cols-2">
                             {upcomingAppointments.map((appointment) => (
                                 <Card key={appointment.id}>
                                     <CardHeader>
                                         <CardTitle className="flex items-center justify-between">
-                                            <span>{appointment.motorcycle ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model}` : appointment.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                                            <span>
+                                                {appointment.motorcycle
+                                                    ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model}`
+                                                    : appointment.type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                                            </span>
+                                            <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(appointment.status)}`}>
                                                 {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                                             </span>
                                         </CardTitle>
                                         <CardDescription>
-                                            {appointment.appointment_date} at {appointment.appointment_time} • {appointment.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                            {appointment.appointment_date} at {appointment.appointment_time} •{' '}
+                                            {appointment.type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="text-sm">
-                                            {appointment.motorcycle && <p><strong>Motorcycle:</strong> {appointment.motorcycle.plate}</p>}
-                                            {appointment.notes && <p><strong>Notes:</strong> {appointment.notes}</p>}
+                                            {appointment.motorcycle && (
+                                                <p>
+                                                    <strong>Motorcycle:</strong> {appointment.motorcycle.plate}
+                                                </p>
+                                            )}
+                                            {appointment.notes && (
+                                                <p>
+                                                    <strong>Notes:</strong> {appointment.notes}
+                                                </p>
+                                            )}
                                         </div>
-                                        
+
                                         <div className="flex gap-2">
-                                            <Button 
-                                                variant="outline" 
+                                            <Button
+                                                variant="outline"
                                                 size="sm"
                                                 onClick={() => handleEditAppointment(appointment.id)}
                                                 className="flex-1"
@@ -134,8 +145,8 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                             >
                                                 Edit
                                             </Button>
-                                            <Button 
-                                                variant="destructive" 
+                                            <Button
+                                                variant="destructive"
                                                 size="sm"
                                                 onClick={() => handleCancelAppointment(appointment.id)}
                                                 className="flex-1"
@@ -151,13 +162,11 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                     ) : (
                         <Card className="border-dashed">
                             <CardContent className="flex flex-col items-center justify-center py-12">
-                                <h3 className="text-lg font-semibold mb-2">No upcoming appointments</h3>
+                                <h3 className="mb-2 text-lg font-semibold">No upcoming appointments</h3>
                                 <p className="text-muted-foreground mb-4 text-center">
                                     Book your first appointment to get started with our services.
                                 </p>
-                                <Button onClick={handleBookAppointment}>
-                                    Book Your First Appointment
-                                </Button>
+                                <Button onClick={handleBookAppointment}>Book Your First Appointment</Button>
                             </CardContent>
                         </Card>
                     )}
@@ -166,7 +175,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                 {/* Appointment History */}
                 <div className="space-y-4">
                     <h2 className="text-lg font-semibold">Appointment History</h2>
-                    
+
                     {pastAppointments.length > 0 ? (
                         <div className="space-y-3">
                             {pastAppointments.map((appointment) => (
@@ -175,16 +184,17 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-1">
                                                 <p className="font-medium">
-                                                    {appointment.motorcycle ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model} • ` : ''}{appointment.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                    {appointment.motorcycle
+                                                        ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model} • `
+                                                        : ''}
+                                                    {appointment.type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                                                 </p>
-                                                <p className="text-sm text-muted-foreground">
+                                                <p className="text-muted-foreground text-sm">
                                                     {appointment.appointment_date} at {appointment.appointment_time}
                                                 </p>
-                                                {appointment.notes && (
-                                                    <p className="text-sm text-muted-foreground">{appointment.notes}</p>
-                                                )}
+                                                {appointment.notes && <p className="text-muted-foreground text-sm">{appointment.notes}</p>}
                                             </div>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                                            <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(appointment.status)}`}>
                                                 {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                                             </span>
                                         </div>
@@ -195,9 +205,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                     ) : (
                         <Card>
                             <CardContent className="flex flex-col items-center justify-center py-8">
-                                <p className="text-muted-foreground text-center">
-                                    No appointment history available.
-                                </p>
+                                <p className="text-muted-foreground text-center">No appointment history available.</p>
                             </CardContent>
                         </Card>
                     )}
@@ -211,55 +219,43 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
-                            <p className="text-sm text-muted-foreground">
-                                {upcomingAppointments.length === 1 ? 'appointment' : 'appointments'}
-                            </p>
+                            <p className="text-muted-foreground text-sm">{upcomingAppointments.length === 1 ? 'appointment' : 'appointments'}</p>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Completed</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {pastAppointments.filter(apt => apt.status === 'completed').length}
-                            </div>
-                            <p className="text-sm text-muted-foreground">services done</p>
+                            <div className="text-2xl font-bold">{pastAppointments.filter((apt) => apt.status === 'completed').length}</div>
+                            <p className="text-muted-foreground text-sm">services done</p>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Motorcycles</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{motorcycles.length}</div>
-                            <p className="text-sm text-muted-foreground">registered</p>
+                            <p className="text-muted-foreground text-sm">registered</p>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Modal Components */}
-                <BookAppointmentModal 
-                    open={isBookModalOpen} 
-                    onOpenChange={setIsBookModalOpen}
-                    motorcycles={motorcycles}
-                />
-                
-                <EditAppointmentModal 
-                    open={isEditModalOpen} 
+                <BookAppointmentModal open={isBookModalOpen} onOpenChange={setIsBookModalOpen} motorcycles={motorcycles} />
+
+                <EditAppointmentModal
+                    open={isEditModalOpen}
                     onOpenChange={setIsEditModalOpen}
                     appointment={selectedAppointment}
                     motorcycles={motorcycles}
                 />
-                
-                <CancelAppointmentModal 
-                    open={isCancelModalOpen} 
-                    onOpenChange={setIsCancelModalOpen}
-                    appointment={selectedAppointment}
-                />
+
+                <CancelAppointmentModal open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen} appointment={selectedAppointment} />
             </div>
         </AppLayout>
     );
-} 
+}

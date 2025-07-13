@@ -1,11 +1,10 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, Clock, Settings, Zap, ChevronDown, Bike } from 'lucide-react';
+import { Bike, Calendar, ChevronDown, Clock, Settings, Zap } from 'lucide-react';
 
 interface Motorcycle {
     id: number;
@@ -35,10 +34,7 @@ interface AppointmentFormProps {
 }
 
 // Common time slots (9:00 AM to 5:00 PM)
-const TIME_SLOTS = [
-    '09:00', '10:00', '11:00', '12:00', 
-    '13:00', '14:00', '15:00', '16:00', '17:00'
-];
+const TIME_SLOTS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
 // Service type options
 const SERVICE_TYPES = [
@@ -46,14 +42,14 @@ const SERVICE_TYPES = [
         id: 'maintenance' as const,
         label: 'Maintenance Service',
         icon: Settings,
-        description: 'Regular maintenance and repairs'
+        description: 'Regular maintenance and repairs',
     },
     {
         id: 'dyno_testing' as const,
         label: 'Dyno Testing',
         icon: Zap,
-        description: 'Performance testing and tuning'
-    }
+        description: 'Performance testing and tuning',
+    },
 ];
 
 export default function AppointmentForm({
@@ -67,7 +63,7 @@ export default function AppointmentForm({
     onSubmit,
     onCancel,
     submitLabel = 'Book Appointment',
-    showCancelButton = true
+    showCancelButton = true,
 }: AppointmentFormProps) {
     // Get minimum date (tomorrow)
     const minDate = new Date();
@@ -79,17 +75,15 @@ export default function AppointmentForm({
             {/* Service Type Selection */}
             <div className="space-y-3">
                 <Label className="text-base font-medium">Service Type</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {SERVICE_TYPES.map((serviceType) => {
                         const Icon = serviceType.icon;
                         return (
-                            <Card 
+                            <Card
                                 key={serviceType.id}
-                                className={`cursor-pointer transition-all p-0 ${
-                                    data.type === serviceType.id
-                                        ? 'border-primary bg-primary/5' 
-                                        : 'hover:border-primary/50'
-                                } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`cursor-pointer p-0 transition-all ${
+                                    data.type === serviceType.id ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
+                                } ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
                                 onClick={() => !disabled && onDataChange('type', serviceType.id)}
                             >
                                 <CardContent className="p-4">
@@ -102,9 +96,7 @@ export default function AppointmentForm({
                         );
                     })}
                 </div>
-                {errors.type && (
-                    <p className="text-sm text-red-600">{errors.type}</p>
-                )}
+                {errors.type && <p className="text-sm text-red-600">{errors.type}</p>}
             </div>
 
             {/* Motorcycle Selection */}
@@ -117,22 +109,16 @@ export default function AppointmentForm({
                     {motorcycles.length > 0 ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button 
-                                    variant="outline" 
-                                    className="w-full justify-between"
-                                    type="button"
-                                    disabled={disabled}
-                                >
-                                    {data.motorcycle_id 
-                                        ? motorcycles.find(m => m.id.toString() === data.motorcycle_id)?.label || 'Select your motorcycle'
-                                        : 'Select your motorcycle'
-                                    }
+                                <Button variant="outline" className="w-full justify-between" type="button" disabled={disabled}>
+                                    {data.motorcycle_id
+                                        ? motorcycles.find((m) => m.id.toString() === data.motorcycle_id)?.label || 'Select your motorcycle'
+                                        : 'Select your motorcycle'}
                                     <ChevronDown className="h-4 w-4 opacity-50" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                                 {motorcycles.map((motorcycle) => (
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                         key={motorcycle.id}
                                         onClick={() => onDataChange('motorcycle_id', motorcycle.id.toString())}
                                         className="cursor-pointer"
@@ -143,23 +129,17 @@ export default function AppointmentForm({
                             </DropdownMenuContent>
                         </DropdownMenu>
                     ) : (
-                        <div className="p-4 border-2 border-dashed border-muted-foreground/25 rounded-lg text-center">
-                            <p className="text-sm text-muted-foreground mb-2">
-                                No motorcycles registered
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                                Please add a motorcycle to your garage first
-                            </p>
+                        <div className="border-muted-foreground/25 rounded-lg border-2 border-dashed p-4 text-center">
+                            <p className="text-muted-foreground mb-2 text-sm">No motorcycles registered</p>
+                            <p className="text-muted-foreground text-xs">Please add a motorcycle to your garage first</p>
                         </div>
                     )}
-                    {errors.motorcycle_id && (
-                        <p className="text-sm text-red-600">{errors.motorcycle_id}</p>
-                    )}
+                    {errors.motorcycle_id && <p className="text-sm text-red-600">{errors.motorcycle_id}</p>}
                 </div>
             )}
 
             {/* Date and Time Selection */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="appointment_date" className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
@@ -174,9 +154,7 @@ export default function AppointmentForm({
                         disabled={disabled}
                         className="w-full"
                     />
-                    {errors.appointment_date && (
-                        <p className="text-sm text-red-600">{errors.appointment_date}</p>
-                    )}
+                    {errors.appointment_date && <p className="text-sm text-red-600">{errors.appointment_date}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -186,31 +164,20 @@ export default function AppointmentForm({
                     </Label>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button 
-                                variant="outline" 
-                                className="w-full justify-between"
-                                type="button"
-                                disabled={disabled}
-                            >
+                            <Button variant="outline" className="w-full justify-between" type="button" disabled={disabled}>
                                 {data.appointment_time || 'Select time'}
                                 <ChevronDown className="h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                             {TIME_SLOTS.map((time) => (
-                                <DropdownMenuItem 
-                                    key={time}
-                                    onClick={() => onDataChange('appointment_time', time)}
-                                    className="cursor-pointer"
-                                >
+                                <DropdownMenuItem key={time} onClick={() => onDataChange('appointment_time', time)} className="cursor-pointer">
                                     {time}
                                 </DropdownMenuItem>
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    {errors.appointment_time && (
-                        <p className="text-sm text-red-600">{errors.appointment_time}</p>
-                    )}
+                    {errors.appointment_time && <p className="text-sm text-red-600">{errors.appointment_time}</p>}
                 </div>
             </div>
 
@@ -225,32 +192,20 @@ export default function AppointmentForm({
                     disabled={disabled}
                     rows={3}
                 />
-                {errors.notes && (
-                    <p className="text-sm text-red-600">{errors.notes}</p>
-                )}
+                {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
             </div>
 
             {/* Actions */}
             <div className="flex gap-3 pt-4">
                 {showCancelButton && (
-                    <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={onCancel}
-                        disabled={processing}
-                        className="flex-1"
-                    >
+                    <Button type="button" variant="outline" onClick={onCancel} disabled={processing} className="flex-1">
                         Cancel
                     </Button>
                 )}
-                <Button 
-                    type="submit" 
-                    disabled={processing || disabled}
-                    className="flex-1"
-                >
+                <Button type="submit" disabled={processing || disabled} className="flex-1">
                     {processing ? 'Processing...' : submitLabel}
                 </Button>
             </div>
         </form>
     );
-} 
+}

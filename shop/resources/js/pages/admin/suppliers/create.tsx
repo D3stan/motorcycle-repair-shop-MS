@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Building2 } from 'lucide-react';
+import { ArrowLeft, Building2, Save } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -69,7 +69,7 @@ export default function SupplierCreate() {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 {/* Supplier Code */}
                                 <div className="space-y-2">
                                     <Label htmlFor="supplier_code">Supplier Code *</Label>
@@ -81,9 +81,7 @@ export default function SupplierCreate() {
                                         placeholder="e.g., SUP001"
                                         required
                                     />
-                                    {errors.supplier_code && (
-                                        <p className="text-sm text-red-600">{errors.supplier_code}</p>
-                                    )}
+                                    {errors.supplier_code && <p className="text-sm text-red-600">{errors.supplier_code}</p>}
                                 </div>
 
                                 {/* Name */}
@@ -97,9 +95,7 @@ export default function SupplierCreate() {
                                         placeholder="e.g., Motosport Components Srl"
                                         required
                                     />
-                                    {errors.name && (
-                                        <p className="text-sm text-red-600">{errors.name}</p>
-                                    )}
+                                    {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
                                 </div>
 
                                 {/* Phone */}
@@ -113,9 +109,7 @@ export default function SupplierCreate() {
                                         placeholder="+39 123 456 7890"
                                         required
                                     />
-                                    {errors.phone && (
-                                        <p className="text-sm text-red-600">{errors.phone}</p>
-                                    )}
+                                    {errors.phone && <p className="text-sm text-red-600">{errors.phone}</p>}
                                 </div>
 
                                 {/* Email */}
@@ -129,9 +123,7 @@ export default function SupplierCreate() {
                                         placeholder="contact@supplier.com"
                                         required
                                     />
-                                    {errors.email && (
-                                        <p className="text-sm text-red-600">{errors.email}</p>
-                                    )}
+                                    {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
                                 </div>
 
                                 {/* Address */}
@@ -144,9 +136,7 @@ export default function SupplierCreate() {
                                         onChange={(e) => setData('address', e.target.value)}
                                         placeholder="Street address"
                                     />
-                                    {errors.address && (
-                                        <p className="text-sm text-red-600">{errors.address}</p>
-                                    )}
+                                    {errors.address && <p className="text-sm text-red-600">{errors.address}</p>}
                                 </div>
 
                                 {/* City */}
@@ -159,9 +149,7 @@ export default function SupplierCreate() {
                                         onChange={(e) => setData('city', e.target.value)}
                                         placeholder="City name"
                                     />
-                                    {errors.city && (
-                                        <p className="text-sm text-red-600">{errors.city}</p>
-                                    )}
+                                    {errors.city && <p className="text-sm text-red-600">{errors.city}</p>}
                                 </div>
 
                                 {/* Postal Code */}
@@ -174,9 +162,7 @@ export default function SupplierCreate() {
                                         onChange={(e) => setData('postal_code', e.target.value)}
                                         placeholder="12345"
                                     />
-                                    {errors.postal_code && (
-                                        <p className="text-sm text-red-600">{errors.postal_code}</p>
-                                    )}
+                                    {errors.postal_code && <p className="text-sm text-red-600">{errors.postal_code}</p>}
                                 </div>
 
                                 {/* Country */}
@@ -190,9 +176,7 @@ export default function SupplierCreate() {
                                         placeholder="Italy"
                                         required
                                     />
-                                    {errors.country && (
-                                        <p className="text-sm text-red-600">{errors.country}</p>
-                                    )}
+                                    {errors.country && <p className="text-sm text-red-600">{errors.country}</p>}
                                 </div>
                             </div>
 
@@ -201,14 +185,12 @@ export default function SupplierCreate() {
                                 <Label htmlFor="notes">Notes</Label>
                                 <textarea
                                     id="notes"
-                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
                                     placeholder="Optional notes about the supplier"
                                 />
-                                {errors.notes && (
-                                    <p className="text-sm text-red-600">{errors.notes}</p>
-                                )}
+                                {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
                             </div>
 
                             {/* Submit Button */}
@@ -227,4 +209,4 @@ export default function SupplierCreate() {
             </div>
         </AppLayout>
     );
-} 
+}

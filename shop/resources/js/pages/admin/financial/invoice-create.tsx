@@ -1,14 +1,14 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Calculator, Euro, Clock, Wrench } from 'lucide-react';
+import { ArrowLeft, Calculator, Clock, Euro, Wrench } from 'lucide-react';
+import { useState } from 'react';
 
 interface WorkOrder {
     id: string;
@@ -48,7 +48,7 @@ interface InvoiceCreateProps {
 
 export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourlyRate }: InvoiceCreateProps) {
     const [hourlyRate, setHourlyRate] = useState(defaultHourlyRate);
-    
+
     const { data, setData, post, processing, errors } = useForm({
         hourly_rate: defaultHourlyRate,
         notes: '',
@@ -101,7 +101,7 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Create Invoice - Work Order #${workOrder.id}`} />
-            
+
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -111,7 +111,7 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
                     </div>
                     <Button asChild variant="outline">
                         <Link href={route('admin.work-orders.show', workOrder.id)}>
-                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Work Order
                         </Link>
                     </Button>
@@ -119,7 +119,7 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
 
                 <div className="grid gap-6 lg:grid-cols-3">
                     {/* Left Column - Work Order & Customer Info */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="space-y-6 lg:col-span-2">
                         {/* Customer Information */}
                         <Card>
                             <CardHeader>
@@ -128,15 +128,15 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
                             <CardContent className="space-y-3">
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Name</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">Name</Label>
                                         <p className="font-medium">{workOrder.customer.name}</p>
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">Email</Label>
                                         <p className="font-medium">{workOrder.customer.email}</p>
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Codice Fiscale</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">Codice Fiscale</Label>
                                         <p className="font-medium">{workOrder.customer.cf}</p>
                                     </div>
                                 </div>
@@ -151,15 +151,17 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
                             <CardContent className="space-y-3">
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Make & Model</Label>
-                                        <p className="font-medium">{workOrder.motorcycle.brand} {workOrder.motorcycle.model}</p>
+                                        <Label className="text-muted-foreground text-sm font-medium">Make & Model</Label>
+                                        <p className="font-medium">
+                                            {workOrder.motorcycle.brand} {workOrder.motorcycle.model}
+                                        </p>
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">License Plate</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">License Plate</Label>
                                         <p className="font-medium">{workOrder.motorcycle.plate}</p>
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">VIN</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">VIN</Label>
                                         <p className="font-medium">{workOrder.motorcycle.vin}</p>
                                     </div>
                                 </div>
@@ -174,16 +176,16 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
                             <CardContent className="space-y-4">
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Started</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">Started</Label>
                                         <p className="font-medium">{formatDate(workOrder.started_at)}</p>
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Completed</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">Completed</Label>
                                         <p className="font-medium">{formatDate(workOrder.completed_at)}</p>
                                     </div>
                                 </div>
                                 <div>
-                                    <Label className="text-sm font-medium text-muted-foreground">Description</Label>
+                                    <Label className="text-muted-foreground text-sm font-medium">Description</Label>
                                     <p className="font-medium">{workOrder.description}</p>
                                 </div>
                             </CardContent>
@@ -198,10 +200,10 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
                                 <CardContent>
                                     <div className="space-y-3">
                                         {partsBreakdown.map((part, index) => (
-                                            <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                                            <div key={index} className="flex items-center justify-between border-b py-2 last:border-b-0">
                                                 <div>
                                                     <p className="font-medium">{part.name}</p>
-                                                    <p className="text-sm text-muted-foreground">
+                                                    <p className="text-muted-foreground text-sm">
                                                         {part.quantity} × {formatCurrency(part.unit_price)}
                                                     </p>
                                                 </div>
@@ -234,21 +236,23 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <Wrench className="h-4 w-4 text-muted-foreground" />
+                                            <Wrench className="text-muted-foreground h-4 w-4" />
                                             <span>Parts</span>
                                         </div>
                                         <span className="font-medium">{formatCurrency(workOrder.parts_cost)}</span>
                                     </div>
-                                    
+
                                     <Separator />
-                                    
+
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
-                                            <Clock className="h-4 w-4 text-muted-foreground" />
+                                            <Clock className="text-muted-foreground h-4 w-4" />
                                             <span>Labor ({workOrder.labor_hours}h)</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Label htmlFor="hourlyRate" className="text-sm">Hourly Rate</Label>
+                                            <Label htmlFor="hourlyRate" className="text-sm">
+                                                Hourly Rate
+                                            </Label>
                                             <div className="flex items-center gap-1">
                                                 <Input
                                                     id="hourlyRate"
@@ -259,17 +263,17 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
                                                     onChange={(e) => handleHourlyRateChange(Number(e.target.value))}
                                                     className="w-20 text-sm"
                                                 />
-                                                <span className="text-sm text-muted-foreground">€/h</span>
+                                                <span className="text-muted-foreground text-sm">€/h</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-muted-foreground">Labor Total</span>
+                                            <span className="text-muted-foreground text-sm">Labor Total</span>
                                             <span className="font-medium">{formatCurrency(calculatedLaborCost)}</span>
                                         </div>
                                     </div>
-                                    
+
                                     <Separator />
-                                    
+
                                     <div className="flex items-center justify-between text-lg font-bold">
                                         <div className="flex items-center gap-2">
                                             <Euro className="h-4 w-4" />
@@ -297,16 +301,10 @@ export default function InvoiceCreate({ workOrder, partsBreakdown, defaultHourly
                                             onChange={(e) => setData('notes', e.target.value)}
                                             rows={3}
                                         />
-                                        {errors.notes && (
-                                            <p className="text-sm text-red-600">{errors.notes}</p>
-                                        )}
+                                        {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
                                     </div>
 
-                                    <Button 
-                                        type="submit" 
-                                        className="w-full" 
-                                        disabled={processing}
-                                    >
+                                    <Button type="submit" className="w-full" disabled={processing}>
                                         {processing ? 'Creating Invoice...' : 'Create Invoice'}
                                     </Button>
                                 </form>

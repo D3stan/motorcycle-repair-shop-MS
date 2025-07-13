@@ -41,7 +41,7 @@ export default function StaffCreate() {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Add Staff Member" />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -64,13 +64,11 @@ export default function StaffCreate() {
                             <UserPlus className="mr-2 h-5 w-5" />
                             Staff Member Information
                         </CardTitle>
-                        <CardDescription>
-                            Enter the details for the new mechanic
-                        </CardDescription>
+                        <CardDescription>Enter the details for the new mechanic</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="first_name">First Name *</Label>
                                     <Input
@@ -81,9 +79,7 @@ export default function StaffCreate() {
                                         className={errors.first_name ? 'border-red-500' : ''}
                                         required
                                     />
-                                    {errors.first_name && (
-                                        <p className="text-sm text-red-500">{errors.first_name}</p>
-                                    )}
+                                    {errors.first_name && <p className="text-sm text-red-500">{errors.first_name}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -96,9 +92,7 @@ export default function StaffCreate() {
                                         className={errors.last_name ? 'border-red-500' : ''}
                                         required
                                     />
-                                    {errors.last_name && (
-                                        <p className="text-sm text-red-500">{errors.last_name}</p>
-                                    )}
+                                    {errors.last_name && <p className="text-sm text-red-500">{errors.last_name}</p>}
                                 </div>
                             </div>
 
@@ -112,12 +106,10 @@ export default function StaffCreate() {
                                     className={errors.email ? 'border-red-500' : ''}
                                     required
                                 />
-                                {errors.email && (
-                                    <p className="text-sm text-red-500">{errors.email}</p>
-                                )}
+                                {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="phone">Phone</Label>
                                     <Input
@@ -127,9 +119,7 @@ export default function StaffCreate() {
                                         onChange={(e) => setData('phone', e.target.value)}
                                         className={errors.phone ? 'border-red-500' : ''}
                                     />
-                                    {errors.phone && (
-                                        <p className="text-sm text-red-500">{errors.phone}</p>
-                                    )}
+                                    {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -141,13 +131,11 @@ export default function StaffCreate() {
                                         onChange={(e) => setData('tax_code', e.target.value)}
                                         className={errors.tax_code ? 'border-red-500' : ''}
                                     />
-                                    {errors.tax_code && (
-                                        <p className="text-sm text-red-500">{errors.tax_code}</p>
-                                    )}
+                                    {errors.tax_code && <p className="text-sm text-red-500">{errors.tax_code}</p>}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="password">Password *</Label>
                                     <Input
@@ -158,9 +146,7 @@ export default function StaffCreate() {
                                         className={errors.password ? 'border-red-500' : ''}
                                         required
                                     />
-                                    {errors.password && (
-                                        <p className="text-sm text-red-500">{errors.password}</p>
-                                    )}
+                                    {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -173,9 +159,7 @@ export default function StaffCreate() {
                                         className={errors.password_confirmation ? 'border-red-500' : ''}
                                         required
                                     />
-                                    {errors.password_confirmation && (
-                                        <p className="text-sm text-red-500">{errors.password_confirmation}</p>
-                                    )}
+                                    {errors.password_confirmation && <p className="text-sm text-red-500">{errors.password_confirmation}</p>}
                                 </div>
                             </div>
 
@@ -193,4 +177,4 @@ export default function StaffCreate() {
             </div>
         </AppLayout>
     );
-} 
+}

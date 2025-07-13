@@ -1,10 +1,10 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminMotorcycleModel } from '@/types';
+import { type AdminMotorcycleModel, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Edit, Trash2, Plus, Bike, Settings, Zap } from 'lucide-react';
+import { Bike, Edit, Eye, Plus, Settings, Trash2, Zap } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,19 +48,17 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Motorcycle Management" />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">Motorcycle Management</h1>
-                        <p className="text-muted-foreground">
-                            Manage motorcycle models and specifications
-                        </p>
+                        <p className="text-muted-foreground">Manage motorcycle models and specifications</p>
                     </div>
                     <Button asChild>
                         <Link href={route('admin.motorcycles.create')}>
-                            <Plus className="h-4 w-4 mr-2" />
+                            <Plus className="mr-2 h-4 w-4" />
                             Add New Model
                         </Link>
                     </Button>
@@ -71,50 +69,47 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Models</CardTitle>
-                            <Bike className="h-4 w-4 text-muted-foreground" />
+                            <Bike className="text-muted-foreground h-4 w-4" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{motorcycleModels.meta?.total || motorcycleModels.data.length}</div>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Active Models</CardTitle>
-                            <Settings className="h-4 w-4 text-muted-foreground" />
+                            <Settings className="text-muted-foreground h-4 w-4" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {motorcycleModels.data.filter(m => m.motorcycles_count > 0).length}
-                            </div>
+                            <div className="text-2xl font-bold">{motorcycleModels.data.filter((m) => m.motorcycles_count > 0).length}</div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Motorcycles</CardTitle>
-                            <Bike className="h-4 w-4 text-muted-foreground" />
+                            <Bike className="text-muted-foreground h-4 w-4" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {motorcycleModels.data.reduce((sum, m) => sum + m.motorcycles_count, 0)}
-                            </div>
+                            <div className="text-2xl font-bold">{motorcycleModels.data.reduce((sum, m) => sum + m.motorcycles_count, 0)}</div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Avg Power</CardTitle>
-                            <Zap className="h-4 w-4 text-muted-foreground" />
+                            <Zap className="text-muted-foreground h-4 w-4" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
                                 {(() => {
-                                    const validModels = motorcycleModels.data.filter(m => m.power != null && !isNaN(Number(m.power)));
-                                    return validModels.length > 0 
+                                    const validModels = motorcycleModels.data.filter((m) => m.power != null && !isNaN(Number(m.power)));
+                                    return validModels.length > 0
                                         ? Math.round(validModels.reduce((sum, m) => sum + Number(m.power), 0) / validModels.length)
                                         : 0;
-                                })()}hp
+                                })()}
+                                hp
                             </div>
                         </CardContent>
                     </Card>
@@ -124,21 +119,19 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
                 <Card>
                     <CardHeader>
                         <CardTitle>Motorcycle Models</CardTitle>
-                        <CardDescription>
-                            Manage motorcycle models and their specifications
-                        </CardDescription>
+                        <CardDescription>Manage motorcycle models and their specifications</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b">
-                                        <th className="text-left p-2">Model</th>
-                                        <th className="text-left p-2">Code</th>
-                                        <th className="text-left p-2">Specifications</th>
-                                        <th className="text-left p-2">Segment</th>
-                                        <th className="text-left p-2">In Use</th>
-                                        <th className="text-left p-2">Actions</th>
+                                        <th className="p-2 text-left">Model</th>
+                                        <th className="p-2 text-left">Code</th>
+                                        <th className="p-2 text-left">Specifications</th>
+                                        <th className="p-2 text-left">Segment</th>
+                                        <th className="p-2 text-left">In Use</th>
+                                        <th className="p-2 text-left">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -149,29 +142,27 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
                                                     <div className="font-medium">
                                                         {model.brand} {model.name}
                                                     </div>
-                                                    <div className="text-sm text-muted-foreground">
-                                                        Added {model.created_at}
-                                                    </div>
+                                                    <div className="text-muted-foreground text-sm">Added {model.created_at}</div>
                                                 </div>
                                             </td>
                                             <td className="p-2">
-                                                <code className="bg-gray-100 px-2 py-1 rounded text-sm text-black">
-                                                    {model.model_code}
-                                                </code>
+                                                <code className="rounded bg-gray-100 px-2 py-1 text-sm text-black">{model.model_code}</code>
                                             </td>
                                             <td className="p-2">
-                                                <div className="text-sm space-y-1">
+                                                <div className="space-y-1 text-sm">
                                                     <div>{model.engine_size}cc</div>
                                                     <div>{model.power}hp</div>
                                                 </div>
                                             </td>
                                             <td className="p-2">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSegmentBadge(model.segment)}`}>
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getSegmentBadge(model.segment)}`}
+                                                >
                                                     {model.segment}
                                                 </span>
                                             </td>
                                             <td className="p-2">
-                                                <Badge variant={model.motorcycles_count > 0 ? "default" : "secondary"}>
+                                                <Badge variant={model.motorcycles_count > 0 ? 'default' : 'secondary'}>
                                                     {model.motorcycles_count} motorcycles
                                                 </Badge>
                                             </td>
@@ -187,8 +178,8 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
                                                             <Edit className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
-                                                    <Button 
-                                                        variant="ghost" 
+                                                    <Button
+                                                        variant="ghost"
                                                         size="sm"
                                                         onClick={() => handleDelete(model)}
                                                         disabled={model.motorcycles_count > 0}
@@ -202,14 +193,14 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
                                 </tbody>
                             </table>
                         </div>
-                        
+
                         {/* Pagination */}
                         {motorcycleModels.links && Array.isArray(motorcycleModels.links) && motorcycleModels.links.length > 3 && (
-                            <div className="flex items-center justify-center gap-2 mt-4">
+                            <div className="mt-4 flex items-center justify-center gap-2">
                                 {motorcycleModels.links.map((link, index) => (
                                     <Button
                                         key={index}
-                                        variant={link.active ? "default" : "outline"}
+                                        variant={link.active ? 'default' : 'outline'}
                                         size="sm"
                                         disabled={!link.url}
                                         asChild={!!link.url}
@@ -228,4 +219,4 @@ export default function MotorcyclesIndex({ motorcycleModels }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

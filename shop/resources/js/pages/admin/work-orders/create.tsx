@@ -1,13 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type CustomerOption, type MechanicOption } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Plus, Wrench } from 'lucide-react';
+import { ArrowLeft, Wrench } from 'lucide-react';
 import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -53,16 +53,16 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
     };
 
     const handleCustomerChange = (customerId: string) => {
-        const customer = customers.find(c => c.id.toString() === customerId);
+        const customer = customers.find((c) => c.id.toString() === customerId);
         setSelectedCustomer(customer || null);
         setData('user_id', customerId);
         setData('motorcycle_id', ''); // Reset motorcycle selection
     };
 
     const handleMechanicToggle = (mechanicId: number) => {
-        setSelectedMechanics(prev => {
+        setSelectedMechanics((prev) => {
             if (prev.includes(mechanicId)) {
-                return prev.filter(id => id !== mechanicId);
+                return prev.filter((id) => id !== mechanicId);
             } else {
                 return [...prev, mechanicId];
             }
@@ -72,7 +72,7 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Work Order" />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -95,14 +95,12 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
                             <Wrench className="mr-2 h-5 w-5" />
                             Work Order Information
                         </CardTitle>
-                        <CardDescription>
-                            Enter the details for the new maintenance or session
-                        </CardDescription>
+                        <CardDescription>Enter the details for the new maintenance or session</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Customer and Motorcycle Selection */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="user_id">Customer *</Label>
                                     <Select value={data.user_id} onValueChange={handleCustomerChange}>
@@ -117,15 +115,13 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.user_id && (
-                                        <p className="text-sm text-red-500">{errors.user_id}</p>
-                                    )}
+                                    {errors.user_id && <p className="text-sm text-red-500">{errors.user_id}</p>}
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="motorcycle_id">Motorcycle *</Label>
-                                    <Select 
-                                        value={data.motorcycle_id} 
+                                    <Select
+                                        value={data.motorcycle_id}
                                         onValueChange={(value) => setData('motorcycle_id', value)}
                                         disabled={!selectedCustomer}
                                     >
@@ -140,9 +136,7 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.motorcycle_id && (
-                                        <p className="text-sm text-red-500">{errors.motorcycle_id}</p>
-                                    )}
+                                    {errors.motorcycle_id && <p className="text-sm text-red-500">{errors.motorcycle_id}</p>}
                                 </div>
                             </div>
 
@@ -158,9 +152,7 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
                                         <SelectItem value="session">Session</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                {errors.type && (
-                                    <p className="text-sm text-red-500">{errors.type}</p>
-                                )}
+                                {errors.type && <p className="text-sm text-red-500">{errors.type}</p>}
                             </div>
 
                             {/* Description */}
@@ -170,17 +162,15 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
                                     id="description"
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
-                                    className={`w-full min-h-[100px] px-3 py-2 border rounded-md resize-none ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                                    className={`min-h-[100px] w-full resize-none rounded-md border px-3 py-2 ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Describe the work to be performed..."
                                     required
                                 />
-                                {errors.description && (
-                                    <p className="text-sm text-red-500">{errors.description}</p>
-                                )}
+                                {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
                             </div>
 
                             {/* Status and Hours Worked */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status *</Label>
                                     <Select value={data.status} onValueChange={(value) => setData('status', value)}>
@@ -208,16 +198,14 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
                                         className={errors.hours_worked ? 'border-red-500' : ''}
                                         placeholder="0.00"
                                     />
-                                    {errors.hours_worked && (
-                                        <p className="text-sm text-red-500">{errors.hours_worked}</p>
-                                    )}
+                                    {errors.hours_worked && <p className="text-sm text-red-500">{errors.hours_worked}</p>}
                                 </div>
                             </div>
 
                             {/* Mechanics Assignment */}
                             <div className="space-y-2">
                                 <Label>Assign Mechanics</Label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                     {mechanics.map((mechanic) => (
                                         <div key={mechanic.id} className="flex items-center space-x-2">
                                             <Checkbox
@@ -240,7 +228,7 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
                                     id="notes"
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
-                                    className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md resize-none"
+                                    className="min-h-[80px] w-full resize-none rounded-md border border-gray-300 px-3 py-2"
                                     placeholder="Additional notes or instructions..."
                                 />
                             </div>
@@ -259,4 +247,4 @@ export default function WorkOrderCreate({ customers, mechanics }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

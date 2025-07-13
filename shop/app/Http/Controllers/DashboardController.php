@@ -282,7 +282,7 @@ class DashboardController extends Controller
         $assignedWorkOrders = $user->assignedWorkOrders()
             ->with(['motorcycle.motorcycleModel', 'motorcycle.user'])
             ->whereIn('Stato', ['pending', 'in_progress'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('INTERVENTI.created_at', 'desc')
             ->get()
             ->map(function ($workOrder) {
                 return [
@@ -298,8 +298,8 @@ class DashboardController extends Controller
         // Get completed work orders count (this month)
         $completedThisMonth = $user->assignedWorkOrders()
             ->where('Stato', 'completed')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
+            ->whereMonth('INTERVENTI.created_at', now()->month)
+            ->whereYear('INTERVENTI.created_at', now()->year)
             ->count();
 
         // Get active work sessions
@@ -341,7 +341,7 @@ class DashboardController extends Controller
         // Today's schedule simplified - show work orders for today (no appointment link in schema)
         $todaySchedule = $user->assignedWorkOrders()
             ->with(['motorcycle.motorcycleModel', 'motorcycle.user'])
-            ->whereDate('created_at', now()->toDateString())
+            ->whereDate('INTERVENTI.created_at', now()->toDateString())
             ->get()
             ->map(function ($workOrder) {
                 return [

@@ -1,14 +1,13 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { route } from 'ziggy-js';
-import { FileText, Eye, DollarSign, Clock, AlertTriangle, Search } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Eye, FileText, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -66,30 +65,38 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
     // Auto-apply filters when status or work type changes
     useEffect(() => {
         if (!initialLoad) {
-            router.get('/admin/financial/invoices', {
-                search,
-                status: status === 'all' ? '' : status,
-                work_type: workType === 'all' ? '' : workType,
-                date_from: dateFrom,
-                date_to: dateTo,
-            }, {
-                preserveState: true,
-            });
+            router.get(
+                '/admin/financial/invoices',
+                {
+                    search,
+                    status: status === 'all' ? '' : status,
+                    work_type: workType === 'all' ? '' : workType,
+                    date_from: dateFrom,
+                    date_to: dateTo,
+                },
+                {
+                    preserveState: true,
+                },
+            );
         } else {
             setInitialLoad(false);
         }
     }, [status, workType]);
 
     const handleSearch = () => {
-        router.get('/admin/financial/invoices', {
-            search,
-            status: status === 'all' ? '' : status,
-            work_type: workType === 'all' ? '' : workType,
-            date_from: dateFrom,
-            date_to: dateTo,
-        }, {
-            preserveState: true,
-        });
+        router.get(
+            '/admin/financial/invoices',
+            {
+                search,
+                status: status === 'all' ? '' : status,
+                work_type: workType === 'all' ? '' : workType,
+                date_from: dateFrom,
+                date_to: dateTo,
+            },
+            {
+                preserveState: true,
+            },
+        );
     };
 
     const clearFilters = () => {
@@ -101,13 +108,11 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
         router.get('/admin/financial/invoices');
     };
 
-
-
     const getStatusBadge = (invoice: Invoice) => {
         if (invoice.is_overdue || invoice.status === 'overdue') {
             return <Badge variant="destructive">Overdue</Badge>;
         }
-        
+
         switch (invoice.status) {
             case 'paid':
                 return <Badge className="bg-green-100 text-green-800">Paid</Badge>;
@@ -128,7 +133,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Invoices Management" />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -155,7 +160,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Search</label>
                                 <div className="relative">
-                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
                                     <Input
                                         placeholder="Invoice number, customer..."
                                         value={search}
@@ -194,26 +199,16 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Date From</label>
-                                <Input
-                                    type="date"
-                                    value={dateFrom}
-                                    onChange={(e) => setDateFrom(e.target.value)}
-                                />
+                                <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Date To</label>
-                                <Input
-                                    type="date"
-                                    value={dateTo}
-                                    onChange={(e) => setDateTo(e.target.value)}
-                                />
+                                <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">&nbsp;</label>
                                 <div className="flex gap-2">
-                                    <Button onClick={handleSearch}>
-                                        Search
-                                    </Button>
+                                    <Button onClick={handleSearch}>Search</Button>
                                     <Button variant="outline" onClick={clearFilters}>
                                         Clear
                                     </Button>
@@ -227,9 +222,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                 <Card>
                     <CardHeader>
                         <CardTitle>All Invoices</CardTitle>
-                        <CardDescription>
-                            Total: {invoices.meta?.total || invoices.data.length} invoices
-                        </CardDescription>
+                        <CardDescription>Total: {invoices.meta?.total || invoices.data.length} invoices</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {invoices.data.length > 0 ? (
@@ -243,46 +236,38 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                             <div>
                                                 <div className="flex items-center space-x-2">
                                                     <div className="font-medium">
-                                                        <Link 
-                                                            href={`/admin/financial/invoices/${invoice.id}`}
-                                                            className="hover:underline"
-                                                        >
+                                                        <Link href={`/admin/financial/invoices/${invoice.id}`} className="hover:underline">
                                                             {invoice.invoice_number}
                                                         </Link>
                                                     </div>
-                                                    <Badge variant="outline" className={
-                                                        invoice.work_type === 'Maintenance' 
-                                                            ? 'border-blue-200 text-blue-700' 
-                                                            : 'border-green-200 text-green-700'
-                                                    }>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={
+                                                            invoice.work_type === 'Maintenance'
+                                                                ? 'border-blue-200 text-blue-700'
+                                                                : 'border-green-200 text-green-700'
+                                                        }
+                                                    >
                                                         {invoice.work_type}
                                                     </Badge>
                                                     {getStatusBadge(invoice)}
                                                 </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Customer: {invoice.customer}
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Motorcycle: {invoice.motorcycle}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    Issue: {new Date(invoice.issue_date).toLocaleDateString()} • 
-                                                    Due: {new Date(invoice.due_date).toLocaleDateString()}
+                                                <div className="text-muted-foreground text-sm">Customer: {invoice.customer}</div>
+                                                <div className="text-muted-foreground text-sm">Motorcycle: {invoice.motorcycle}</div>
+                                                <div className="text-muted-foreground text-xs">
+                                                    Issue: {new Date(invoice.issue_date).toLocaleDateString()} • Due:{' '}
+                                                    {new Date(invoice.due_date).toLocaleDateString()}
                                                     {invoice.paid_at && ` • Paid: ${new Date(invoice.paid_at).toLocaleDateString()}`}
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="flex items-center space-x-4">
                                             <div className="text-right">
-                                                <div className="text-lg font-semibold">
-                                                    {formatCurrency(invoice.total_amount)}
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Total: {formatCurrency(invoice.total_amount)}
-                                                </div>
+                                                <div className="text-lg font-semibold">{formatCurrency(invoice.total_amount)}</div>
+                                                <div className="text-muted-foreground text-sm">Total: {formatCurrency(invoice.total_amount)}</div>
                                             </div>
-                                            
+
                                             <div className="flex items-center space-x-2">
                                                 <Button variant="ghost" size="sm" asChild>
                                                     <Link href={`/admin/financial/invoices/${invoice.id}`}>
@@ -295,8 +280,8 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <div className="text-muted-foreground py-8 text-center">
+                                <FileText className="mx-auto mb-4 h-12 w-12 opacity-50" />
                                 <p className="text-lg font-medium">No invoices found</p>
                                 <p>Try adjusting your search filters</p>
                             </div>
@@ -308,7 +293,7 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
                                 {invoices.links.map((link: any, index: number) => (
                                     <Button
                                         key={index}
-                                        variant={link.active ? "default" : "outline"}
+                                        variant={link.active ? 'default' : 'outline'}
                                         size="sm"
                                         disabled={!link.url}
                                         onClick={() => link.url && router.get(link.url)}
@@ -322,4 +307,4 @@ export default function InvoicesIndex({ invoices, filters }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

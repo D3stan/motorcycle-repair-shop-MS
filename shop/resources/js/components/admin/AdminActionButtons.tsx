@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
-import { Eye, Edit, Trash2 } from 'lucide-react';
+import { Edit, Eye, Trash2 } from 'lucide-react';
 
 interface AdminActionButtonsProps {
     itemId: number | string;
@@ -21,7 +21,7 @@ export default function AdminActionButtons({
     showEdit = true,
     showDelete = true,
     size = 'sm',
-    variant = 'ghost'
+    variant = 'ghost',
 }: AdminActionButtonsProps) {
     const handleDelete = () => {
         if (onDelete) {
@@ -46,15 +46,10 @@ export default function AdminActionButtons({
                 </Button>
             )}
             {showDelete && onDelete && (
-                <Button 
-                    variant={variant} 
-                    size={size} 
-                    onClick={handleDelete}
-                    className="text-red-600 hover:text-red-700"
-                >
+                <Button variant={variant} size={size} onClick={handleDelete} className="text-red-600 hover:text-red-700">
                     <Trash2 className="h-4 w-4" />
                 </Button>
             )}
         </div>
     );
-} 
+}

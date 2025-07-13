@@ -1,7 +1,7 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler, useState, useEffect } from 'react';
+import { FormEventHandler, useEffect, useState } from 'react';
 
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
@@ -23,57 +23,57 @@ type ProfileForm = {
     first_name: string;
     last_name: string;
     email: string;
-}
+};
 
 function parseName(fullName: string): { first_name: string; last_name: string } {
     const trimmedName = fullName.trim();
     if (!trimmedName) return { first_name: '', last_name: '' };
-    
+
     const nameParts = trimmedName.split(/\s+/);
-    
+
     if (nameParts.length === 1) {
         return { first_name: nameParts[0], last_name: '' };
     }
-    
+
     // First part is first name, everything else is last name
     const first_name = nameParts[0];
     const last_name = nameParts.slice(1).join(' ');
-    
+
     return { first_name, last_name };
 }
 
 function validateName(fullName: string): string | null {
     const trimmedName = fullName.trim();
-    
+
     if (!trimmedName) {
         return 'Name is required';
     }
-    
+
     if (trimmedName.length < 2) {
         return 'Name must be at least 2 characters long';
     }
-    
+
     // Check for at least one space (indicating first and last name)
     if (!trimmedName.includes(' ')) {
         return 'Please enter both first and last name (e.g., "John Doe")';
     }
-    
+
     const { first_name, last_name } = parseName(trimmedName);
-    
+
     if (!first_name || !last_name) {
         return 'Please enter both first and last name';
     }
-    
+
     if (first_name.length < 1 || last_name.length < 1) {
         return 'Both first and last name must be at least 1 character long';
     }
-    
+
     // Basic character validation (letters, spaces, hyphens, apostrophes)
     const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
     if (!nameRegex.test(trimmedName)) {
         return 'Name can only contain letters, spaces, hyphens, and apostrophes';
     }
-    
+
     return null;
 }
 
@@ -97,23 +97,23 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
     const handleNameChange = (value: string) => {
         setFullNameInput(value);
-        
+
         // Clear previous error
         setNameError(null);
-        
+
         // Parse and validate the name
         const validationError = validateName(value);
         if (validationError) {
             setNameError(validationError);
             return;
         }
-        
+
         // If valid, parse and set the data
         const { first_name, last_name } = parseName(value);
         setData((prevData) => ({
             ...prevData,
             first_name,
-            last_name
+            last_name,
         }));
     };
 
@@ -156,7 +156,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                             <InputError className="mt-2" message={nameError || errors.first_name || errors.last_name} />
                             {fullNameInput && !nameError && data.first_name && data.last_name && (
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-muted-foreground text-sm">
                                     First name: {data.first_name}, Last name: {data.last_name}
                                 </div>
                             )}

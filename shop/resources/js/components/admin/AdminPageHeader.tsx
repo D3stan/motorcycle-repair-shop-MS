@@ -10,13 +10,7 @@ interface AdminPageHeaderProps {
     children?: React.ReactNode;
 }
 
-export default function AdminPageHeader({ 
-    title, 
-    description, 
-    createRoute, 
-    createLabel = "Add New", 
-    children 
-}: AdminPageHeaderProps) {
+export default function AdminPageHeader({ title, description, createRoute, createLabel = 'Add New', children }: AdminPageHeaderProps) {
     return (
         <div className="flex items-center justify-between">
             <div>
@@ -36,4 +30,4 @@ export default function AdminPageHeader({
             </div>
         </div>
     );
-} 
+}

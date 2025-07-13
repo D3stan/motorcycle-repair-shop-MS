@@ -50,14 +50,14 @@ interface AdminDashboardProps {
     }>;
 }
 
-export default function AdminDashboard({ 
+export default function AdminDashboard({
     currentMonthRevenue,
     activeWorkOrdersCount,
     pendingAppointmentsCount,
     totalCustomersCount,
     recentWorkOrders,
     recentAppointments,
-    lowStockParts
+    lowStockParts,
 }: AdminDashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -72,12 +72,8 @@ export default function AdminDashboard({
                             <CardDescription>Current month earnings</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">
-                                €{Number(currentMonthRevenue || 0).toFixed(2)}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                                From completed work & sessions
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">€{Number(currentMonthRevenue || 0).toFixed(2)}</div>
+                            <div className="text-muted-foreground text-sm">From completed work & sessions</div>
                         </CardContent>
                     </Card>
 
@@ -88,10 +84,8 @@ export default function AdminDashboard({
                             <CardDescription>Orders & sessions in progress</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{activeWorkOrdersCount}</div>
-                            <div className="text-sm text-muted-foreground">
-                                Maintenance & sessions
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{activeWorkOrdersCount}</div>
+                            <div className="text-muted-foreground text-sm">Maintenance & sessions</div>
                         </CardContent>
                     </Card>
 
@@ -102,10 +96,8 @@ export default function AdminDashboard({
                             <CardDescription>Awaiting confirmation</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{pendingAppointmentsCount}</div>
-                            <div className="text-sm text-muted-foreground">
-                                Need confirmation
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{pendingAppointmentsCount}</div>
+                            <div className="text-muted-foreground text-sm">Need confirmation</div>
                         </CardContent>
                     </Card>
 
@@ -116,10 +108,8 @@ export default function AdminDashboard({
                             <CardDescription>Registered users</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{totalCustomersCount}</div>
-                            <div className="text-sm text-muted-foreground">
-                                Active customer base
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{totalCustomersCount}</div>
+                            <div className="text-muted-foreground text-sm">Active customer base</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -141,27 +131,29 @@ export default function AdminDashboard({
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-2">
                                                         <p className="text-sm font-medium">{workOrder.customer}</p>
-                                                        <span className={`px-2 py-1 text-xs rounded-full ${
-                                                            workOrder.type === 'maintenance' 
-                                                                ? 'bg-blue-100 text-blue-700' 
-                                                                : 'bg-green-100 text-green-700'
-                                                        }`}>
+                                                        <span
+                                                            className={`rounded-full px-2 py-1 text-xs ${
+                                                                workOrder.type === 'maintenance'
+                                                                    ? 'bg-blue-100 text-blue-700'
+                                                                    : 'bg-green-100 text-green-700'
+                                                            }`}
+                                                        >
                                                             {workOrder.type === 'maintenance' ? 'Maintenance' : 'Session'}
                                                         </span>
                                                     </div>
-                                                    <p className="text-xs text-muted-foreground">{workOrder.motorcycle}</p>
-                                                    <p className="text-xs text-muted-foreground">{workOrder.description}</p>
-                                                    <p className="text-xs text-muted-foreground">Created: {workOrder.formatted_date}</p>
+                                                    <p className="text-muted-foreground text-xs">{workOrder.motorcycle}</p>
+                                                    <p className="text-muted-foreground text-xs">{workOrder.description}</p>
+                                                    <p className="text-muted-foreground text-xs">Created: {workOrder.formatted_date}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="text-sm font-medium capitalize">{workOrder.status.replace('_', ' ')}</div>
-                                                    <div className="text-xs text-muted-foreground">{workOrder.mechanics || 'Not assigned'}</div>
+                                                    <div className="text-muted-foreground text-xs">{workOrder.mechanics || 'Not assigned'}</div>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-6 text-muted-foreground">
+                                    <div className="text-muted-foreground py-6 text-center">
                                         <p>No recent work orders</p>
                                     </div>
                                 )}
@@ -213,19 +205,19 @@ export default function AdminDashboard({
                                         <div key={appointment.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                             <div className="space-y-1">
                                                 <p className="text-sm font-medium">{appointment.customer}</p>
-                                                <p className="text-xs text-muted-foreground">{appointment.motorcycle}</p>
-                                                <p className="text-xs text-muted-foreground">{appointment.type}</p>
+                                                <p className="text-muted-foreground text-xs">{appointment.motorcycle}</p>
+                                                <p className="text-muted-foreground text-xs">{appointment.type}</p>
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-sm font-medium">{appointment.appointment_date}</div>
-                                                <div className="text-xs text-muted-foreground">{appointment.appointment_time}</div>
-                                                <div className="text-xs text-muted-foreground capitalize">{appointment.status}</div>
+                                                <div className="text-muted-foreground text-xs">{appointment.appointment_time}</div>
+                                                <div className="text-muted-foreground text-xs capitalize">{appointment.status}</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-muted-foreground">
+                                <div className="text-muted-foreground py-6 text-center">
                                     <p>No recent appointments</p>
                                 </div>
                             )}
@@ -245,19 +237,19 @@ export default function AdminDashboard({
                                         <div key={part.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                             <div className="space-y-1">
                                                 <p className="text-sm font-medium">{part.name}</p>
-                                                <p className="text-xs text-muted-foreground">Supplier: {part.supplier}</p>
+                                                <p className="text-muted-foreground text-xs">Supplier: {part.supplier}</p>
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-sm font-medium text-orange-600">
                                                     {part.current_stock}/{part.minimum_stock}
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">Stock/Min</div>
+                                                <div className="text-muted-foreground text-xs">Stock/Min</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-muted-foreground">
+                                <div className="text-muted-foreground py-6 text-center">
                                     <p>All parts adequately stocked</p>
                                 </div>
                             )}
@@ -267,4 +259,4 @@ export default function AdminDashboard({
             </div>
         </AppLayout>
     );
-} 
+}

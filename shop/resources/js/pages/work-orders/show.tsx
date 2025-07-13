@@ -114,7 +114,7 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
                         <p className="text-muted-foreground">{workOrder.description}</p>
                     </div>
                     <div className="flex gap-2">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(workOrder.status)}`}>
+                        <span className={`rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(workOrder.status)}`}>
                             {workOrder.status.charAt(0).toUpperCase() + workOrder.status.slice(1).replace('_', ' ')}
                         </span>
                         <Button asChild variant="outline">
@@ -125,35 +125,45 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
 
                 <div className="grid gap-6 lg:grid-cols-3">
                     {/* Main Details */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="space-y-6 lg:col-span-2">
                         {/* Work Order Information */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Work Order Details</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="grid md:grid-cols-2 gap-4">
+                                <div className="grid gap-4 md:grid-cols-2">
                                     <div>
-                                        <h4 className="font-medium mb-2">Timeline</h4>
+                                        <h4 className="mb-2 font-medium">Timeline</h4>
                                         <div className="space-y-1 text-sm">
-                                            <p><strong>Started:</strong> {formatDateTime(workOrder.started_at)}</p>
-                                            <p><strong>Completed:</strong> {formatDateTime(workOrder.completed_at)}</p>
+                                            <p>
+                                                <strong>Started:</strong> {formatDateTime(workOrder.started_at)}
+                                            </p>
+                                            <p>
+                                                <strong>Completed:</strong> {formatDateTime(workOrder.completed_at)}
+                                            </p>
                                         </div>
                                     </div>
                                     <div>
-                                        <h4 className="font-medium mb-2">Costs</h4>
+                                        <h4 className="mb-2 font-medium">Costs</h4>
                                         <div className="space-y-1 text-sm">
-                                            <p><strong>Labor:</strong> {formatCurrency(workOrder.labor_cost)}</p>
-                                            <p><strong>Parts:</strong> {formatCurrency(workOrder.parts_cost)}</p>
-                                            <p><strong>Total:</strong> {formatCurrency(workOrder.total_cost)}</p>
+                                            <p>
+                                                <strong>Labor:</strong> {formatCurrency(workOrder.labor_cost)}
+                                            </p>
+                                            <p>
+                                                <strong>Parts:</strong> {formatCurrency(workOrder.parts_cost)}
+                                            </p>
+                                            <p>
+                                                <strong>Total:</strong> {formatCurrency(workOrder.total_cost)}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {workOrder.notes && (
                                     <div>
-                                        <h4 className="font-medium mb-2">Notes</h4>
-                                        <p className="text-sm text-muted-foreground">{workOrder.notes}</p>
+                                        <h4 className="mb-2 font-medium">Notes</h4>
+                                        <p className="text-muted-foreground text-sm">{workOrder.notes}</p>
                                     </div>
                                 )}
                             </CardContent>
@@ -170,13 +180,13 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
                                     {/* Parts */}
                                     {partsBreakdown.length > 0 && (
                                         <div>
-                                            <h4 className="font-medium mb-3">Parts Used</h4>
+                                            <h4 className="mb-3 font-medium">Parts Used</h4>
                                             <div className="space-y-2">
                                                 {partsBreakdown.map((part, index) => (
-                                                    <div key={index} className="flex items-center justify-between py-2 border-b">
+                                                    <div key={index} className="flex items-center justify-between border-b py-2">
                                                         <div className="flex-1">
                                                             <p className="font-medium">{part.name}</p>
-                                                            <p className="text-sm text-muted-foreground">
+                                                            <p className="text-muted-foreground text-sm">
                                                                 Quantity: {part.quantity} × {formatCurrency(part.unit_price)}
                                                             </p>
                                                         </div>
@@ -195,11 +205,11 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
 
                                     {/* Labor */}
                                     <div>
-                                        <h4 className="font-medium mb-3">Labor</h4>
-                                        <div className="flex items-center justify-between py-2 border-b">
+                                        <h4 className="mb-3 font-medium">Labor</h4>
+                                        <div className="flex items-center justify-between border-b py-2">
                                             <div>
                                                 <p className="font-medium">Technical Labor</p>
-                                                <p className="text-sm text-muted-foreground">{workOrder.description}</p>
+                                                <p className="text-muted-foreground text-sm">{workOrder.description}</p>
                                             </div>
                                             <div className="text-right">
                                                 <p className="font-medium">{formatCurrency(workOrder.labor_cost)}</p>
@@ -227,10 +237,18 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
                                 <CardTitle>Motorcycle</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2 text-sm">
-                                <p><strong>Make & Model:</strong> {workOrder.motorcycle.brand} {workOrder.motorcycle.model}</p>
-                                <p><strong>Year:</strong> {workOrder.motorcycle.year}</p>
-                                <p><strong>License Plate:</strong> {workOrder.motorcycle.plate}</p>
-                                <p><strong>VIN:</strong> {workOrder.motorcycle.vin}</p>
+                                <p>
+                                    <strong>Make & Model:</strong> {workOrder.motorcycle.brand} {workOrder.motorcycle.model}
+                                </p>
+                                <p>
+                                    <strong>Year:</strong> {workOrder.motorcycle.year}
+                                </p>
+                                <p>
+                                    <strong>License Plate:</strong> {workOrder.motorcycle.plate}
+                                </p>
+                                <p>
+                                    <strong>VIN:</strong> {workOrder.motorcycle.vin}
+                                </p>
                             </CardContent>
                         </Card>
 
@@ -241,9 +259,16 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
                                     <CardTitle>Related Appointment</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-2 text-sm">
-                                    <p><strong>Date:</strong> {formatDate(workOrder.appointment.appointment_date)}</p>
-                                    <p><strong>Time:</strong> {workOrder.appointment.appointment_time}</p>
-                                    <p><strong>Type:</strong> {workOrder.appointment.type.charAt(0).toUpperCase() + workOrder.appointment.type.slice(1).replace('_', ' ')}</p>
+                                    <p>
+                                        <strong>Date:</strong> {formatDate(workOrder.appointment.appointment_date)}
+                                    </p>
+                                    <p>
+                                        <strong>Time:</strong> {workOrder.appointment.appointment_time}
+                                    </p>
+                                    <p>
+                                        <strong>Type:</strong>{' '}
+                                        {workOrder.appointment.type.charAt(0).toUpperCase() + workOrder.appointment.type.slice(1).replace('_', ' ')}
+                                    </p>
                                 </CardContent>
                             </Card>
                         )}
@@ -257,15 +282,25 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
                                 <CardContent className="space-y-3">
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm font-medium">Status</span>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getInvoiceStatusColor(workOrder.invoice.status)}`}>
+                                        <span
+                                            className={`rounded-full px-2 py-1 text-xs font-medium ${getInvoiceStatusColor(workOrder.invoice.status)}`}
+                                        >
                                             {workOrder.invoice.status.charAt(0).toUpperCase() + workOrder.invoice.status.slice(1)}
                                         </span>
                                     </div>
                                     <div className="space-y-2 text-sm">
-                                        <p><strong>Invoice #:</strong> {workOrder.invoice.invoice_number}</p>
-                                        <p><strong>Issue Date:</strong> {formatDate(workOrder.invoice.issue_date)}</p>
-                                        <p><strong>Due Date:</strong> {formatDate(workOrder.invoice.due_date)}</p>
-                                        <p><strong>Total:</strong> {formatCurrency(workOrder.invoice.total_amount)}</p>
+                                        <p>
+                                            <strong>Invoice #:</strong> {workOrder.invoice.invoice_number}
+                                        </p>
+                                        <p>
+                                            <strong>Issue Date:</strong> {formatDate(workOrder.invoice.issue_date)}
+                                        </p>
+                                        <p>
+                                            <strong>Due Date:</strong> {formatDate(workOrder.invoice.due_date)}
+                                        </p>
+                                        <p>
+                                            <strong>Total:</strong> {formatCurrency(workOrder.invoice.total_amount)}
+                                        </p>
                                     </div>
                                     <Button asChild variant="outline" size="sm" className="w-full">
                                         <a href={`/invoices/${workOrder.invoice.id}/download`} target="_blank" rel="noopener noreferrer">
@@ -280,4 +315,4 @@ export default function WorkOrderShow({ workOrder, partsBreakdown }: WorkOrderSh
             </div>
         </AppLayout>
     );
-} 
+}

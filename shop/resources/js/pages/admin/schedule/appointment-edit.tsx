@@ -1,21 +1,13 @@
-import { useState, useEffect } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { 
-    Calendar, 
-    Clock, 
-    User, 
-    Settings, 
-    FileText,
-    ArrowLeft,
-    Save
-} from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Save, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Customer {
     id: number;
@@ -91,12 +83,12 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
 
     useEffect(() => {
         if (data.user_id) {
-            const customer = customers.find(c => c.id.toString() === data.user_id);
+            const customer = customers.find((c) => c.id.toString() === data.user_id);
             setSelectedCustomer(customer || null);
             setAvailableMotorcycles(customer?.motorcycles || []);
-            
+
             // If the selected customer doesn't have the current motorcycle, reset motorcycle selection
-            if (customer && !customer.motorcycles.find(m => m.id.toString() === data.motorcycle_id)) {
+            if (customer && !customer.motorcycles.find((m) => m.id.toString() === data.motorcycle_id)) {
                 setData('motorcycle_id', '');
             }
         }
@@ -104,7 +96,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
 
     // Initialize customer and motorcycles on component mount
     useEffect(() => {
-        const customer = customers.find(c => c.id === appointment.user_id);
+        const customer = customers.find((c) => c.id === appointment.user_id);
         setSelectedCustomer(customer || null);
         setAvailableMotorcycles(customer?.motorcycles || []);
     }, []);
@@ -146,7 +138,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                     <div className="flex items-center gap-4">
                         <Button asChild variant="outline" size="sm">
                             <Link href={`/admin/schedule/appointments/${appointment.id}`}>
-                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                <ArrowLeft className="mr-2 h-4 w-4" />
                                 Back to Appointment
                             </Link>
                         </Button>
@@ -175,7 +167,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         id="user_id"
                                         value={data.user_id}
                                         onChange={(e) => setData('user_id', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                         required
                                     >
                                         <option value="">Select a customer</option>
@@ -185,9 +177,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.user_id && (
-                                        <p className="text-sm text-red-600">{errors.user_id}</p>
-                                    )}
+                                    {errors.user_id && <p className="text-sm text-red-600">{errors.user_id}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -196,7 +186,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         id="motorcycle_id"
                                         value={data.motorcycle_id}
                                         onChange={(e) => setData('motorcycle_id', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                         required
                                         disabled={!selectedCustomer}
                                     >
@@ -207,11 +197,8 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.motorcycle_id && (
-                                        <p className="text-sm text-red-600">{errors.motorcycle_id}</p>
-                                    )}
+                                    {errors.motorcycle_id && <p className="text-sm text-red-600">{errors.motorcycle_id}</p>}
                                 </div>
-
                             </CardContent>
                         </Card>
 
@@ -234,9 +221,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         onChange={(e) => setData('appointment_date', e.target.value)}
                                         required
                                     />
-                                    {errors.appointment_date && (
-                                        <p className="text-sm text-red-600">{errors.appointment_date}</p>
-                                    )}
+                                    {errors.appointment_date && <p className="text-sm text-red-600">{errors.appointment_date}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -245,7 +230,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         id="appointment_time"
                                         value={data.appointment_time}
                                         onChange={(e) => setData('appointment_time', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                         required
                                     >
                                         <option value="">Select time</option>
@@ -255,9 +240,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.appointment_time && (
-                                        <p className="text-sm text-red-600">{errors.appointment_time}</p>
-                                    )}
+                                    {errors.appointment_time && <p className="text-sm text-red-600">{errors.appointment_time}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -266,7 +249,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         id="type"
                                         value={data.type}
                                         onChange={(e) => setData('type', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                         required
                                     >
                                         <option value="">Select appointment type</option>
@@ -274,9 +257,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         <option value="dyno_testing">Dyno Testing</option>
                                         <option value="inspection">Inspection</option>
                                     </select>
-                                    {errors.type && (
-                                        <p className="text-sm text-red-600">{errors.type}</p>
-                                    )}
+                                    {errors.type && <p className="text-sm text-red-600">{errors.type}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -285,7 +266,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         id="status"
                                         value={data.status}
                                         onChange={(e) => setData('status', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                         required
                                     >
                                         <option value="pending">Pending</option>
@@ -294,15 +275,12 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         <option value="completed">Completed</option>
                                         <option value="cancelled">Cancelled</option>
                                     </select>
-                                    {errors.status && (
-                                        <p className="text-sm text-red-600">{errors.status}</p>
-                                    )}
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-sm text-muted-foreground">Current status:</span>
+                                    {errors.status && <p className="text-sm text-red-600">{errors.status}</p>}
+                                    <div className="mt-1 flex items-center gap-2">
+                                        <span className="text-muted-foreground text-sm">Current status:</span>
                                         {getStatusBadge(data.status)}
                                     </div>
                                 </div>
-
                             </CardContent>
                         </Card>
                     </div>
@@ -324,23 +302,21 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
                                     placeholder="Enter any special instructions, customer requests, or relevant information..."
-                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                     rows={4}
                                 />
-                                {errors.notes && (
-                                    <p className="text-sm text-red-600">{errors.notes}</p>
-                                )}
+                                {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Submit Buttons */}
-                    <div className="flex justify-end gap-4 mt-6">
+                    <div className="mt-6 flex justify-end gap-4">
                         <Button asChild variant="outline">
                             <Link href={`/admin/schedule/appointments/${appointment.id}`}>Cancel</Link>
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            <Save className="h-4 w-4 mr-2" />
+                            <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Updating...' : 'Update Appointment'}
                         </Button>
                     </div>
@@ -348,4 +324,4 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

@@ -1,16 +1,15 @@
-import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { route } from 'ziggy-js';
-import { ArrowLeft, Calculator, Euro, Clock, Wrench, FileText, Search } from 'lucide-react';
+import { Calculator, Clock, Euro, FileText, Search, Wrench } from 'lucide-react';
+import { useState } from 'react';
 
 interface WorkOrder {
     id: string;
@@ -43,7 +42,7 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
     const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(null);
     const [hourlyRate, setHourlyRate] = useState(defaultHourlyRate);
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     const { data, setData, post, processing, errors } = useForm({
         work_order_id: '',
         hourly_rate: defaultHourlyRate,
@@ -66,12 +65,13 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
     ];
 
     // Filter work orders based on search term
-    const filteredWorkOrders = availableWorkOrders.filter(workOrder =>
-        workOrder.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        workOrder.motorcycle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        workOrder.motorcycle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        workOrder.motorcycle.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        workOrder.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredWorkOrders = availableWorkOrders.filter(
+        (workOrder) =>
+            workOrder.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            workOrder.motorcycle.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            workOrder.motorcycle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            workOrder.motorcycle.plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            workOrder.description.toLowerCase().includes(searchTerm.toLowerCase()),
     );
 
     const handleWorkOrderSelect = (workOrder: WorkOrder) => {
@@ -87,7 +87,7 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedWorkOrder) return;
-        
+
         post('/admin/financial/invoices');
     };
 
@@ -109,7 +109,7 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Create Invoice" />
-            
+
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -121,7 +121,7 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
 
                 <div className="grid gap-6 lg:grid-cols-3">
                     {/* Left Column - Work Order Selection */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="space-y-6 lg:col-span-2">
                         {/* Search */}
                         <Card>
                             <CardHeader>
@@ -130,7 +130,7 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
                             <CardContent>
                                 <div className="space-y-4">
                                     <div className="relative">
-                                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
                                         <Input
                                             placeholder="Search by customer, motorcycle, or description..."
                                             value={searchTerm}
@@ -138,42 +138,43 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
                                             className="pl-8"
                                         />
                                     </div>
-                                    
+
                                     {filteredWorkOrders.length === 0 ? (
-                                        <div className="text-center py-8 text-muted-foreground">
+                                        <div className="text-muted-foreground py-8 text-center">
                                             <p>No completed work orders available for invoicing.</p>
                                         </div>
                                     ) : (
-                                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                                        <div className="max-h-96 space-y-3 overflow-y-auto">
                                             {filteredWorkOrders.map((workOrder) => (
                                                 <div
                                                     key={workOrder.id}
-                                                    className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                                                        selectedWorkOrder?.id === workOrder.id 
-                                                            ? 'border-primary bg-primary/5' 
+                                                    className={`cursor-pointer rounded-lg border p-4 transition-colors ${
+                                                        selectedWorkOrder?.id === workOrder.id
+                                                            ? 'border-primary bg-primary/5'
                                                             : 'border-border hover:border-primary/50'
                                                     }`}
                                                     onClick={() => handleWorkOrderSelect(workOrder)}
                                                 >
                                                     <div className="flex items-start justify-between">
                                                         <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-2">
+                                                            <div className="mb-2 flex items-center gap-2">
                                                                 <Badge variant="outline">Work Order #{workOrder.id}</Badge>
-                                                                <span className="text-sm text-muted-foreground">
+                                                                <span className="text-muted-foreground text-sm">
                                                                     Completed: {formatDate(workOrder.completed_at)}
                                                                 </span>
                                                             </div>
                                                             <div className="space-y-1">
                                                                 <p className="font-medium">{workOrder.customer.name}</p>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {workOrder.motorcycle.brand} {workOrder.motorcycle.model} • {workOrder.motorcycle.plate}
+                                                                <p className="text-muted-foreground text-sm">
+                                                                    {workOrder.motorcycle.brand} {workOrder.motorcycle.model} •{' '}
+                                                                    {workOrder.motorcycle.plate}
                                                                 </p>
                                                                 <p className="text-sm">{workOrder.description}</p>
                                                             </div>
                                                         </div>
                                                         <div className="text-right">
                                                             <p className="font-semibold">{formatCurrency(workOrder.total_cost)}</p>
-                                                            <p className="text-sm text-muted-foreground">{workOrder.labor_hours}h labor</p>
+                                                            <p className="text-muted-foreground text-sm">{workOrder.labor_hours}h labor</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -193,24 +194,26 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
                                 <CardContent className="space-y-4">
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div>
-                                            <Label className="text-sm font-medium text-muted-foreground">Customer</Label>
+                                            <Label className="text-muted-foreground text-sm font-medium">Customer</Label>
                                             <p className="font-medium">{selectedWorkOrder.customer.name}</p>
-                                            <p className="text-sm text-muted-foreground">{selectedWorkOrder.customer.email}</p>
-                                            <p className="text-sm text-muted-foreground">CF: {selectedWorkOrder.customer.cf}</p>
+                                            <p className="text-muted-foreground text-sm">{selectedWorkOrder.customer.email}</p>
+                                            <p className="text-muted-foreground text-sm">CF: {selectedWorkOrder.customer.cf}</p>
                                         </div>
                                         <div>
-                                            <Label className="text-sm font-medium text-muted-foreground">Motorcycle</Label>
-                                            <p className="font-medium">{selectedWorkOrder.motorcycle.brand} {selectedWorkOrder.motorcycle.model}</p>
-                                            <p className="text-sm text-muted-foreground">{selectedWorkOrder.motorcycle.plate}</p>
-                                            <p className="text-sm text-muted-foreground">VIN: {selectedWorkOrder.motorcycle.vin}</p>
+                                            <Label className="text-muted-foreground text-sm font-medium">Motorcycle</Label>
+                                            <p className="font-medium">
+                                                {selectedWorkOrder.motorcycle.brand} {selectedWorkOrder.motorcycle.model}
+                                            </p>
+                                            <p className="text-muted-foreground text-sm">{selectedWorkOrder.motorcycle.plate}</p>
+                                            <p className="text-muted-foreground text-sm">VIN: {selectedWorkOrder.motorcycle.vin}</p>
                                         </div>
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Work Description</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">Work Description</Label>
                                         <p className="font-medium">{selectedWorkOrder.description}</p>
                                     </div>
                                     <div>
-                                        <Label className="text-sm font-medium text-muted-foreground">Completed Date</Label>
+                                        <Label className="text-muted-foreground text-sm font-medium">Completed Date</Label>
                                         <p className="font-medium">{formatDate(selectedWorkOrder.completed_at)}</p>
                                     </div>
                                 </CardContent>
@@ -233,21 +236,23 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <Wrench className="h-4 w-4 text-muted-foreground" />
+                                                <Wrench className="text-muted-foreground h-4 w-4" />
                                                 <span>Parts</span>
                                             </div>
                                             <span className="font-medium">{formatCurrency(selectedWorkOrder.parts_cost)}</span>
                                         </div>
-                                        
+
                                         <Separator />
-                                        
+
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-2">
-                                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                                <Clock className="text-muted-foreground h-4 w-4" />
                                                 <span>Labor ({selectedWorkOrder.labor_hours}h)</span>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Label htmlFor="hourlyRate" className="text-sm">Hourly Rate</Label>
+                                                <Label htmlFor="hourlyRate" className="text-sm">
+                                                    Hourly Rate
+                                                </Label>
                                                 <div className="flex items-center gap-1">
                                                     <Input
                                                         id="hourlyRate"
@@ -258,17 +263,17 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
                                                         onChange={(e) => handleHourlyRateChange(Number(e.target.value))}
                                                         className="w-20 text-sm"
                                                     />
-                                                    <span className="text-sm text-muted-foreground">€/h</span>
+                                                    <span className="text-muted-foreground text-sm">€/h</span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">Labor Total</span>
+                                                <span className="text-muted-foreground text-sm">Labor Total</span>
                                                 <span className="font-medium">{formatCurrency(calculatedLaborCost)}</span>
                                             </div>
                                         </div>
-                                        
+
                                         <Separator />
-                                        
+
                                         <div className="flex items-center justify-between text-lg font-bold">
                                             <div className="flex items-center gap-2">
                                                 <Euro className="h-4 w-4" />
@@ -297,16 +302,10 @@ export default function InvoiceCreateSelect({ availableWorkOrders, defaultHourly
                                             onChange={(e) => setData('notes', e.target.value)}
                                             rows={3}
                                         />
-                                        {errors.notes && (
-                                            <p className="text-sm text-red-600">{errors.notes}</p>
-                                        )}
+                                        {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
                                     </div>
 
-                                    <Button 
-                                        type="submit" 
-                                        className="w-full" 
-                                        disabled={processing || !selectedWorkOrder}
-                                    >
+                                    <Button type="submit" className="w-full" disabled={processing || !selectedWorkOrder}>
                                         <FileText className="mr-2 h-4 w-4" />
                                         {processing ? 'Creating Invoice...' : 'Create Invoice'}
                                     </Button>

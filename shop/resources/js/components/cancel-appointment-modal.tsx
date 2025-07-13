@@ -1,6 +1,6 @@
-import { useForm } from '@inertiajs/react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useForm } from '@inertiajs/react';
 import { AlertTriangle, Calendar, Clock, Settings, Zap } from 'lucide-react';
 
 interface Appointment {
@@ -48,7 +48,7 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
 
     // Format the appointment type for display
     const formatType = (type: string) => {
-        return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     };
 
     // Format date for display
@@ -58,7 +58,7 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
@@ -77,18 +77,16 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                        <AlertTriangle className="text-destructive h-5 w-5" />
                         Cancel Appointment
                     </DialogTitle>
-                    <DialogDescription>
-                        Are you sure you want to cancel this appointment? This action cannot be undone.
-                    </DialogDescription>
+                    <DialogDescription>Are you sure you want to cancel this appointment? This action cannot be undone.</DialogDescription>
                 </DialogHeader>
 
                 {!canCancel ? (
                     <div className="space-y-4">
-                        <div className="p-4 bg-muted rounded-lg">
-                            <p className="text-sm text-muted-foreground">
+                        <div className="bg-muted rounded-lg p-4">
+                            <p className="text-muted-foreground text-sm">
                                 This appointment cannot be cancelled because it has already been completed.
                             </p>
                         </div>
@@ -102,39 +100,37 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
                     <div className="space-y-6">
                         {/* Appointment Details */}
                         <div className="space-y-4">
-                            <div className="p-4 border rounded-lg space-y-3">
+                            <div className="space-y-3 rounded-lg border p-4">
                                 <div className="flex items-center gap-2">
                                     {appointment.type === 'maintenance' ? (
-                                        <Settings className="h-4 w-4 text-muted-foreground" />
+                                        <Settings className="text-muted-foreground h-4 w-4" />
                                     ) : (
-                                        <Zap className="h-4 w-4 text-muted-foreground" />
+                                        <Zap className="text-muted-foreground h-4 w-4" />
                                     )}
                                     <span className="font-medium">{formatType(appointment.type)}</span>
                                 </div>
-                                
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+
+                                <div className="text-muted-foreground flex items-center gap-2 text-sm">
                                     <Calendar className="h-4 w-4" />
                                     <span>{formatDate(appointment.appointment_date)}</span>
                                 </div>
-                                
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+
+                                <div className="text-muted-foreground flex items-center gap-2 text-sm">
                                     <Clock className="h-4 w-4" />
                                     <span>{formatTime(appointment.appointment_time)}</span>
                                 </div>
 
                                 {appointment.motorcycle && (
-                                    <div className="pt-2 border-t">
-                                        <p className="font-medium text-sm">
+                                    <div className="border-t pt-2">
+                                        <p className="text-sm font-medium">
                                             {appointment.motorcycle.brand} {appointment.motorcycle.model}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            License Plate: {appointment.motorcycle.plate}
-                                        </p>
+                                        <p className="text-muted-foreground text-sm">License Plate: {appointment.motorcycle.plate}</p>
                                     </div>
                                 )}
 
                                 {appointment.notes && (
-                                    <div className="pt-2 border-t">
+                                    <div className="border-t pt-2">
                                         <p className="text-sm">
                                             <span className="font-medium">Notes:</span> {appointment.notes}
                                         </p>
@@ -144,29 +140,19 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
                         </div>
 
                         {/* Warning Message */}
-                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                            <p className="text-sm text-destructive">
-                                <strong>Warning:</strong> Cancelling this appointment will remove it from your schedule. 
-                                If you need to reschedule, you'll need to book a new appointment.
+                        <div className="bg-destructive/10 border-destructive/20 rounded-lg border p-3">
+                            <p className="text-destructive text-sm">
+                                <strong>Warning:</strong> Cancelling this appointment will remove it from your schedule. If you need to reschedule,
+                                you'll need to book a new appointment.
                             </p>
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex justify-end gap-3">
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                onClick={handleClose}
-                                disabled={processing}
-                            >
+                            <Button type="button" variant="outline" onClick={handleClose} disabled={processing}>
                                 Keep Appointment
                             </Button>
-                            <Button 
-                                type="button"
-                                variant="destructive" 
-                                onClick={handleCancel}
-                                disabled={processing}
-                            >
+                            <Button type="button" variant="destructive" onClick={handleCancel} disabled={processing}>
                                 {processing ? 'Cancelling...' : 'Cancel Appointment'}
                             </Button>
                         </div>
@@ -175,4 +161,4 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
             </DialogContent>
         </Dialog>
     );
-} 
+}

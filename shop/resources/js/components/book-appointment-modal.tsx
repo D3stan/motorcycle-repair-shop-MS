@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { useForm } from '@inertiajs/react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, Clock, Settings, Zap, ChevronDown, Bike } from 'lucide-react';
+import { useForm } from '@inertiajs/react';
+import { Bike, Calendar, ChevronDown, Clock, Settings, Zap } from 'lucide-react';
+import { useState } from 'react';
 
 interface Motorcycle {
     id: number;
@@ -40,10 +40,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
     });
 
     // Generate available time slots (9:00 AM to 5:00 PM)
-    const timeSlots = [
-        '09:00', '10:00', '11:00', '12:00', 
-        '13:00', '14:00', '15:00', '16:00', '17:00'
-    ];
+    const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
     // Get minimum date (tomorrow)
     const minDate = new Date();
@@ -52,7 +49,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         post(route('appointments.store'), {
             onSuccess: () => {
                 reset();
@@ -78,21 +75,17 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Book New Appointment</DialogTitle>
-                    <DialogDescription>
-                        Choose the type of service you need and select your preferred date and time.
-                    </DialogDescription>
+                    <DialogDescription>Choose the type of service you need and select your preferred date and time.</DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Service Type Selection */}
                     <div className="space-y-3">
                         <Label className="text-base font-medium">Service Type</Label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Card 
-                                className={`cursor-pointer transition-all p-0 ${
-                                    selectedType === 'maintenance' 
-                                        ? 'border-primary bg-primary/5' 
-                                        : 'hover:border-primary/50'
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <Card
+                                className={`cursor-pointer p-0 transition-all ${
+                                    selectedType === 'maintenance' ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
                                 }`}
                                 onClick={() => handleTypeSelect('maintenance')}
                             >
@@ -104,11 +97,9 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                 </CardContent>
                             </Card>
 
-                            <Card 
-                                className={`cursor-pointer transition-all p-0 ${
-                                    selectedType === 'dyno_testing' 
-                                        ? 'border-primary bg-primary/5' 
-                                        : 'hover:border-primary/50'
+                            <Card
+                                className={`cursor-pointer p-0 transition-all ${
+                                    selectedType === 'dyno_testing' ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
                                 }`}
                                 onClick={() => handleTypeSelect('dyno_testing')}
                             >
@@ -120,9 +111,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                 </CardContent>
                             </Card>
                         </div>
-                        {errors.Tipo && (
-                            <p className="text-sm text-red-600">{errors.Tipo}</p>
-                        )}
+                        {errors.Tipo && <p className="text-sm text-red-600">{errors.Tipo}</p>}
                     </div>
 
                     {/* Motorcycle Selection */}
@@ -134,21 +123,16 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                         {motorcycles.length > 0 ? (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button 
-                                        variant="outline" 
-                                        className="w-full justify-between"
-                                        type="button"
-                                    >
-                                        {data.NumTelaio 
-                                            ? motorcycles.find(m => m.id.toString() === data.NumTelaio)?.label || 'Select your motorcycle'
-                                            : 'Select your motorcycle'
-                                        }
+                                    <Button variant="outline" className="w-full justify-between" type="button">
+                                        {data.NumTelaio
+                                            ? motorcycles.find((m) => m.id.toString() === data.NumTelaio)?.label || 'Select your motorcycle'
+                                            : 'Select your motorcycle'}
                                         <ChevronDown className="h-4 w-4 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                                     {motorcycles.map((motorcycle) => (
-                                        <DropdownMenuItem 
+                                        <DropdownMenuItem
                                             key={motorcycle.id}
                                             onClick={() => setData('NumTelaio', motorcycle.id.toString())}
                                             className="cursor-pointer"
@@ -159,22 +143,16 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         ) : (
-                            <div className="p-4 border-2 border-dashed border-muted-foreground/25 rounded-lg text-center">
-                                <p className="text-sm text-muted-foreground mb-2">
-                                    No motorcycles registered
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    Please add a motorcycle to your garage first
-                                </p>
+                            <div className="border-muted-foreground/25 rounded-lg border-2 border-dashed p-4 text-center">
+                                <p className="text-muted-foreground mb-2 text-sm">No motorcycles registered</p>
+                                <p className="text-muted-foreground text-xs">Please add a motorcycle to your garage first</p>
                             </div>
                         )}
-                        {errors.NumTelaio && (
-                            <p className="text-sm text-red-600">{errors.NumTelaio}</p>
-                        )}
+                        {errors.NumTelaio && <p className="text-sm text-red-600">{errors.NumTelaio}</p>}
                     </div>
 
                     {/* Date and Time Selection */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="DataAppuntamento" className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
@@ -188,9 +166,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                 onChange={(e) => setData('DataAppuntamento', e.target.value)}
                                 className="w-full"
                             />
-                            {errors.DataAppuntamento && (
-                                <p className="text-sm text-red-600">{errors.DataAppuntamento}</p>
-                            )}
+                            {errors.DataAppuntamento && <p className="text-sm text-red-600">{errors.DataAppuntamento}</p>}
                         </div>
 
                         <div className="space-y-2">
@@ -200,30 +176,20 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                             </Label>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button 
-                                        variant="outline" 
-                                        className="w-full justify-between"
-                                        type="button"
-                                    >
+                                    <Button variant="outline" className="w-full justify-between" type="button">
                                         {data.Ora || 'Select time'}
                                         <ChevronDown className="h-4 w-4 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                                     {timeSlots.map((time) => (
-                                        <DropdownMenuItem 
-                                            key={time}
-                                            onClick={() => setData('Ora', time)}
-                                            className="cursor-pointer"
-                                        >
+                                        <DropdownMenuItem key={time} onClick={() => setData('Ora', time)} className="cursor-pointer">
                                             {time}
                                         </DropdownMenuItem>
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            {errors.Ora && (
-                                <p className="text-sm text-red-600">{errors.Ora}</p>
-                            )}
+                            {errors.Ora && <p className="text-sm text-red-600">{errors.Ora}</p>}
                         </div>
                     </div>
 
@@ -236,11 +202,9 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                             value={data.Note}
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('Note', e.target.value)}
                             rows={3}
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         />
-                        {errors.Note && (
-                            <p className="text-sm text-red-600">{errors.Note}</p>
-                        )}
+                        {errors.Note && <p className="text-sm text-red-600">{errors.Note}</p>}
                     </div>
 
                     {/* Form Actions */}
@@ -248,9 +212,11 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                         <Button type="button" variant="outline" onClick={handleClose}>
                             Cancel
                         </Button>
-                        <Button 
-                            type="submit" 
-                            disabled={processing || motorcycles.length === 0 || !selectedType || !data.NumTelaio || !data.DataAppuntamento || !data.Ora}
+                        <Button
+                            type="submit"
+                            disabled={
+                                processing || motorcycles.length === 0 || !selectedType || !data.NumTelaio || !data.DataAppuntamento || !data.Ora
+                            }
                             className={motorcycles.length === 0 ? 'cursor-not-allowed' : ''}
                         >
                             {processing ? 'Booking...' : motorcycles.length === 0 ? 'Add Motorcycle First' : 'Book Appointment'}
@@ -260,4 +226,4 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
             </DialogContent>
         </Dialog>
     );
-} 
+}

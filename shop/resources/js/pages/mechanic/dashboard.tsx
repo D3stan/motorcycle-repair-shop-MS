@@ -47,13 +47,13 @@ interface MechanicDashboardProps {
     }>;
 }
 
-export default function MechanicDashboard({ 
+export default function MechanicDashboard({
     assignedWorkOrders,
     completedThisMonth,
     activeWorkSessions,
     recentCompletedOrders,
     hoursWorkedThisWeek,
-    todaySchedule
+    todaySchedule,
 }: MechanicDashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -68,10 +68,8 @@ export default function MechanicDashboard({
                             <CardDescription>Work orders assigned to you</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{assignedWorkOrders.length}</div>
-                            <div className="text-sm text-muted-foreground">
-                                Currently assigned
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{assignedWorkOrders.length}</div>
+                            <div className="text-muted-foreground text-sm">Currently assigned</div>
                         </CardContent>
                     </Card>
 
@@ -82,10 +80,8 @@ export default function MechanicDashboard({
                             <CardDescription>Work orders finished</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{completedThisMonth}</div>
-                            <div className="text-sm text-muted-foreground">
-                                This month total
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{completedThisMonth}</div>
+                            <div className="text-muted-foreground text-sm">This month total</div>
                         </CardContent>
                     </Card>
 
@@ -96,10 +92,8 @@ export default function MechanicDashboard({
                             <CardDescription>Time worked this week</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{Number(hoursWorkedThisWeek).toFixed(1)}h</div>
-                            <div className="text-sm text-muted-foreground">
-                                Current week total
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{Number(hoursWorkedThisWeek).toFixed(1)}h</div>
+                            <div className="text-muted-foreground text-sm">Current week total</div>
                         </CardContent>
                     </Card>
 
@@ -110,8 +104,8 @@ export default function MechanicDashboard({
                             <CardDescription>Currently working on</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{activeWorkSessions.length}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="mb-2 text-2xl font-bold">{activeWorkSessions.length}</div>
+                            <div className="text-muted-foreground text-sm">
                                 {activeWorkSessions.length > 0 ? 'In progress' : 'No active sessions'}
                             </div>
                         </CardContent>
@@ -134,14 +128,12 @@ export default function MechanicDashboard({
                                             <div key={workOrder.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                                 <div className="space-y-1">
                                                     <p className="text-sm font-medium">{workOrder.customer}</p>
-                                                    <p className="text-xs text-muted-foreground">{workOrder.motorcycle}</p>
-                                                    <p className="text-xs text-muted-foreground">{workOrder.description}</p>
-                                                    <p className="text-xs text-muted-foreground">Created: {workOrder.created_at}</p>
+                                                    <p className="text-muted-foreground text-xs">{workOrder.motorcycle}</p>
+                                                    <p className="text-muted-foreground text-xs">{workOrder.description}</p>
+                                                    <p className="text-muted-foreground text-xs">Created: {workOrder.created_at}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-sm font-medium capitalize">
-                                                        {workOrder.status.replace('_', ' ')}
-                                                    </div>
+                                                    <div className="text-sm font-medium capitalize">{workOrder.status.replace('_', ' ')}</div>
                                                     <Button asChild size="sm" variant="outline" className="mt-1">
                                                         <Link href={`/work-orders/${workOrder.id}`}>View</Link>
                                                     </Button>
@@ -150,7 +142,7 @@ export default function MechanicDashboard({
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-6 text-muted-foreground">
+                                    <div className="text-muted-foreground py-6 text-center">
                                         <p>No assigned work orders</p>
                                         <p className="text-sm">Check with your supervisor for new assignments.</p>
                                     </div>
@@ -200,18 +192,18 @@ export default function MechanicDashboard({
                                         <div key={appointment.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                             <div className="space-y-1">
                                                 <p className="text-sm font-medium">{appointment.customer}</p>
-                                                <p className="text-xs text-muted-foreground">{appointment.motorcycle}</p>
-                                                <p className="text-xs text-muted-foreground">{appointment.type}</p>
+                                                <p className="text-muted-foreground text-xs">{appointment.motorcycle}</p>
+                                                <p className="text-muted-foreground text-xs">{appointment.type}</p>
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-sm font-medium">{appointment.time}</div>
-                                                <div className="text-xs text-muted-foreground capitalize">{appointment.status}</div>
+                                                <div className="text-muted-foreground text-xs capitalize">{appointment.status}</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-muted-foreground">
+                                <div className="text-muted-foreground py-6 text-center">
                                     <p>No scheduled appointments for today</p>
                                 </div>
                             )}
@@ -231,21 +223,19 @@ export default function MechanicDashboard({
                                         <div key={workOrder.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                             <div className="space-y-1">
                                                 <p className="text-sm font-medium">{workOrder.customer}</p>
-                                                <p className="text-xs text-muted-foreground">{workOrder.motorcycle}</p>
-                                                <p className="text-xs text-muted-foreground">{workOrder.description}</p>
-                                                <p className="text-xs text-muted-foreground">Completed: {workOrder.completed_at}</p>
+                                                <p className="text-muted-foreground text-xs">{workOrder.motorcycle}</p>
+                                                <p className="text-muted-foreground text-xs">{workOrder.description}</p>
+                                                <p className="text-muted-foreground text-xs">Completed: {workOrder.completed_at}</p>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-sm font-medium">
-                                                    €{Number(workOrder.labor_cost || 0).toFixed(2)}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">Labor</div>
+                                                <div className="text-sm font-medium">€{Number(workOrder.labor_cost || 0).toFixed(2)}</div>
+                                                <div className="text-muted-foreground text-xs">Labor</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-muted-foreground">
+                                <div className="text-muted-foreground py-6 text-center">
                                     <p>No recent completed work</p>
                                 </div>
                             )}
@@ -263,11 +253,11 @@ export default function MechanicDashboard({
                         <CardContent>
                             <div className="grid gap-4 md:grid-cols-2">
                                 {activeWorkSessions.map((session) => (
-                                    <div key={session.id} className="flex items-center justify-between border rounded-lg p-3">
+                                    <div key={session.id} className="flex items-center justify-between rounded-lg border p-3">
                                         <div className="space-y-1">
                                             <p className="text-sm font-medium">{session.motorcycle}</p>
-                                            <p className="text-xs text-muted-foreground">{session.session_type}</p>
-                                            <p className="text-xs text-muted-foreground">Started: {session.start_time}</p>
+                                            <p className="text-muted-foreground text-xs">{session.session_type}</p>
+                                            <p className="text-muted-foreground text-xs">Started: {session.start_time}</p>
                                         </div>
                                         <div className="flex gap-2">
                                             <Button asChild size="sm" variant="outline">
@@ -286,4 +276,4 @@ export default function MechanicDashboard({
             </div>
         </AppLayout>
     );
-} 
+}

@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function Index({ users }) {
     return (
         <div>
@@ -13,13 +11,11 @@ export default function Index({ users }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map(user => (
+                    {users.map((user) => (
                         <tr key={user.id}>
                             <td>{user.name}</td>
                             <td>{user.email}</td>
-                            <td>
-                                {/* Add actions here */}
-                            </td>
+                            <td>{/* Add actions here */}</td>
                         </tr>
                     ))}
                 </tbody>
