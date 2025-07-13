@@ -125,7 +125,6 @@ export default function InventoryIndex({ parts }: Props) {
                                                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                                     <span>Supplier: {part.supplier_name}</span>
                                                     <span className="flex items-center gap-1">
-                                                        <DollarSign className="h-3 w-3" />
                                                         €{part.supplier_price.toFixed(2)}
                                                     </span>
                                                 </div>
