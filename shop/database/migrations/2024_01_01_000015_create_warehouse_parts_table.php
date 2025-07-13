@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('STOCCAGGI', function (Blueprint $table) {
             $table->string('CodiceMagazzino');
             $table->string('CodiceRicambio');
+            $table->integer('Quantita')->default(0);
+            $table->integer('QuantitaMinima')->default(0);
             $table->timestamps();
 
             $table->foreign('CodiceMagazzino')->references('CodiceMagazzino')->on('MAGAZZINI')->onDelete('cascade');

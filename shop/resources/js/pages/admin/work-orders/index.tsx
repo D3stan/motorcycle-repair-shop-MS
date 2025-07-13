@@ -27,9 +27,14 @@ interface Props {
 }
 
 export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
-    const handleDelete = (workOrderId: number) => {
-        if (confirm('Are you sure you want to delete this work order?')) {
-            router.delete(`/admin/work-orders/${workOrderId}`);
+    const handleDelete = (workItem: AdminWorkOrder) => {
+        const itemType = workItem.type === 'work_session' ? 'work session' : 'work order';
+        if (confirm(`Are you sure you want to delete this ${itemType}?`)) {
+            if (workItem.type === 'work_session') {
+                router.delete(`/admin/work-orders/${workItem.id}?type=work_session`);
+            } else {
+                router.delete(`/admin/work-orders/${workItem.id}`);
+            }
         }
     };
 
@@ -211,23 +216,19 @@ export default function WorkOrdersIndex({ workOrders, statistics }: Props) {
                                                         <Eye className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
-                                                {workItem.type === 'work_order' && (
-                                                    <>
-                                                        <Button variant="ghost" size="sm" asChild>
-                                                            <Link href={`/admin/work-orders/${workItem.id}/edit`}>
-                                                                <Edit className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="sm" 
-                                                            onClick={() => handleDelete(workItem.id)}
-                                                            className="text-red-600 hover:text-red-700"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </>
-                                                )}
+                                                <Button variant="ghost" size="sm" asChild>
+                                                    <Link href={`/admin/work-orders/${workItem.id}/edit${workItem.type === 'work_session' ? '?type=work_session' : ''}`}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="sm" 
+                                                    onClick={() => handleDelete(workItem)}
+                                                    className="text-red-600 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
                                             </div>
                                         </div>
                                     </div>

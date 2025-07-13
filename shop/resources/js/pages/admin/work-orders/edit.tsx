@@ -23,6 +23,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface WorkOrderEditData {
     id: number;
+    type: 'work_order' | 'work_session';
     user_id: number;
     motorcycle_id: number;
     appointment_id?: number;
@@ -37,9 +38,10 @@ interface Props {
     workOrder: WorkOrderEditData;
     customers: CustomerOption[];
     mechanics: MechanicOption[];
+    isSession?: boolean;
 }
 
-export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props) {
+export default function WorkOrderEdit({ workOrder, customers, mechanics, isSession = false }: Props) {
     const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
     const [selectedMechanics, setSelectedMechanics] = useState<number[]>(workOrder.assigned_mechanics || []);
 
@@ -56,8 +58,8 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
     ];
 
     const { data, setData, put, processing, errors } = useForm({
-        user_id: workOrder.user_id.toString(),
-        motorcycle_id: workOrder.motorcycle_id.toString(),
+        user_id: workOrder.user_id?.toString() || '',
+        motorcycle_id: workOrder.motorcycle_id?.toString() || '',
         appointment_id: workOrder.appointment_id?.toString() || '',
         description: workOrder.description || '',
         status: workOrder.status || 'pending',
@@ -76,7 +78,12 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
         e.preventDefault();
         // Update the form data with selected mechanics before submitting
         setData('mechanics', selectedMechanics);
-        put(`/admin/work-orders/${workOrder.id}`);
+        
+        if (isSession) {
+            put(`/admin/work-orders/${workOrder.id}?type=work_session`);
+        } else {
+            put(`/admin/work-orders/${workOrder.id}`);
+        }
     };
 
     const handleCustomerChange = (customerId: string) => {
@@ -107,11 +114,11 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Edit Work Order #{workOrder.id}</h1>
-                        <p className="text-muted-foreground">Update work order details and assignments</p>
+                        <h1 className="text-3xl font-bold">Edit {isSession ? 'Session' : 'Maintenance'} #{workOrder.id}</h1>
+                        <p className="text-muted-foreground">Update {isSession ? 'session' : 'maintenance'} details and assignments</p>
                     </div>
                     <Button variant="outline" asChild>
-                        <Link href={`/admin/work-orders/${workOrder.id}`}>
+                        <Link href={`/admin/work-orders/${workOrder.id}${isSession ? '?type=work_session' : ''}`}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Details
                         </Link>
@@ -260,10 +267,10 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
 
                             <div className="flex items-center justify-end space-x-2">
                                 <Button type="button" variant="outline" asChild>
-                                    <Link href={`/admin/work-orders/${workOrder.id}`}>Cancel</Link>
+                                    <Link href={`/admin/work-orders/${workOrder.id}${isSession ? '?type=work_session' : ''}`}>Cancel</Link>
                                 </Button>
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Updating...' : 'Update Work Order'}
+                                    {processing ? 'Updating...' : `Update ${isSession ? 'Session' : 'Maintenance'}`}
                                 </Button>
                             </div>
                         </form>

@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type CustomerOption, type MechanicOption, type AppointmentOption } from '@/types';
+import { type BreadcrumbItem, type CustomerOption, type MechanicOption } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Plus, Wrench } from 'lucide-react';
 import { useState } from 'react';
@@ -28,17 +28,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     customers: CustomerOption[];
     mechanics: MechanicOption[];
-    appointments: AppointmentOption[];
 }
 
-export default function WorkOrderCreate({ customers, mechanics, appointments }: Props) {
+export default function WorkOrderCreate({ customers, mechanics }: Props) {
     const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
     const [selectedMechanics, setSelectedMechanics] = useState<number[]>([]);
 
     const { data, setData, post, processing, errors } = useForm({
         user_id: '',
         motorcycle_id: '',
-        appointment_id: '',
+        type: 'maintenance',
         description: '',
         status: 'pending',
         hours_worked: '',
@@ -79,7 +78,7 @@ export default function WorkOrderCreate({ customers, mechanics, appointments }: 
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">Create Work Order</h1>
-                        <p className="text-muted-foreground">Create a new work order for a customer</p>
+                        <p className="text-muted-foreground">Create a new maintenance or session for a customer</p>
                     </div>
                     <Button variant="outline" asChild>
                         <Link href="/admin/work-orders">
@@ -97,7 +96,7 @@ export default function WorkOrderCreate({ customers, mechanics, appointments }: 
                             Work Order Information
                         </CardTitle>
                         <CardDescription>
-                            Enter the details for the new work order
+                            Enter the details for the new maintenance or session
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -147,21 +146,21 @@ export default function WorkOrderCreate({ customers, mechanics, appointments }: 
                                 </div>
                             </div>
 
-                            {/* Appointment Selection */}
+                            {/* Type Selection */}
                             <div className="space-y-2">
-                                <Label htmlFor="appointment_id">Related Appointment (Optional)</Label>
-                                <Select value={data.appointment_id} onValueChange={(value) => setData('appointment_id', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select an appointment (optional)" />
+                                <Label htmlFor="type">Type *</Label>
+                                <Select value={data.type} onValueChange={(value) => setData('type', value)}>
+                                    <SelectTrigger className={errors.type ? 'border-red-500' : ''}>
+                                        <SelectValue placeholder="Select work type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {appointments.map((appointment) => (
-                                            <SelectItem key={appointment.id} value={appointment.id.toString()}>
-                                                {appointment.customer} - {appointment.motorcycle} ({appointment.date} {appointment.time})
-                                            </SelectItem>
-                                        ))}
+                                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                                        <SelectItem value="session">Session</SelectItem>
                                     </SelectContent>
                                 </Select>
+                                {errors.type && (
+                                    <p className="text-sm text-red-500">{errors.type}</p>
+                                )}
                             </div>
 
                             {/* Description */}
@@ -251,7 +250,7 @@ export default function WorkOrderCreate({ customers, mechanics, appointments }: 
                                     <Link href="/admin/work-orders">Cancel</Link>
                                 </Button>
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Creating...' : 'Create Work Order'}
+                                    {processing ? 'Creating...' : `Create ${data.type === 'session' ? 'Session' : 'Maintenance'}`}
                                 </Button>
                             </div>
                         </form>

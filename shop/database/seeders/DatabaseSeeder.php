@@ -9,6 +9,7 @@ use App\Models\{
     Supplier,
     Part,
     Warehouse,
+    Stoccaggio,
     WorkSession,
     Appointment,
     WorkOrder,
@@ -53,17 +54,27 @@ class DatabaseSeeder extends Seeder
         // Create parts
         $parts = Part::factory()->count(100)->create();
 
-        // Create STOCCAGGI relationships (Parts in Warehouses) with Quantita
-        $parts->each(function ($part) use ($warehouses) {
+        // Create STOCCAGGI relationships (Parts in Warehouses) using factory
+        $stoccaggi = collect();
+        $parts->each(function ($part) use ($warehouses, &$stoccaggi) {
+            // Each part is stored in 1-2 random warehouses
             $randomWarehouses = $warehouses->random(rand(1, 2));
             foreach ($randomWarehouses as $warehouse) {
-                DB::table('STOCCAGGI')->insert([
-                    'CodiceMagazzino' => $warehouse->CodiceMagazzino,
-                    'CodiceRicambio' => $part->CodiceRicambio,
-                    'Quantita' => rand(0, 50),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                // Create different stock scenarios
+                $stockType = fake()->randomElement(['wellStocked', 'lowStock', 'outOfStock']);
+                $weights = ['wellStocked' => 70, 'lowStock' => 25, 'outOfStock' => 5];
+                $stockType = fake()->randomElement(array_merge(
+                    array_fill(0, $weights['wellStocked'], 'wellStocked'),
+                    array_fill(0, $weights['lowStock'], 'lowStock'),
+                    array_fill(0, $weights['outOfStock'], 'outOfStock')
+                ));
+                
+                $stoccaggio = Stoccaggio::factory()
+                    ->forWarehouseAndPart($warehouse->CodiceMagazzino, $part->CodiceRicambio)
+                    ->{$stockType}()
+                    ->create();
+                    
+                $stoccaggi->push($stoccaggio);
             }
         });
 
@@ -177,30 +188,98 @@ class DatabaseSeeder extends Seeder
             }
         });
 
-        // Create invoices for completed work orders
+        // Create invoices for completed work (orders, sessions, or both)
         $completedWorkOrders = $workOrders->where('Stato', 'completed');
-        $completedWorkOrders->each(function ($workOrder) use ($motorcycles) {
-            // Find the motorcycle owner for this work order
+        $completedWorkSessions = $workSessions->where('Stato', 'completed');
+        $invoices = collect();
+
+        // Scenario 1: Invoice for work order only (60% of completed work orders)
+        $workOrderOnlyInvoices = $completedWorkOrders->random(min($completedWorkOrders->count(), (int)($completedWorkOrders->count() * 0.6)));
+        $workOrderOnlyInvoices->each(function ($workOrder) use ($motorcycles, &$invoices) {
             $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
             if ($motorcycle) {
-                Invoice::factory()->create([
+                $invoice = Invoice::factory()->create([
                     'CF' => $motorcycle->CF,
                     'CodiceIntervento' => $workOrder->CodiceIntervento,
-                    'CodiceSessione' => null, // Will be linked to sessions later if needed
+                    'CodiceSessione' => null,
                 ]);
+                $invoices->push($invoice);
+            }
+        });
+
+        // Scenario 2: Invoice for work session only (40% of completed work sessions)
+        $workSessionOnlyInvoices = $completedWorkSessions->random(min($completedWorkSessions->count(), (int)($completedWorkSessions->count() * 0.4)));
+        $workSessionOnlyInvoices->each(function ($workSession) use ($motorcycles, &$invoices) {
+            $motorcycle = $motorcycles->where('NumTelaio', $workSession->NumTelaio)->first();
+            if ($motorcycle) {
+                $invoice = Invoice::factory()->create([
+                    'CF' => $motorcycle->CF,
+                    'CodiceIntervento' => null,
+                    'CodiceSessione' => $workSession->CodiceSessione,
+                ]);
+                $invoices->push($invoice);
+            }
+        });
+
+        // Scenario 3: Invoice for both work order and session (for same motorcycle)
+        // Find completed work orders and sessions for the same motorcycle
+        $remainingWorkOrders = $completedWorkOrders->diff($workOrderOnlyInvoices);
+        $remainingWorkSessions = $completedWorkSessions->diff($workSessionOnlyInvoices);
+        
+        $combinedInvoices = collect();
+        $remainingWorkOrders->each(function ($workOrder) use ($remainingWorkSessions, $motorcycles, &$invoices, &$combinedInvoices) {
+            // Find a work session for the same motorcycle
+            $matchingSession = $remainingWorkSessions->where('NumTelaio', $workOrder->NumTelaio)->first();
+            if ($matchingSession && fake()->boolean(30)) { // 30% chance of combined invoice
+                $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
+                if ($motorcycle) {
+                    $invoice = Invoice::factory()->create([
+                        'CF' => $motorcycle->CF,
+                        'CodiceIntervento' => $workOrder->CodiceIntervento,
+                        'CodiceSessione' => $matchingSession->CodiceSessione,
+                    ]);
+                    $invoices->push($invoice);
+                    $combinedInvoices->push(['workOrder' => $workOrder, 'session' => $matchingSession]);
+                }
             }
         });
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
+        // Calculate invoice statistics
+        $workOrderOnlyCount = $workOrderOnlyInvoices->count();
+        $workSessionOnlyCount = $workSessionOnlyInvoices->count();
+        $combinedCount = $combinedInvoices->count();
+        $totalInvoices = $invoices->count();
+        
+        // Calculate stock statistics
+        $wellStockedCount = $stoccaggi->filter(function ($stoccaggio) {
+            return $stoccaggio->Quantita > $stoccaggio->QuantitaMinima + 10;
+        })->count();
+        $lowStockCount = $stoccaggi->filter(function ($stoccaggio) {
+            return $stoccaggio->Quantita <= $stoccaggio->QuantitaMinima && $stoccaggio->Quantita > 0;
+        })->count();
+        $outOfStockCount = $stoccaggi->filter(function ($stoccaggio) {
+            return $stoccaggio->Quantita === 0;
+        })->count();
         
         $this->command->info('Database seeded successfully!');
         $this->command->info('Admin user created: admin@shop.com (password: password)');
         $this->command->info("Created {$customers->count()} customers, {$mechanics->count()} mechanics");
         $this->command->info("Created {$motorcycles->count()} motorcycles from {$motorcycleModels->count()} models");
         $this->command->info("Created {$parts->count()} parts from {$suppliers->count()} suppliers");
+        $this->command->info("Created {$warehouses->count()} warehouses");
+        $this->command->info("Created {$stoccaggi->count()} warehouse-part relationships (STOCCAGGI):");
+        $this->command->info("  - {$wellStockedCount} well stocked");
+        $this->command->info("  - {$lowStockCount} low stock");
+        $this->command->info("  - {$outOfStockCount} out of stock");
         $this->command->info("Created {$appointments->count()} appointments");
         $this->command->info("Created {$workOrders->count()} work orders");
         $this->command->info("Created {$workSessions->count()} work sessions");
+        $this->command->info("Created {$totalInvoices} invoices:");
+        $this->command->info("  - {$workOrderOnlyCount} for work orders only");
+        $this->command->info("  - {$workSessionOnlyCount} for work sessions only");
+        $this->command->info("  - {$combinedCount} for both work orders and sessions");
         $this->command->info("Italian schema structure populated successfully!");
     }
 }

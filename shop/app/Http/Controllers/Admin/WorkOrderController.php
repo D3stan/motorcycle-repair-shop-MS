@@ -180,42 +180,9 @@ class WorkOrderController extends Controller
                 ];
             });
 
-        // Appointments simplified - no direct link to motorcycles in schema
-        $appointments = Appointment::with(['user'])
-            ->orderBy('DataAppuntamento')
-            ->get()
-            ->map(function ($appointment) {
-                return [
-                    'id' => $appointment->CodiceAppuntamento,
-                    'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                    'description' => $appointment->Descrizione,
-                    'date' => $appointment->DataAppuntamento->format('Y-m-d'),
-                    'type' => $appointment->Tipo,
-                ];
-            });
-
-        // Pre-fill data if coming from appointment (simplified)
-        $prefilledData = null;
-        if ($request->has('appointment_id')) {
-            $appointment = Appointment::with(['user'])
-                ->where('CodiceAppuntamento', $request->appointment_id)
-                ->first();
-            
-            if ($appointment) {
-                $prefilledData = [
-                    'appointment_id' => $appointment->CodiceAppuntamento,
-                    'CF' => $appointment->CF,
-                    'description' => 'Work order for ' . ucfirst(str_replace('_', ' ', $appointment->Tipo)) . ' appointment: ' . $appointment->Descrizione,
-                    'customer_name' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                ];
-            }
-        }
-
         return Inertia::render('admin/work-orders/create', [
             'customers' => $customers,
             'mechanics' => $mechanics,
-            'appointments' => $appointments,
-            'prefilledData' => $prefilledData,
         ]);
     }
 
@@ -227,7 +194,7 @@ class WorkOrderController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,CF',
             'motorcycle_id' => 'required|exists:MOTO,NumTelaio',
-            'appointment_id' => 'nullable|exists:APPUNTAMENTI,CodiceAppuntamento',
+            'type' => 'required|in:session,maintenance',
             'description' => 'required|string|max:1000',
             'status' => 'required|in:pending,in_progress,completed,cancelled',
             'hours_worked' => 'nullable|numeric|min:0',
@@ -236,59 +203,85 @@ class WorkOrderController extends Controller
             'mechanics.*' => 'exists:users,CF',
         ]);
 
-        // Determine status and dates based on request
-        $stato = $validated['status'];
-        $dataInizio = null;
-        $dataFine = null;
-        
-        if ($stato === 'in_progress') {
-            $dataInizio = now();
-        }
-        
-        if ($stato === 'completed') {
-            $dataInizio = $dataInizio ?? now();
-            $dataFine = now();
-        }
+        if ($validated['type'] === 'session') {
+            // Create work session (SESSIONI)
+            $stato = $validated['status'];
+            
+            $workSessionData = [
+                'CodiceSessione' => 'WS' . str_pad(WorkSession::count() + 1, 6, '0', STR_PAD_LEFT),
+                'Data' => now()->toDateString(),
+                'OreImpiegate' => $validated['hours_worked'] ?? 0,
+                'Stato' => $stato,
+                'Note' => $validated['description'],
+                'NumTelaio' => $validated['motorcycle_id'],
+            ];
 
-        $workOrderData = [
-            'CodiceIntervento' => 'WO' . str_pad(WorkOrder::count() + 1, 6, '0', STR_PAD_LEFT),
-            'DataInizio' => $dataInizio,
-            'DataFine' => $dataFine,
-            'KmMoto' => 0,
-            'Tipo' => 'manutenzione_ordinaria', // Default type
-            'Stato' => $stato,
-            'Causa' => null,
-            'OreImpiegate' => $validated['hours_worked'] ?? 0,
-            'Note' => $validated['description'],
-            'NoteAggiuntive' => $validated['notes'],
-            'Nome' => $validated['description'], // Using description as name
-            'NumTelaio' => $validated['motorcycle_id'],
-            'CF' => $validated['user_id'],
-            'CodiceAppuntamento' => $validated['appointment_id'],
-        ];
+            $workSession = WorkSession::create($workSessionData);
 
-        $workOrder = WorkOrder::create($workOrderData);
-
-        // Assign mechanics if provided
-        if (!empty($validated['mechanics'])) {
-            $mechanicData = [];
-            foreach ($validated['mechanics'] as $mechanicCF) {
-                $mechanicData[$mechanicCF] = [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+            // Assign mechanics if provided
+            if (!empty($validated['mechanics'])) {
+                $mechanicData = [];
+                foreach ($validated['mechanics'] as $mechanicCF) {
+                    $mechanicData[$mechanicCF] = [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+                $workSession->mechanics()->attach($mechanicData);
             }
-            $workOrder->mechanics()->attach($mechanicData);
-        }
 
-        // Update appointment status if linked
-        if (!empty($validated['appointment_id'])) {
-            Appointment::where('CodiceAppuntamento', $validated['appointment_id'])
-                ->update(['Stato' => 'in_progress']);
-        }
+            return redirect()->route('admin.work-orders.show', ['id' => $workSession->CodiceSessione, 'type' => 'work_session'])
+                ->with('success', 'Work session created successfully!');
+                
+        } else {
+            // Create work order (INTERVENTI)
+            $stato = $validated['status'];
+            $dataInizio = null;
+            $dataFine = null;
+            
+            if ($stato === 'in_progress') {
+                $dataInizio = now();
+            }
+            
+            if ($stato === 'completed') {
+                $dataInizio = $dataInizio ?? now();
+                $dataFine = now();
+            }
 
-        return redirect()->route('admin.work-orders.show', $workOrder->CodiceIntervento)
-            ->with('success', 'Work order created successfully!');
+            $workOrderData = [
+                'CodiceIntervento' => 'WO' . str_pad(WorkOrder::count() + 1, 6, '0', STR_PAD_LEFT),
+                'DataInizio' => $dataInizio,
+                'DataFine' => $dataFine,
+                'KmMoto' => 0,
+                'Tipo' => 'manutenzione_ordinaria',
+                'Stato' => $stato,
+                'Causa' => null,
+                'OreImpiegate' => $validated['hours_worked'] ?? 0,
+                'Note' => $validated['description'],
+                'NoteAggiuntive' => $validated['notes'],
+                'Nome' => $validated['description'],
+                'NumTelaio' => $validated['motorcycle_id'],
+                'CF' => $validated['user_id'],
+                'CodiceAppuntamento' => null,
+            ];
+
+            $workOrder = WorkOrder::create($workOrderData);
+
+            // Assign mechanics if provided
+            if (!empty($validated['mechanics'])) {
+                $mechanicData = [];
+                foreach ($validated['mechanics'] as $mechanicCF) {
+                    $mechanicData[$mechanicCF] = [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+                $workOrder->mechanics()->attach($mechanicData);
+            }
+
+            return redirect()->route('admin.work-orders.show', $workOrder->CodiceIntervento)
+                ->with('success', 'Work order created successfully!');
+        }
     }
 
     /**
@@ -439,71 +432,134 @@ class WorkOrderController extends Controller
     }
 
     /**
-     * Show the form for editing the specified work order.
+     * Show the form for editing the specified work order or work session.
      */
-    public function edit(WorkOrder $workOrder): Response
+    public function edit(Request $request, string $id): Response
     {
-        $workOrder->load(['user', 'motorcycle.motorcycleModel', 'mechanics']);
+        $type = $request->get('type', 'work_order');
+        
+        if ($type === 'work_session') {
+            $workSession = WorkSession::with(['motorcycle.motorcycleModel', 'motorcycle.user', 'mechanics'])
+                ->where('CodiceSessione', $id)
+                ->firstOrFail();
 
-        $customers = User::where('type', 'customer')
-            ->with('motorcycles.motorcycleModel')
-            ->orderBy('first_name')
-            ->get()
-            ->map(function ($customer) {
-                return [
-                    'id' => $customer->CF,
-                    'name' => $customer->first_name . ' ' . $customer->last_name,
-                    'email' => $customer->email,
-                    'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
-                        return [
-                            'id' => $motorcycle->NumTelaio,
-                            'name' => $motorcycle->motorcycleModel->Marca . ' ' . $motorcycle->motorcycleModel->Nome,
-                            'plate' => $motorcycle->Targa,
-                            'year' => $motorcycle->AnnoImmatricolazione,
-                        ];
-                    }),
-                ];
-            });
+            $customers = User::where('type', 'customer')
+                ->with('motorcycles.motorcycleModel')
+                ->orderBy('first_name')
+                ->get()
+                ->map(function ($customer) {
+                    return [
+                        'id' => $customer->CF,
+                        'name' => $customer->first_name . ' ' . $customer->last_name,
+                        'email' => $customer->email,
+                        'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
+                            return [
+                                'id' => $motorcycle->NumTelaio,
+                                'name' => $motorcycle->motorcycleModel->Marca . ' ' . $motorcycle->motorcycleModel->Nome,
+                                'plate' => $motorcycle->Targa,
+                                'year' => $motorcycle->AnnoImmatricolazione,
+                            ];
+                        }),
+                    ];
+                });
 
-        $mechanics = User::where('type', 'mechanic')
-            ->orderBy('first_name')
-            ->get()
-            ->map(function ($mechanic) {
-                return [
-                    'id' => $mechanic->CF,
-                    'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
-                    'email' => $mechanic->email,
-                ];
-            });
+            $mechanics = User::where('type', 'mechanic')
+                ->orderBy('first_name')
+                ->get()
+                ->map(function ($mechanic) {
+                    return [
+                        'id' => $mechanic->CF,
+                        'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
+                        'email' => $mechanic->email,
+                    ];
+                });
 
-        $workOrderData = [
-            'id' => $workOrder->CodiceIntervento,
-            'user_id' => $workOrder->CF,
-            'motorcycle_id' => $workOrder->NumTelaio,
-            'appointment_id' => $workOrder->CodiceAppuntamento,
-            'description' => $workOrder->Note,
-            'status' => $workOrder->Stato,
-            'hours_worked' => $workOrder->OreImpiegate ? (float) $workOrder->OreImpiegate : 0.0,
-            'notes' => $workOrder->NoteAggiuntive,
-            'assigned_mechanics' => $workOrder->mechanics->pluck('CF')->toArray(),
-        ];
+            $workData = [
+                'id' => $workSession->CodiceSessione,
+                'type' => 'work_session',
+                'user_id' => $workSession->motorcycle->CF,
+                'motorcycle_id' => $workSession->NumTelaio,
+                'description' => $workSession->Note,
+                'status' => $workSession->Stato,
+                'hours_worked' => $workSession->OreImpiegate ? (float) $workSession->OreImpiegate : 0.0,
+                'notes' => null,
+                'assigned_mechanics' => $workSession->mechanics->pluck('CF')->toArray(),
+            ];
 
-        return Inertia::render('admin/work-orders/edit', [
-            'workOrder' => $workOrderData,
-            'customers' => $customers,
-            'mechanics' => $mechanics,
-        ]);
+            return Inertia::render('admin/work-orders/edit', [
+                'workOrder' => $workData,
+                'customers' => $customers,
+                'mechanics' => $mechanics,
+                'isSession' => true,
+            ]);
+        } else {
+            $workOrder = WorkOrder::with(['user', 'motorcycle.motorcycleModel', 'mechanics'])
+                ->where('CodiceIntervento', $id)
+                ->firstOrFail();
+
+            $customers = User::where('type', 'customer')
+                ->with('motorcycles.motorcycleModel')
+                ->orderBy('first_name')
+                ->get()
+                ->map(function ($customer) {
+                    return [
+                        'id' => $customer->CF,
+                        'name' => $customer->first_name . ' ' . $customer->last_name,
+                        'email' => $customer->email,
+                        'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
+                            return [
+                                'id' => $motorcycle->NumTelaio,
+                                'name' => $motorcycle->motorcycleModel->Marca . ' ' . $motorcycle->motorcycleModel->Nome,
+                                'plate' => $motorcycle->Targa,
+                                'year' => $motorcycle->AnnoImmatricolazione,
+                            ];
+                        }),
+                    ];
+                });
+
+            $mechanics = User::where('type', 'mechanic')
+                ->orderBy('first_name')
+                ->get()
+                ->map(function ($mechanic) {
+                    return [
+                        'id' => $mechanic->CF,
+                        'name' => $mechanic->first_name . ' ' . $mechanic->last_name,
+                        'email' => $mechanic->email,
+                    ];
+                });
+
+            $workOrderData = [
+                'id' => $workOrder->CodiceIntervento,
+                'type' => 'work_order',
+                'user_id' => $workOrder->CF,
+                'motorcycle_id' => $workOrder->NumTelaio,
+                'appointment_id' => $workOrder->CodiceAppuntamento,
+                'description' => $workOrder->Note,
+                'status' => $workOrder->Stato,
+                'hours_worked' => $workOrder->OreImpiegate ? (float) $workOrder->OreImpiegate : 0.0,
+                'notes' => $workOrder->NoteAggiuntive,
+                'assigned_mechanics' => $workOrder->mechanics->pluck('CF')->toArray(),
+            ];
+
+            return Inertia::render('admin/work-orders/edit', [
+                'workOrder' => $workOrderData,
+                'customers' => $customers,
+                'mechanics' => $mechanics,
+                'isSession' => false,
+            ]);
+        }
     }
 
     /**
-     * Update the specified work order.
+     * Update the specified work order or work session.
      */
-    public function update(Request $request, WorkOrder $workOrder): RedirectResponse
+    public function update(Request $request, string $id): RedirectResponse
     {
+        $type = $request->get('type', 'work_order');
+        
         $validated = $request->validate([
             'user_id' => 'required|exists:users,CF',
             'motorcycle_id' => 'required|exists:MOTO,NumTelaio',
-            'appointment_id' => 'nullable|exists:APPUNTAMENTI,CodiceAppuntamento',
             'description' => 'required|string|max:1000',
             'status' => 'required|in:pending,in_progress,completed,cancelled',
             'hours_worked' => 'nullable|numeric|min:0',
@@ -512,73 +568,124 @@ class WorkOrderController extends Controller
             'mechanics.*' => 'exists:users,CF',
         ]);
 
-        // Determine status and dates based on request
-        $stato = $validated['status'];
-        $dataInizio = $workOrder->DataInizio;
-        $dataFine = $workOrder->DataFine;
-        
-        if ($stato === 'in_progress' && !$workOrder->DataInizio) {
-            $dataInizio = now();
-        }
-        
-        if ($stato === 'completed' && !$workOrder->DataFine) {
-            $dataFine = now();
-            if (!$workOrder->DataInizio) {
+        if ($type === 'work_session') {
+            $workSession = WorkSession::where('CodiceSessione', $id)->firstOrFail();
+            
+            $workSession->update([
+                'Stato' => $validated['status'],
+                'OreImpiegate' => $validated['hours_worked'] ?? 0,
+                'Note' => $validated['description'],
+                'NumTelaio' => $validated['motorcycle_id'],
+            ]);
+
+            // Update mechanics assignment
+            if (isset($validated['mechanics'])) {
+                $mechanicData = [];
+                foreach ($validated['mechanics'] as $mechanicCF) {
+                    $mechanicData[$mechanicCF] = [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+                $workSession->mechanics()->sync($mechanicData);
+            } else {
+                $workSession->mechanics()->detach();
+            }
+
+            return redirect()->route('admin.work-orders.show', ['id' => $workSession->CodiceSessione, 'type' => 'work_session'])
+                ->with('success', 'Work session updated successfully!');
+        } else {
+            $workOrder = WorkOrder::where('CodiceIntervento', $id)->firstOrFail();
+            
+            // Determine status and dates based on request
+            $stato = $validated['status'];
+            $dataInizio = $workOrder->DataInizio;
+            $dataFine = $workOrder->DataFine;
+            
+            if ($stato === 'in_progress' && !$workOrder->DataInizio) {
                 $dataInizio = now();
             }
-        }
-
-        $workOrder->update([
-            'DataInizio' => $dataInizio,
-            'DataFine' => $dataFine,
-            'Stato' => $stato,
-            'OreImpiegate' => $validated['hours_worked'] ?? 0,
-            'Note' => $validated['description'],
-            'NoteAggiuntive' => $validated['notes'],
-            'NumTelaio' => $validated['motorcycle_id'],
-            'CF' => $validated['user_id'],
-            'CodiceAppuntamento' => $validated['appointment_id'],
-        ]);
-
-        // Update mechanics assignment
-        if (isset($validated['mechanics'])) {
-            $mechanicData = [];
-            foreach ($validated['mechanics'] as $mechanicCF) {
-                $mechanicData[$mechanicCF] = [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+            
+            if ($stato === 'completed' && !$workOrder->DataFine) {
+                $dataFine = now();
+                if (!$workOrder->DataInizio) {
+                    $dataInizio = now();
+                }
             }
-            $workOrder->mechanics()->sync($mechanicData);
-        } else {
-            $workOrder->mechanics()->detach();
-        }
 
-        return redirect()->route('admin.work-orders.show', $workOrder->CodiceIntervento)
-            ->with('success', 'Work order updated successfully!');
+            $workOrder->update([
+                'DataInizio' => $dataInizio,
+                'DataFine' => $dataFine,
+                'Stato' => $stato,
+                'OreImpiegate' => $validated['hours_worked'] ?? 0,
+                'Note' => $validated['description'],
+                'NoteAggiuntive' => $validated['notes'],
+                'NumTelaio' => $validated['motorcycle_id'],
+                'CF' => $validated['user_id'],
+            ]);
+
+            // Update mechanics assignment
+            if (isset($validated['mechanics'])) {
+                $mechanicData = [];
+                foreach ($validated['mechanics'] as $mechanicCF) {
+                    $mechanicData[$mechanicCF] = [
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+                $workOrder->mechanics()->sync($mechanicData);
+            } else {
+                $workOrder->mechanics()->detach();
+            }
+
+            return redirect()->route('admin.work-orders.show', $workOrder->CodiceIntervento)
+                ->with('success', 'Work order updated successfully!');
+        }
     }
 
     /**
-     * Remove the specified work order.
+     * Remove the specified work order or work session.
      */
-    public function destroy(WorkOrder $workOrder): RedirectResponse
+    public function destroy(Request $request, string $id): RedirectResponse
     {
-        // Check if work order has an invoice
-        if ($workOrder->invoice) {
+        $type = $request->get('type', 'work_order');
+        
+        if ($type === 'work_session') {
+            $workSession = WorkSession::where('CodiceSessione', $id)->firstOrFail();
+            
+            // Check if work session has an invoice
+            if ($workSession->invoice) {
+                return redirect()->route('admin.work-orders.index')
+                    ->with('error', 'Cannot delete work session with an associated invoice.');
+            }
+
+            // Detach mechanics
+            $workSession->mechanics()->detach();
+
+            $workSession->delete();
+
             return redirect()->route('admin.work-orders.index')
-                ->with('error', 'Cannot delete work order with an associated invoice.');
+                ->with('success', 'Work session deleted successfully!');
+        } else {
+            $workOrder = WorkOrder::where('CodiceIntervento', $id)->firstOrFail();
+            
+            // Check if work order has an invoice
+            if ($workOrder->invoice) {
+                return redirect()->route('admin.work-orders.index')
+                    ->with('error', 'Cannot delete work order with an associated invoice.');
+            }
+
+            // Detach mechanics
+            $workOrder->mechanics()->detach();
+
+            // Detach parts
+            $workOrder->parts()->detach();
+
+            $workOrder->delete();
+
+            return redirect()->route('admin.work-orders.index')
+                ->with('success', 'Work order deleted successfully!');
         }
-
-        // Detach mechanics
-        $workOrder->mechanics()->detach();
-
-        // Detach parts
-        $workOrder->parts()->detach();
-
-        $workOrder->delete();
-
-        return redirect()->route('admin.work-orders.index')
-            ->with('success', 'Work order deleted successfully!');
     }
 
     /**
