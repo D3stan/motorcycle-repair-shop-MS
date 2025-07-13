@@ -13,7 +13,7 @@ import {
     type AdminWorkOrderInvoice
 } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, Trash2, Users, Bike, Calendar, FileText, Wrench } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Users, Bike, Calendar, FileText, Wrench, CheckCircle } from 'lucide-react';
 
 interface Props {
     workOrder: AdminWorkOrderDetails;
@@ -52,6 +52,12 @@ export default function WorkOrderShow({
     const handleDelete = () => {
         if (confirm('Are you sure you want to delete this work order?')) {
             router.delete(`/admin/work-orders/${workOrder.id}`);
+        }
+    };
+
+    const handleMarkCompleted = () => {
+        if (confirm('Are you sure you want to mark this work order as completed?')) {
+            router.patch(`/admin/work-orders/${workOrder.id}/mark-completed`);
         }
     };
 
@@ -100,6 +106,12 @@ export default function WorkOrderShow({
                                         Edit
                                     </Link>
                                 </Button>
+                                {workOrder.status !== 'completed' && (
+                                    <Button variant="default" onClick={handleMarkCompleted}>
+                                        <CheckCircle className="mr-2 h-4 w-4" />
+                                        Mark as Completed
+                                    </Button>
+                                )}
                                 <Button variant="destructive" onClick={handleDelete}>
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete

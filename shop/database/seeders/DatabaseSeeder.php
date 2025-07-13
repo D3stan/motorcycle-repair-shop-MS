@@ -142,7 +142,12 @@ class DatabaseSeeder extends Seeder
 
         // Assign mechanics to work orders (SVOLGIMENTI table)
         $workOrders->each(function ($workOrder) use ($mechanics) {
-            $assignedMechanics = $mechanics->random(rand(1, 2));
+            $numMechanics = rand(1, 2);
+            $assignedMechanics = $mechanics->random($numMechanics);
+            // Ensure it's always a collection
+            if (!is_iterable($assignedMechanics)) {
+                $assignedMechanics = collect([$assignedMechanics]);
+            }
             $mechanicData = [];
             
             foreach ($assignedMechanics as $mechanic) {
@@ -157,7 +162,12 @@ class DatabaseSeeder extends Seeder
 
         // Assign mechanics to work sessions (AFFIANCAMENTI table)
         $workSessions->each(function ($workSession) use ($mechanics) {
-            $assignedMechanics = $mechanics->random(rand(1, 2));
+            $numMechanics = rand(1, 2);
+            $assignedMechanics = $mechanics->random($numMechanics);
+            // Ensure it's always a collection
+            if (!is_iterable($assignedMechanics)) {
+                $assignedMechanics = collect([$assignedMechanics]);
+            }
             $mechanicData = [];
             
             foreach ($assignedMechanics as $mechanic) {

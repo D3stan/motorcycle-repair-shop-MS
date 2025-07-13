@@ -27,6 +27,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('work-orders', WorkOrderController::class);
     Route::post('work-orders/{workOrder}/assign-mechanics', [WorkOrderController::class, 'assignMechanics'])->name('work-orders.assign-mechanics');
     Route::patch('work-orders/{workOrder}/status', [WorkOrderController::class, 'updateStatus'])->name('work-orders.update-status');
+    Route::patch('work-orders/{workOrder}/mark-completed', [WorkOrderController::class, 'markCompleted'])->name('work-orders.mark-completed');
     
     // Inventory Management
     Route::resource('inventory', InventoryController::class);

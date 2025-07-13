@@ -287,7 +287,7 @@ class WorkOrderController extends Controller
     /**
      * Display the specified work order or work session.
      */
-    public function show(Request $request, string $id): Response
+    public function show(Request $request, $id): Response
     {
         $type = $request->get('type', 'work_order');
         
@@ -351,8 +351,8 @@ class WorkOrderController extends Controller
 
         } else {
             $workOrder = WorkOrder::with([
-                'user',
                 'motorcycle.motorcycleModel',
+                'motorcycle.user',
                 'mechanics',
                 'parts',
                 'invoice'
@@ -434,7 +434,7 @@ class WorkOrderController extends Controller
     /**
      * Show the form for editing the specified work order or work session.
      */
-    public function edit(Request $request, string $id): Response
+    public function edit(Request $request, $id): Response
     {
         $type = $request->get('type', 'work_order');
         
@@ -531,7 +531,7 @@ class WorkOrderController extends Controller
             $workOrderData = [
                 'id' => $workOrder->CodiceIntervento,
                 'type' => 'work_order',
-                'user_id' => $workOrder->CF,
+                'user_id' => $workOrder->motorcycle->CF,
                 'motorcycle_id' => $workOrder->NumTelaio,
                 'appointment_id' => $workOrder->CodiceAppuntamento,
                 'description' => $workOrder->Note,
@@ -553,7 +553,7 @@ class WorkOrderController extends Controller
     /**
      * Update the specified work order or work session.
      */
-    public function update(Request $request, string $id): RedirectResponse
+    public function update(Request $request, $id): RedirectResponse
     {
         $type = $request->get('type', 'work_order');
         
@@ -646,7 +646,7 @@ class WorkOrderController extends Controller
     /**
      * Remove the specified work order or work session.
      */
-    public function destroy(Request $request, string $id): RedirectResponse
+    public function destroy(Request $request, $id): RedirectResponse
     {
         $type = $request->get('type', 'work_order');
         
@@ -741,5 +741,20 @@ class WorkOrderController extends Controller
 
         return redirect()->route('admin.work-orders.show', $workOrder)
             ->with('success', 'Work order status updated successfully!');
+    }
+
+    /**
+     * Mark a work order as completed and set the completion date.
+     */
+    public function markCompleted(WorkOrder $workOrder): RedirectResponse
+    {
+        
+        // Set status to completed and completion date
+        $workOrder->update([
+            'Stato' => 'completed',
+            'DataFine' => now(),
+        ]);
+
+        return back()->with('success', 'Work order marked as completed successfully!');
     }
 } 

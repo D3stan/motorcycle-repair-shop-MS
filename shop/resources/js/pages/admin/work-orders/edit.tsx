@@ -31,7 +31,7 @@ interface WorkOrderEditData {
     status: string;
     hours_worked: number;
     notes?: string;
-    assigned_mechanics: number[];
+    assigned_mechanics: string[];
 }
 
 interface Props {
@@ -43,7 +43,7 @@ interface Props {
 
 export default function WorkOrderEdit({ workOrder, customers, mechanics, isSession = false }: Props) {
     const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
-    const [selectedMechanics, setSelectedMechanics] = useState<number[]>(workOrder.assigned_mechanics || []);
+    const [selectedMechanics, setSelectedMechanics] = useState<string[]>(workOrder.assigned_mechanics || []);
 
     const breadcrumbsWithEdit: BreadcrumbItem[] = [
         ...breadcrumbs,
@@ -65,7 +65,7 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics, isSessi
         status: workOrder.status || 'pending',
         hours_worked: workOrder.hours_worked?.toString() || '',
         notes: workOrder.notes || '',
-        mechanics: workOrder.assigned_mechanics || [] as number[],
+        mechanics: workOrder.assigned_mechanics || [] as string[],
     });
 
     // Initialize selected customer on mount
@@ -96,7 +96,7 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics, isSessi
         }
     };
 
-    const handleMechanicToggle = (mechanicId: number) => {
+    const handleMechanicToggle = (mechanicId: string) => {
         setSelectedMechanics(prev => {
             if (prev.includes(mechanicId)) {
                 return prev.filter(id => id !== mechanicId);
@@ -242,8 +242,8 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics, isSessi
                                         <div key={mechanic.id} className="flex items-center space-x-2">
                                             <Checkbox
                                                 id={`mechanic-${mechanic.id}`}
-                                                checked={selectedMechanics.includes(mechanic.id)}
-                                                onCheckedChange={() => handleMechanicToggle(mechanic.id)}
+                                                checked={selectedMechanics.includes(mechanic.id.toString())}
+                                                onCheckedChange={() => handleMechanicToggle(mechanic.id.toString())}
                                             />
                                             <Label htmlFor={`mechanic-${mechanic.id}`} className="text-sm">
                                                 {mechanic.name} ({mechanic.email})
