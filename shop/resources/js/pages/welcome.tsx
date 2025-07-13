@@ -19,10 +19,10 @@ function VideoHero() {
             </div>
             <div className="relative z-10 flex h-full w-full flex-col items-center justify-center">
                 <h1 className="mb-4 text-center text-5xl font-bold text-white drop-shadow-lg md:text-7xl">[Shop Name Placeholder]</h1>
-                <p className="mb-8 max-w-2xl text-center text-xl text-white/80 md:text-2xl">
+                <p className="mb-8 max-w-2xl text-center text-xl text-white drop-shadow-lg md:text-2xl">
                     Your one-stop solution for motorcycle workshop management
                 </p>
-                <Button asChild size="lg" className="bg-white/90 font-semibold text-black hover:bg-white">
+                <Button asChild size="lg" className="bg-white font-semibold text-black hover:bg-gray-100 shadow-lg">
                     <Link href={route('register')}>Get Started</Link>
                 </Button>
             </div>
@@ -41,7 +41,7 @@ function LandingNavbar() {
     }, []);
     const navBg = scrolled ? 'bg-white/90 shadow-md backdrop-blur' : 'bg-transparent';
     const textColor = scrolled ? 'text-gray-900' : 'text-white';
-    const hoverColor = scrolled ? 'hover:text-primary' : 'hover:text-primary-100';
+    const hoverColor = scrolled ? 'hover:text-primary' : 'hover:text-gray-900';
 
     return (
         <nav className={`fixed top-0 left-0 z-50 w-full transition-all ${navBg}`}>
@@ -68,7 +68,7 @@ function LandingNavbar() {
                             <Button
                                 asChild
                                 size="sm"
-                                className={`ml-2 ${scrolled ? '' : 'border-white/30 bg-white/20 text-white hover:bg-white/40 hover:text-black'}`}
+                                className={`ml-2 ${scrolled ? '' : 'border-white bg-white/10 text-white hover:bg-white hover:text-black backdrop-blur-sm'}`}
                             >
                                 <Link href={route('register')}>Register</Link>
                             </Button>
@@ -83,21 +83,21 @@ function LandingNavbar() {
                                 <MenuIcon size={32} className={textColor} />
                             </button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="bg-background text-foreground flex flex-col p-0">
+                        <SheetContent side="right" className="bg-white text-gray-900 flex flex-col p-0">
                             <div className="flex items-center justify-between border-b px-6 py-4">
                                 <span className="text-xl font-bold">[Shop Name]</span>
-                                <button onClick={() => setOpen(false)} aria-label="Close menu" className="text-foreground">
+                                <button onClick={() => setOpen(false)} aria-label="Close menu" className="text-gray-900">
                                     <CloseIcon size={28} />
                                 </button>
                             </div>
                             <nav className="flex flex-col gap-2 px-6 py-8 text-lg">
-                                <a href="#services" onClick={() => setOpen(false)} className="hover:bg-accent rounded px-2 py-3 transition-colors">
+                                <a href="#services" onClick={() => setOpen(false)} className="hover:bg-gray-100 rounded px-2 py-3 transition-colors">
                                     Services
                                 </a>
                                 <a
                                     href={route('login')}
                                     onClick={() => setOpen(false)}
-                                    className="hover:bg-accent rounded px-2 py-3 transition-colors"
+                                    className="hover:bg-gray-100 rounded px-2 py-3 transition-colors"
                                 >
                                     Login
                                 </a>
@@ -150,19 +150,19 @@ function ServicesSection() {
     ];
 
     return (
-        <section id="services" className="bg-background flex min-h-screen flex-col items-center py-40">
+        <section id="services" className="bg-gray-50 flex min-h-screen flex-col items-center py-40">
             <div className="mt-8 mb-16 flex flex-col items-center">
-                <h2 className="mb-6 text-center text-6xl font-extrabold tracking-tight">Our Services</h2>
-                <p className="text-muted-foreground mb-8 max-w-2xl text-center text-2xl">
+                <h2 className="mb-6 text-center text-6xl font-extrabold tracking-tight text-gray-900">Our Services</h2>
+                <p className="text-gray-600 mb-8 max-w-2xl text-center text-2xl">
                     Discover how our platform streamlines your motorcycle workshop experience. From easy appointment booking to real-time job tracking
-                    and inventory management, we provide everything you need for a modern, efficient garage. [Add your own subtitle here!]
+                    and inventory management, we provide everything you need for a modern, efficient garage.
                 </p>
             </div>
             <div className="grid w-full max-w-[1600px] grid-cols-1 gap-16 px-8 md:grid-cols-3">
                 {services.map((service, idx) => (
                     <Card
                         key={service.title}
-                        className="group hover:shadow-3xl bg-muted/60 hover:bg-muted/80 hover:ring-primary/30 relative flex min-h-[600px] transform-gpu flex-col overflow-hidden border-0 shadow-2xl ring-0 transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:ring-8"
+                        className="group hover:shadow-3xl bg-white hover:bg-gray-50 hover:ring-primary/30 relative flex min-h-[600px] transform-gpu flex-col overflow-hidden border shadow-2xl ring-0 transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:ring-8"
                         style={{ minHeight: 600 }}
                     >
                         <div className="relative h-80 w-full overflow-hidden">
@@ -173,18 +173,18 @@ function ServicesSection() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-90" />
                             {/* Fancy floating icon overlay */}
-                            <div className="absolute top-6 right-6 z-20 opacity-80 drop-shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:opacity-100">
+                            <div className="absolute top-6 right-6 z-20 text-white opacity-90 drop-shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:opacity-100">
                                 {service.icon}
                             </div>
                             {/* Subtle pattern overlay */}
                             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,rgba(255,255,255,0.08)_1px,transparent_1px)] bg-[size:32px_32px]" />
                         </div>
                         <CardHeader className="relative z-10 mt-8">
-                            <CardTitle className="group-hover:text-primary text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] transition-colors">
+                            <CardTitle className="group-hover:text-primary text-4xl font-extrabold tracking-tight text-gray-900 transition-colors">
                                 {service.title}
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="relative z-10 flex flex-1 items-center text-2xl font-medium text-white/90 group-hover:text-white">
+                        <CardContent className="relative z-10 flex flex-1 items-center text-2xl font-medium text-gray-700 group-hover:text-gray-900">
                             {service.description}
                         </CardContent>
                     </Card>
