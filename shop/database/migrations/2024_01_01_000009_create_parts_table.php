@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('Nome');
             $table->text('Descrizione')->nullable();
             $table->decimal('PrezzoFornitore', 10, 2);
+            $table->string('Categoria');
             $table->string('CodiceFornitore');
             $table->timestamps();
 

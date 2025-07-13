@@ -42,9 +42,8 @@ class Part extends Model
         'Nome',
         'Descrizione',
         'PrezzoFornitore',
+        'Categoria',
         'CodiceFornitore',
-        'QuantitaDisponibile',
-        'ScortaMinima',
     ];
 
     /**
@@ -95,11 +94,4 @@ class Part extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Check if the part is low on stock.
-     */
-    public function isLowStock(): bool
-    {
-        return $this->QuantitaDisponibile < $this->ScortaMinima;
-    }
 } 

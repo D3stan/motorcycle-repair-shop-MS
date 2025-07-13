@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminPartDetails } from '@/types';
+import { type BreadcrumbItem, type AdminPart } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, Package, AlertTriangle, DollarSign, Wrench, Bike } from 'lucide-react';
+import { ArrowLeft, Edit, Package, Wrench, Bike } from 'lucide-react';
 
 interface Props {
-    part: AdminPartDetails;
+    part: AdminPart;
     compatibleModels: Array<{
         id: number;
         brand: string;
@@ -209,61 +209,6 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                                 ) : (
                                     <p className="text-muted-foreground">This part has not been used in any work orders yet</p>
                                 )}
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Sidebar */}
-                    <div className="space-y-4">
-                        {/* Stock Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Stock Information</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Current Stock</span>
-                                    <span className="text-lg font-bold">{part.stock_quantity}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Minimum Stock</span>
-                                    <span className="text-lg">{part.minimum_stock}</span>
-                                </div>
-                                {part.is_low_stock && (
-                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
-                                        <AlertTriangle className="h-4 w-4 text-red-600" />
-                                        <span className="text-sm font-medium text-red-800">Low Stock Alert</span>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {/* Pricing Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Pricing</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Supplier Price</span>
-                                    <span className="text-lg font-bold">€{part.supplier_price.toFixed(2)}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Selling Price</span>
-                                    <span className="text-lg font-bold">€{part.selling_price.toFixed(2)}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Markup</span>
-                                    <span className="text-lg font-bold text-green-600">
-                                        {(((part.selling_price - part.supplier_price) / part.supplier_price) * 100).toFixed(1)}%
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Stock Value</span>
-                                    <span className="text-lg font-bold">
-                                        €{(part.stock_quantity * part.supplier_price).toFixed(2)}
-                                    </span>
-                                </div>
                             </CardContent>
                         </Card>
                     </div>

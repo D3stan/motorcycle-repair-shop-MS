@@ -30,13 +30,9 @@ class InventoryController extends Controller
                 'name' => $part->Nome,
                 'description' => $part->Descrizione,
                 'supplier_price' => (float) $part->PrezzoFornitore,
-                'selling_price' => (float) $part->PrezzoVendita,
                 'category' => $part->Categoria,
-                'stock_quantity' => $part->QuantitaDisponibile,
-                'minimum_stock' => $part->ScortaMinima,
                 'supplier_id' => $part->CodiceFornitore,
                 'supplier_name' => $part->supplier->Nome,
-                'is_low_stock' => $part->isLowStock(),
                 'created_at' => $part->created_at->format('Y-m-d'),
             ];
         });
@@ -75,10 +71,7 @@ class InventoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'supplier_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
             'category' => 'required|string|max:255',
-            'stock_quantity' => 'required|integer|min:0',
-            'minimum_stock' => 'required|integer|min:0',
             'supplier_id' => 'required|exists:FORNITORI,CodiceFornitore',
         ]);
 
@@ -88,10 +81,7 @@ class InventoryController extends Controller
             'Nome' => $validated['name'],
             'Descrizione' => $validated['description'],
             'PrezzoFornitore' => $validated['supplier_price'],
-            'PrezzoVendita' => $validated['selling_price'],
             'Categoria' => $validated['category'],
-            'QuantitaDisponibile' => $validated['stock_quantity'],
-            'ScortaMinima' => $validated['minimum_stock'],
             'CodiceFornitore' => $validated['supplier_id'],
         ]);
 
@@ -113,13 +103,9 @@ class InventoryController extends Controller
             'name' => $inventory->Nome,
             'description' => $inventory->Descrizione,
             'supplier_price' => (float) $inventory->PrezzoFornitore,
-            'selling_price' => (float) $inventory->PrezzoVendita,
             'category' => $inventory->Categoria,
-            'stock_quantity' => $inventory->QuantitaDisponibile,
-            'minimum_stock' => $inventory->ScortaMinima,
             'supplier_id' => $inventory->CodiceFornitore,
             'supplier_name' => $inventory->supplier->Nome,
-            'is_low_stock' => $inventory->isLowStock(),
             'created_at' => $inventory->created_at->format('Y-m-d H:i'),
         ];
 
@@ -174,10 +160,7 @@ class InventoryController extends Controller
                 'name' => $inventory->Nome,
                 'description' => $inventory->Descrizione,
                 'supplier_price' => (float) $inventory->PrezzoFornitore,
-                'selling_price' => (float) $inventory->PrezzoVendita,
                 'category' => $inventory->Categoria,
-                'stock_quantity' => $inventory->QuantitaDisponibile,
-                'minimum_stock' => $inventory->ScortaMinima,
                 'supplier_id' => $inventory->CodiceFornitore,
             ],
             'suppliers' => $suppliers,
@@ -195,10 +178,7 @@ class InventoryController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'supplier_price' => 'required|numeric|min:0',
-            'selling_price' => 'required|numeric|min:0',
             'category' => 'required|string|max:255',
-            'stock_quantity' => 'required|integer|min:0',
-            'minimum_stock' => 'required|integer|min:0',
             'supplier_id' => 'required|exists:FORNITORI,CodiceFornitore',
         ]);
 
@@ -208,10 +188,7 @@ class InventoryController extends Controller
             'Nome' => $validated['name'],
             'Descrizione' => $validated['description'],
             'PrezzoFornitore' => $validated['supplier_price'],
-            'PrezzoVendita' => $validated['selling_price'],
             'Categoria' => $validated['category'],
-            'QuantitaDisponibile' => $validated['stock_quantity'],
-            'ScortaMinima' => $validated['minimum_stock'],
             'CodiceFornitore' => $validated['supplier_id'],
         ]);
 

@@ -40,6 +40,7 @@ class PartFactory extends Factory
             'Nome' => $partName,
             'Descrizione' => fake()->optional()->sentence(),
             'PrezzoFornitore' => $supplierPrice,
+            'Categoria' => $category,
             'CodiceFornitore' => Supplier::factory(),
         ];
     }

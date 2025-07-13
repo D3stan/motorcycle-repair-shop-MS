@@ -296,32 +296,13 @@ export interface AdminPart {
     name: string;
     description?: string;
     supplier_price: number;
-    selling_price: number;
     category: string;
-    stock_quantity: number;
-    minimum_stock: number;
     supplier_id: number;
     supplier_name: string;
-    is_low_stock: boolean;
     created_at: string;
 }
 
-export interface AdminPartDetails {
-    id: number;
-    part_code: string;
-    brand: string;
-    name: string;
-    description?: string;
-    supplier_price: number;
-    selling_price: number;
-    category: string;
-    stock_quantity: number;
-    minimum_stock: number;
-    supplier_id: number;
-    supplier_name: string;
-    is_low_stock: boolean;
-    created_at: string;
-}
+
 
 export interface AdminSupplier {
     id: number;

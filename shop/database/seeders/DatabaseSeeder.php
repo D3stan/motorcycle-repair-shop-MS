@@ -265,19 +265,35 @@ class DatabaseSeeder extends Seeder
             }
         });
 
-        // Create some guaranteed current month invoices for better demo data
-        $customers->take(5)->each(function ($customer) use ($motorcycles, &$invoices) {
-            $customerMotorcycles = $motorcycles->where('CF', $customer->CF);
-            if ($customerMotorcycles->isNotEmpty()) {
-                $motorcycle = $customerMotorcycles->first();
-                
-                // Create a guaranteed current month invoice
+        // Create additional current month invoices linked to existing work
+        $remainingCompletedWorkOrders = $completedWorkOrders->diff($workOrderOnlyInvoices)->diff($combinedInvoices->pluck('workOrder'));
+        $remainingCompletedWorkSessions = $completedWorkSessions->diff($workSessionOnlyInvoices)->diff($combinedInvoices->pluck('session'));
+        
+        // Add more current month work order invoices
+        $remainingCompletedWorkOrders->take(3)->each(function ($workOrder, $index) use ($motorcycles, &$invoices) {
+            $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
+            if ($motorcycle) {
                 $invoice = Invoice::factory()->create([
-                    'CF' => $customer->CF,
-                    'CodiceIntervento' => null,
+                    'CF' => $motorcycle->CF,
+                    'CodiceIntervento' => $workOrder->CodiceIntervento,
                     'CodiceSessione' => null,
                     'Data' => fake()->dateTimeBetween(now()->startOfMonth(), now()),
-                    'Importo' => fake()->randomFloat(2, 200, 1500), // Higher amounts for visibility
+                    'Importo' => fake()->randomFloat(2, 200, 1500),
+                ]);
+                $invoices->push($invoice);
+            }
+        });
+        
+        // Add more current month work session invoices  
+        $remainingCompletedWorkSessions->take(2)->each(function ($workSession, $index) use ($motorcycles, &$invoices) {
+            $motorcycle = $motorcycles->where('NumTelaio', $workSession->NumTelaio)->first();
+            if ($motorcycle) {
+                $invoice = Invoice::factory()->create([
+                    'CF' => $motorcycle->CF,
+                    'CodiceIntervento' => null,
+                    'CodiceSessione' => $workSession->CodiceSessione,
+                    'Data' => fake()->dateTimeBetween(now()->startOfMonth(), now()),
+                    'Importo' => fake()->randomFloat(2, 200, 1500),
                 ]);
                 $invoices->push($invoice);
             }

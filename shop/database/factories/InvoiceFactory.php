@@ -19,7 +19,6 @@ class InvoiceFactory extends Factory
     public function definition(): array
     {
         $issueDate = fake()->dateTimeBetween('-1 year', 'now');
-        $dueDate = (clone $issueDate)->modify('+30 days');
         $amount = fake()->randomFloat(2, 100, 2000);
 
         return [

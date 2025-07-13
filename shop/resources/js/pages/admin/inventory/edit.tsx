@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminPartDetails, type SupplierOption } from '@/types';
+import { type BreadcrumbItem, type AdminPart, type SupplierOption } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save, Package } from 'lucide-react';
 
@@ -20,7 +20,7 @@ const categories = [
 ];
 
 interface Props {
-    part: AdminPartDetails;
+    part: AdminPart;
     suppliers: SupplierOption[];
 }
 
@@ -31,10 +31,7 @@ export default function InventoryEdit({ part, suppliers }: Props) {
         name: part.name,
         description: part.description || '',
         supplier_price: part.supplier_price.toString(),
-        selling_price: part.selling_price.toString(),
         category: part.category,
-        stock_quantity: part.stock_quantity.toString(),
-        minimum_stock: part.minimum_stock.toString(),
         supplier_id: part.supplier_id.toString(),
     });
 
@@ -191,55 +188,6 @@ export default function InventoryEdit({ part, suppliers }: Props) {
                                     />
                                     {errors.supplier_price && (
                                         <p className="text-sm text-red-600">{errors.supplier_price}</p>
-                                    )}
-                                </div>
-
-                                {/* Selling Price */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="selling_price">Selling Price (€) *</Label>
-                                    <Input
-                                        id="selling_price"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={data.selling_price}
-                                        onChange={(e) => setData('selling_price', e.target.value)}
-                                        required
-                                    />
-                                    {errors.selling_price && (
-                                        <p className="text-sm text-red-600">{errors.selling_price}</p>
-                                    )}
-                                </div>
-
-                                {/* Stock Quantity */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="stock_quantity">Stock Quantity *</Label>
-                                    <Input
-                                        id="stock_quantity"
-                                        type="number"
-                                        min="0"
-                                        value={data.stock_quantity}
-                                        onChange={(e) => setData('stock_quantity', e.target.value)}
-                                        required
-                                    />
-                                    {errors.stock_quantity && (
-                                        <p className="text-sm text-red-600">{errors.stock_quantity}</p>
-                                    )}
-                                </div>
-
-                                {/* Minimum Stock */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="minimum_stock">Minimum Stock *</Label>
-                                    <Input
-                                        id="minimum_stock"
-                                        type="number"
-                                        min="0"
-                                        value={data.minimum_stock}
-                                        onChange={(e) => setData('minimum_stock', e.target.value)}
-                                        required
-                                    />
-                                    {errors.minimum_stock && (
-                                        <p className="text-sm text-red-600">{errors.minimum_stock}</p>
                                     )}
                                 </div>
                             </div>

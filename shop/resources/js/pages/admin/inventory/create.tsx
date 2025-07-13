@@ -45,10 +45,7 @@ export default function InventoryCreate({ suppliers }: Props) {
         name: '',
         description: '',
         supplier_price: '',
-        selling_price: '',
         category: '',
-        stock_quantity: '',
-        minimum_stock: '',
         supplier_id: '',
     });
 
@@ -190,58 +187,6 @@ export default function InventoryCreate({ suppliers }: Props) {
                                     />
                                     {errors.supplier_price && (
                                         <p className="text-sm text-red-600">{errors.supplier_price}</p>
-                                    )}
-                                </div>
-
-                                {/* Selling Price */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="selling_price">Selling Price (€) *</Label>
-                                    <Input
-                                        id="selling_price"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={data.selling_price}
-                                        onChange={(e) => setData('selling_price', e.target.value)}
-                                        placeholder="0.00"
-                                        required
-                                    />
-                                    {errors.selling_price && (
-                                        <p className="text-sm text-red-600">{errors.selling_price}</p>
-                                    )}
-                                </div>
-
-                                {/* Stock Quantity */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="stock_quantity">Stock Quantity *</Label>
-                                    <Input
-                                        id="stock_quantity"
-                                        type="number"
-                                        min="0"
-                                        value={data.stock_quantity}
-                                        onChange={(e) => setData('stock_quantity', e.target.value)}
-                                        placeholder="0"
-                                        required
-                                    />
-                                    {errors.stock_quantity && (
-                                        <p className="text-sm text-red-600">{errors.stock_quantity}</p>
-                                    )}
-                                </div>
-
-                                {/* Minimum Stock */}
-                                <div className="space-y-2">
-                                    <Label htmlFor="minimum_stock">Minimum Stock *</Label>
-                                    <Input
-                                        id="minimum_stock"
-                                        type="number"
-                                        min="0"
-                                        value={data.minimum_stock}
-                                        onChange={(e) => setData('minimum_stock', e.target.value)}
-                                        placeholder="0"
-                                        required
-                                    />
-                                    {errors.minimum_stock && (
-                                        <p className="text-sm text-red-600">{errors.minimum_stock}</p>
                                     )}
                                 </div>
                             </div>
