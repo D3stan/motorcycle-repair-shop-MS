@@ -22,15 +22,7 @@ class StaffController extends BaseAdminController
         $staff = $this->getUsersWithCounts(
             'mechanic',
             ['assignedWorkOrders'],
-            ['assignedWorkOrders' => function($query) {
-                $query->where(function ($q) {
-                    $q->whereNull('DataInizio')
-                      ->orWhere(function ($subQ) {
-                          $subQ->whereNotNull('DataInizio')
-                               ->whereNull('DataFine');
-                      });
-                });
-            }]
+            ['assignedWorkOrders']
         );
 
         return Inertia::render('admin/staff/index', [
@@ -69,8 +61,8 @@ class StaffController extends BaseAdminController
         // Load staff data with relationships
         $staff->load([
             'assignedWorkOrders.motorcycle.motorcycleModel',
-            'assignedWorkOrders.user',
-            'workSessions'
+            'assignedWorkOrders.motorcycle.user',
+            'assignedWorkOrders.invoice'
         ]);
 
         // Format staff data using base controller method
@@ -94,11 +86,8 @@ class StaffController extends BaseAdminController
                 'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
                 'total_cost' => $workOrder->invoice?->Importo ? (float) $workOrder->invoice->Importo : 0.0,
                 'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
-                'customer' => $workOrder->user->first_name . ' ' . $workOrder->user->last_name,
+                'customer' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
                 'assigned_at' => $workOrder->pivot->created_at ? Carbon::parse($workOrder->pivot->created_at)->format('Y-m-d H:i') : null,
-                'pivot_started_at' => $workOrder->pivot->created_at ? Carbon::parse($workOrder->pivot->created_at)->format('Y-m-d H:i') : null,
-                'pivot_completed_at' => $workOrder->pivot->updated_at ? Carbon::parse($workOrder->pivot->updated_at)->format('Y-m-d H:i') : null,
-                'pivot_notes' => $workOrder->pivot->Note ?? '',
             ];
         });
 

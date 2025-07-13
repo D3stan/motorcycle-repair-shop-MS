@@ -42,6 +42,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Get the key name for the model when used in relationships with CF.
+     */
+    public function getQualifiedCFColumn(): string
+    {
+        return $this->getTable().'.CF';
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -98,7 +106,7 @@ class User extends Authenticatable
      */
     public function assignedWorkOrders(): BelongsToMany
     {
-        return $this->belongsToMany(WorkOrder::class, 'SVOLGIMENTI', 'CF', 'CodiceIntervento')
+        return $this->belongsToMany(WorkOrder::class, 'SVOLGIMENTI', 'CF', 'CodiceIntervento', 'CF', 'CodiceIntervento')
             ->withTimestamps();
     }
 
@@ -107,7 +115,7 @@ class User extends Authenticatable
      */
     public function getFullNameAttribute(): string
     {
-        return "{$this->first_name} {$this->last_name}";
+        return $this->first_name . ' ' . $this->last_name;
     }
 
     /**

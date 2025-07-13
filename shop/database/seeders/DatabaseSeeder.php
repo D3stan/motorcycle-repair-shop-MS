@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
 
         // Create mechanics
         $mechanics = User::factory()->mechanic()->count(5)->create();
+        $this->command->info("Created {$mechanics->count()} mechanics with CFs: " . $mechanics->pluck('CF')->implode(', '));
 
         // Create customers
         $customers = User::factory()->customer()->count(20)->create();
@@ -112,15 +113,17 @@ class DatabaseSeeder extends Seeder
             if ($customerMotorcycles->isNotEmpty()) {
                 $motorcycle = $customerMotorcycles->random();
                 
-                $workOrderData = WorkOrder::factory()
-                    ->count(rand(1, 2))
-                    ->make([
-                        'NumTelaio' => $motorcycle->NumTelaio,
-                    ]);
-                
-                foreach ($workOrderData as $workOrder) {
-                    $createdWorkOrder = WorkOrder::create($workOrder->toArray());
-                    $workOrders->push($createdWorkOrder);
+                // Create 1-2 work orders per customer
+                $numWorkOrders = rand(1, 2);
+                for ($i = 0; $i < $numWorkOrders; $i++) {
+                    try {
+                        $createdWorkOrder = WorkOrder::factory()->create([
+                            'NumTelaio' => $motorcycle->NumTelaio,
+                        ]);
+                        $workOrders->push($createdWorkOrder);
+                    } catch (\Exception $e) {
+                        $this->command->error("Failed to create work order: " . $e->getMessage());
+                    }
                 }
             }
         });
@@ -128,56 +131,79 @@ class DatabaseSeeder extends Seeder
         // Create work sessions for some work orders
         $workSessions = collect();
         $workOrders->take(8)->each(function ($workOrder) use (&$workSessions) {
-            $sessionData = WorkSession::factory()
-                ->count(rand(1, 3))
-                ->make([
+            // Create 1-3 work sessions per selected work order
+            $numSessions = rand(1, 3);
+            for ($i = 0; $i < $numSessions; $i++) {
+                $createdSession = WorkSession::factory()->create([
                     'NumTelaio' => $workOrder->NumTelaio,
                 ]);
-            
-            foreach ($sessionData as $session) {
-                $createdSession = WorkSession::create($session->toArray());
                 $workSessions->push($createdSession);
             }
         });
 
-        // Assign mechanics to work orders (SVOLGIMENTI table)
-        $workOrders->each(function ($workOrder) use ($mechanics) {
-            $numMechanics = rand(1, 2);
+        // Assign mechanics to work orders (SVOLGIMENTI table)  
+        $mechanicsAssigned = 0;
+        $this->command->info("About to assign mechanics to work orders. Mechanics count: {$mechanics->count()}, Work orders count: {$workOrders->count()}");
+        
+        $command = $this->command;
+        $workOrders->each(function ($workOrder) use ($mechanics, &$mechanicsAssigned, $command) {
+            // Ensure we have mechanics to assign
+            if ($mechanics->isEmpty()) {
+                $command->warn("No mechanics available for assignment!");
+                return;
+            }
+            
+            $numMechanics = rand(1, min(2, $mechanics->count()));
             $assignedMechanics = $mechanics->random($numMechanics);
-            // Ensure it's always a collection
-            if (!is_iterable($assignedMechanics)) {
+            
+            // Convert to collection if single item
+            if (!$assignedMechanics instanceof \Illuminate\Support\Collection) {
                 $assignedMechanics = collect([$assignedMechanics]);
             }
-            $mechanicData = [];
             
+            // Prepare data for pivot table
+            $mechanicCFs = [];
             foreach ($assignedMechanics as $mechanic) {
-                $mechanicData[$mechanic->CF] = [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                $mechanicCFs[] = $mechanic->CF;
             }
             
-            $workOrder->mechanics()->attach($mechanicData);
+            // Attach mechanics using sync to avoid duplicates
+            try {
+                $syncResult = $workOrder->mechanics()->sync($mechanicCFs);
+                $mechanicsAssigned++;
+                
+                // Debug info for first few work orders
+                if ($mechanicsAssigned <= 3) {
+                    $command->info("Work Order {$workOrder->CodiceIntervento}: Assigned mechanics " . implode(', ', $mechanicCFs));
+                }
+            } catch (\Exception $e) {
+                $command->error("Failed to assign mechanics to work order {$workOrder->CodiceIntervento}: " . $e->getMessage());
+            }
         });
 
         // Assign mechanics to work sessions (AFFIANCAMENTI table)
         $workSessions->each(function ($workSession) use ($mechanics) {
-            $numMechanics = rand(1, 2);
+            // Ensure we have mechanics to assign
+            if ($mechanics->isEmpty()) {
+                return;
+            }
+            
+            $numMechanics = rand(1, min(2, $mechanics->count()));
             $assignedMechanics = $mechanics->random($numMechanics);
-            // Ensure it's always a collection
-            if (!is_iterable($assignedMechanics)) {
+            
+            // Convert to collection if single item
+            if (!$assignedMechanics instanceof \Illuminate\Support\Collection) {
                 $assignedMechanics = collect([$assignedMechanics]);
             }
-            $mechanicData = [];
             
+            // Prepare data for pivot table
+            $mechanicCFs = [];
             foreach ($assignedMechanics as $mechanic) {
-                $mechanicData[$mechanic->CF] = [
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
+                $mechanicCFs[] = $mechanic->CF;
             }
             
-            $workSession->mechanics()->attach($mechanicData);
+            // Attach mechanics using sync to avoid duplicates
+            $workSession->mechanics()->sync($mechanicCFs);
         });
 
         // Create UTILIZZI relationships (Parts used in Work Orders)
@@ -334,6 +360,18 @@ class DatabaseSeeder extends Seeder
         $this->command->info("Created {$appointments->count()} appointments");
         $this->command->info("Created {$workOrders->count()} work orders");
         $this->command->info("Created {$workSessions->count()} work sessions");
+        $this->command->info("Assigned mechanics to {$mechanicsAssigned} work orders");
+        
+        // Verify the assignments by checking the database directly
+        $svolgimentiCount = DB::table('SVOLGIMENTI')->count();
+        $this->command->info("SVOLGIMENTI table has {$svolgimentiCount} records");
+        
+        // Check a sample work order
+        $sampleWorkOrder = $workOrders->first();
+        if ($sampleWorkOrder) {
+            $sampleMechanics = $sampleWorkOrder->mechanics()->get();
+            $this->command->info("Sample work order {$sampleWorkOrder->CodiceIntervento} has {$sampleMechanics->count()} mechanics assigned");
+        }
         $this->command->info("Created {$totalInvoices} invoices:");
         $this->command->info("  - {$workOrderOnlyCount} for work orders only");
         $this->command->info("  - {$workSessionOnlyCount} for work sessions only");

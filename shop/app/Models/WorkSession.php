@@ -80,7 +80,7 @@ class WorkSession extends Model
      */
     public function mechanics(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'AFFIANCAMENTI', 'CodiceSessione', 'CF')
+        return $this->belongsToMany(User::class, 'AFFIANCAMENTI', 'CodiceSessione', 'CF', null, 'CF')
             ->withTimestamps();
     }
 

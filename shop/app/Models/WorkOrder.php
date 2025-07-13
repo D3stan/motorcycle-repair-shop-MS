@@ -108,7 +108,7 @@ class WorkOrder extends Model
      */
     public function mechanics(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'SVOLGIMENTI', 'CodiceIntervento', 'CF')
+        return $this->belongsToMany(User::class, 'SVOLGIMENTI', 'CodiceIntervento', 'CF', null, 'CF')
             ->withTimestamps();
     }
 

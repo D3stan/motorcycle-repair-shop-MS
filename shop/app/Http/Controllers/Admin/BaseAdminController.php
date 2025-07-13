@@ -76,7 +76,7 @@ abstract class BaseAdminController extends Controller
             'last_name' => $user->last_name,
             'email' => $user->email,
             'phone' => $user->phone,
-            'tax_code' => $user->tax_code,
+            'tax_code' => $user->CF,
         ];
     }
 
@@ -94,7 +94,7 @@ abstract class BaseAdminController extends Controller
             'last_name' => $user->last_name,
             'email' => $user->email,
             'phone' => $user->phone,
-            'tax_code' => $user->tax_code,
+            'tax_code' => $user->CF,
             'created_at' => $user->created_at->format('Y-m-d H:i'),
         ];
     }

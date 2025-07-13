@@ -29,6 +29,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('work-orders/{workOrder}/status', [WorkOrderController::class, 'updateStatus'])->name('work-orders.update-status');
     Route::patch('work-orders/{workOrder}/mark-completed', [WorkOrderController::class, 'markCompleted'])->name('work-orders.mark-completed');
     
+    // Debug route for testing mechanics relationship
+    Route::get('debug/work-order-mechanics', function () {
+        $workOrder = \App\Models\WorkOrder::with('mechanics')->first();
+        if (!$workOrder) {
+            return response()->json(['error' => 'No work orders found']);
+        }
+        
+        return response()->json([
+            'work_order_id' => $workOrder->CodiceIntervento,
+            'mechanics_count' => $workOrder->mechanics->count(),
+            'mechanics' => $workOrder->mechanics->toArray(),
+            'raw_query' => $workOrder->mechanics()->toSql(),
+            'raw_bindings' => $workOrder->mechanics()->getBindings(),
+        ]);
+    });
+    
+    // Debug route for testing staff assigned work orders
+    Route::get('debug/staff-work-orders', function () {
+        $mechanic = \App\Models\User::where('type', 'mechanic')->with('assignedWorkOrders')->first();
+        if (!$mechanic) {
+            return response()->json(['error' => 'No mechanics found']);
+        }
+        
+        return response()->json([
+            'mechanic_name' => $mechanic->first_name . ' ' . $mechanic->last_name,
+            'mechanic_cf' => $mechanic->CF,
+            'assigned_work_orders_count' => $mechanic->assignedWorkOrders->count(),
+            'assigned_work_orders' => $mechanic->assignedWorkOrders->toArray(),
+            'raw_query' => $mechanic->assignedWorkOrders()->toSql(),
+            'raw_bindings' => $mechanic->assignedWorkOrders()->getBindings(),
+        ]);
+    });
+    
     // Inventory Management
     Route::resource('inventory', InventoryController::class);
     
