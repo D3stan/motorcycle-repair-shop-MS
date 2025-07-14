@@ -13,10 +13,12 @@
 
 .foreach {.docauthors}
     name info:
-    .row gap:{1cm} alignment:{end}
+    .align {end}
         **.name**
 
+    .align {end}
         .get {email} from:{.info}
+    .align {end}
         .get {matricula} from:{.info}
 
 <<<
