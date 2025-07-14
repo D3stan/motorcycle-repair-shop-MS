@@ -311,12 +311,12 @@ Operazione che permette la consultazione completa dello storico degli interventi
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
 | MOTO | E | 1 | L
-| EFFETTUAZIONE | R | 2.25 | 
-| INTERVENTO | E | 2.25 |
-| SVILUPPO | R | 0.75 |
-| SESSIONE | E | 0.75 |
-| SVOLGIMENTO | R | 2.25 |
-| AFFIANCAMENTO | R | 4.5 | 
+| EFFETTUAZIONE | R | 2.25 | L
+| INTERVENTO | E | 2.25 |L
+| SVILUPPO | R | 0.75 |L
+| SESSIONE | E | 0.75 |L
+| SVOLGIMENTO | R | 2.25 |L
+| AFFIANCAMENTO | R | 4.5 | L
 | PERSONA | E | 3 | L
 | UTILIZZO | R | 5.6 | L
 | RICAMBIO | E | 5.6 | L
@@ -425,7 +425,7 @@ UNIQUE(Email)
   Descrizione,
   Stato,
   Tipo,
-  .text {CF} decoration:{underline}: PERSONE
+  .text {CF}: PERSONE
 )  
 **AFFIANCAMENTI** (
   .text {CodiceSessione} decoration:{underline},
@@ -440,9 +440,9 @@ UNIQUE(Email)
   Importo,
   Data,
   Note,
-  .text {CF} decoration:{underline}: PERSONE,
-  .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
-  .text {CodiceSessione} decoration:{underline}: SESSIONI
+  .text {CF}: PERSONE,
+  .text {CodiceIntervento}: INTERVENTI,
+  .text {CodiceSessione}: SESSIONI
 )  
 **SESSIONI** (
   .text {CodiceSessione} decoration:{underline},
@@ -450,7 +450,7 @@ UNIQUE(Email)
   OreImpiegate,
   Stato,
   Note,
-  .text {NumTelaio} decoration:{underline}: MOTO
+  .text {NumTelaio}: MOTO
 )  
 **INTERVENTI** (
   .text {CodiceIntervento} decoration:{underline},
@@ -460,15 +460,15 @@ UNIQUE(Email)
   OreImpiegate,
   Stato,
   Note,
-  .text {NumTelaio} decoration:{underline}: MOTO
+  .text {NumTelaio}: MOTO
 )  
 **MOTO** (
   .text {NumTelaio} decoration:{underline},
   Targa,
   AnnoImmatricolazione,
   Note,
-  .text {CodiceModello} decoration:{underline}: MODELLI,
-  .text {CF} decoration:{underline}: PERSONE
+  .text {CodiceModello}: MODELLI,
+  .text {CF}: PERSONE
 )  
 UNIQUE(Targa)  
 **MODELLI** (
@@ -492,7 +492,7 @@ UNIQUE(Targa)
   Categoria,
   Descrizione[0–1],
   PrezzoFornitore,
-  .text {CodiceFornitore} decoration:{underline}: FORNITORI
+  .text {CodiceFornitore}: FORNITORI
 )  
 **MAGAZZINI** (
   .text {CodiceMagazzino} decoration:{underline}
