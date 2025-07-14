@@ -26,7 +26,6 @@ interface Props {
 
 interface AppointmentFormData {
     user_id: string;
-    motorcycle_id: string;
     appointment_date: string;
     appointment_time: string;
     type: string;
@@ -59,7 +58,6 @@ export default function AppointmentCreate({ customers }: Props) {
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
         user_id: '',
-        motorcycle_id: '',
         appointment_date: '',
         appointment_time: '',
         type: '',
@@ -71,7 +69,6 @@ export default function AppointmentCreate({ customers }: Props) {
             const customer = customers.find((c) => c.id.toString() === data.user_id);
             setSelectedCustomer(customer || null);
             setAvailableMotorcycles(customer?.motorcycles || []);
-            setData('motorcycle_id', '');
         }
     }, [data.user_id]);
 
@@ -140,25 +137,19 @@ export default function AppointmentCreate({ customers }: Props) {
                                     {errors.user_id && <p className="text-sm text-red-600">{errors.user_id}</p>}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="motorcycle_id">Motorcycle</Label>
-                                    <select
-                                        id="motorcycle_id"
-                                        value={data.motorcycle_id}
-                                        onChange={(e) => setData('motorcycle_id', e.target.value)}
-                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                                        required
-                                        disabled={!selectedCustomer}
-                                    >
-                                        <option value="">Select a motorcycle</option>
-                                        {availableMotorcycles.map((motorcycle) => (
-                                            <option key={motorcycle.id} value={motorcycle.id}>
-                                                {motorcycle.name} - {motorcycle.plate} ({motorcycle.year})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.motorcycle_id && <p className="text-sm text-red-600">{errors.motorcycle_id}</p>}
-                                </div>
+                                {selectedCustomer && availableMotorcycles.length > 0 && (
+                                    <div className="space-y-2">
+                                        <Label>Customer's Motorcycles</Label>
+                                        <div className="bg-gray-50 rounded-md p-3">
+                                            <p className="text-sm font-medium text-gray-900 mb-2">Available motorcycles:</p>
+                                            {availableMotorcycles.filter(motorcycle => motorcycle && motorcycle.id).map((motorcycle, index) => (
+                                                <div key={motorcycle.id || `motorcycle-${index}`} className="text-sm text-gray-700">
+                                                    • {motorcycle.name} - {motorcycle.plate} ({motorcycle.year})
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {selectedCustomer && (
                                     <div className="rounded-md bg-gray-50 p-3">
@@ -226,7 +217,6 @@ export default function AppointmentCreate({ customers }: Props) {
                                         <option value="">Select appointment type</option>
                                         <option value="maintenance">Maintenance</option>
                                         <option value="dyno_testing">Dyno Testing</option>
-                                        <option value="inspection">Inspection</option>
                                     </select>
                                     {errors.type && <p className="text-sm text-red-600">{errors.type}</p>}
                                 </div>

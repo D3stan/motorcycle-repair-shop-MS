@@ -267,12 +267,12 @@ class ScheduleController extends Controller
                     'email' => $customer->email,
                     'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
                         return [
-                            'id' => $motorcycle->id,
-                            'name' => $motorcycle->motorcycleModel->brand . ' ' . 
-                                    $motorcycle->motorcycleModel->name . ' (' . 
-                                    $motorcycle->license_plate . ')',
-                            'plate' => $motorcycle->license_plate,
-                            'year' => $motorcycle->registration_year,
+                            'id' => $motorcycle->NumTelaio,
+                            'name' => $motorcycle->motorcycleModel->Marca . ' ' . 
+                                    $motorcycle->motorcycleModel->Nome . ' (' . 
+                                    $motorcycle->Targa . ')',
+                            'plate' => $motorcycle->Targa,
+                            'year' => $motorcycle->AnnoImmatricolazione,
                         ];
                     }),
                 ];
@@ -296,18 +296,27 @@ class ScheduleController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Check if the time slot is available
-        $existingAppointment = Appointment::where('appointment_date', $validated['appointment_date'])
-            ->where('appointment_time', $validated['appointment_time'])
-            ->first();
+        // Find the user by ID to get their CF
+        $user = User::findOrFail($validated['user_id']);
+        
+        // Generate a unique appointment code
+        $appointmentCode = 'APP' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        while (Appointment::where('CodiceAppuntamento', $appointmentCode)->exists()) {
+            $appointmentCode = 'APP' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        }
 
-        if ($existingAppointment) {
-            return back()->withErrors(['appointment_time' => 'This time slot is already booked.']);
+        // Create description including time and notes
+        $description = $validated['notes'] ?? 'Appointment for ' . $validated['type'];
+        if (!empty($validated['appointment_time'])) {
+            $description .= ' at ' . $validated['appointment_time'];
         }
 
         $appointment = Appointment::create([
-            ...$validated,
-            'status' => 'confirmed',
+            'CodiceAppuntamento' => $appointmentCode,
+            'DataAppuntamento' => $validated['appointment_date'],
+            'Descrizione' => $description,
+            'Tipo' => $validated['type'],
+            'CF' => $user->CF,
         ]);
 
         return redirect()->route('admin.schedule.show', $appointment)
@@ -333,12 +342,12 @@ class ScheduleController extends Controller
                     'email' => $customer->email,
                     'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
                         return [
-                            'id' => $motorcycle->id,
-                            'name' => $motorcycle->motorcycleModel->brand . ' ' . 
-                                    $motorcycle->motorcycleModel->name . ' (' . 
-                                    $motorcycle->license_plate . ')',
-                            'plate' => $motorcycle->license_plate,
-                            'year' => $motorcycle->registration_year,
+                            'id' => $motorcycle->NumTelaio,
+                            'name' => $motorcycle->motorcycleModel->Marca . ' ' . 
+                                    $motorcycle->motorcycleModel->Nome . ' (' . 
+                                    $motorcycle->Targa . ')',
+                            'plate' => $motorcycle->Targa,
+                            'year' => $motorcycle->AnnoImmatricolazione,
                         ];
                     }),
                 ];

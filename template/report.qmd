@@ -425,6 +425,7 @@ APPUNTAMENTI (
   .text {CodiceAppuntamento} decoration:{underline},
   DataAppuntamento,
   Descrizione,
+  Stato,
   Tipo,
   .text {CF} decoration:{underline}: PERSONE
 )  
