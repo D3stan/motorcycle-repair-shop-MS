@@ -176,9 +176,9 @@ Questa operazione permette la registrazione di nuovi utenti nel sistema. La regi
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| PERSONA | E | 1 | L (CF uniqueness check)
-| PERSONA | E | 1 | L (Email uniqueness check)
-| PERSONA | E | 1 | S (Insert new cliente)
+| PERSONA | E | 1 | L
+| PERSONA | E | 1 | L
+| PERSONA | E | 1 | S
 
 .center
     **Totale costo**: 4 letture -> 40 accessi al mese
@@ -188,13 +188,13 @@ Operazione che consente ai clienti di aggiungere le proprie motociclette al gara
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| MOTO | E | 1 | L (NumTelaio uniqueness)
-| MOTO | E | 1 | L (Targa uniqueness)
-| MODELLO | E | 1 | L (Verify exists)
-| PERSONA | E | 1 | L (Verify exists)
-| MOTO | E | 1 | S (Insert motorcycle)
-| REALIZZAZIONE | R | 1 | S (Link MODELLO to MOTO)
-| POSSESSIONE | R | 1 | S (Link PERSONA to MOTO)
+| MOTO | E | 1 | L
+| MOTO | E | 1 | L
+| MODELLO | E | 1 | L
+| PERSONA | E | 1 | L
+| MOTO | E | 1 | S 
+| REALIZZAZIONE | R | 1 | S 
+| POSSESSIONE | R | 1 | S 
 
 .center
     **Totale costo**: 10 letture -> 1400 accessi all'anno
@@ -204,10 +204,10 @@ Gestisce la prenotazione di appuntamenti da parte dei clienti tramite relazione 
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| CLIENTE | E | 1 | L (Verify cliente exists)
-| APPUNTAMENTO | E | 1 | S (Create appointment)
-| CREAZIONE | R | 1 | S (Link CLIENTE to APPUNTAMENTO)
-| APPUNTAMENTO | E | 1 | S (Update for confirmation/cancellation)
+| CLIENTE | E | 1 | L 
+| APPUNTAMENTO | E | 1 | S
+| CREAZIONE | R | 1 | S 
+| APPUNTAMENTO | E | 1 | S 
 
 .center
     **Totale costo**: 6 letture -> 90 accessi al giorno
@@ -219,9 +219,9 @@ Operazione che permette l'assegnazione di uno o più meccanici agli interventi p
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| INTERVENTO | E | 1 | L (Verify exists and status)
-| MECCANICO | E | 1 | L (Verify mechanic exists)
-| SVOLGIMENTO | R | 1 | S (Create assignment)
+| INTERVENTO | E | 1 | L
+| MECCANICO | E | 1 | L
+| SVOLGIMENTO | R | 1 | S
 
 .center
     **Totale costo**: 4 letture -> 40 accessi al giorno
@@ -231,10 +231,10 @@ Operazione che permette la consultazione dell'inventario corrente con evidenziaz
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| RICAMBIO | E | 1200 | L (All parts for threshold check)
-| STOCCAGGIO | R | 30 | L (All stock relationships)
-| MAGAZZINO | E | 3 | L (All warehouses)
-| FORNITORE | E | 25 | L (All suppliers for reorder info)
+| RICAMBIO | E | 1200 | L
+| STOCCAGGIO | R | 30 | L 
+| MAGAZZINO | E | 3 | L
+| FORNITORE | E | 25 | L
 
 .center
     **Totale costo**: 1258 letture -> 50320 accessi al mese
@@ -244,12 +244,12 @@ Gestisce il processo di rifornimento dell'inventario con ricambi dai fornitori. 
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| FORNITORE | E | 1 | L (Verify supplier)
-| RICAMBIO | E | 1 | L (Verify part)
-| FORNITURA | R | 1 | L (Get current supplier info)
-| MAGAZZINO | E | 1 | L (Verify warehouse)
-| STOCCAGGIO | R | 1 | L (Check existing stock)
-| STOCCAGGIO | R | 1 | S (Update quantity)
+| FORNITORE | E | 1 | L 
+| RICAMBIO | E | 1 | L
+| FORNITURA | R | 1 | L 
+| MAGAZZINO | E | 1 | L 
+| STOCCAGGIO | R | 1 | L 
+| STOCCAGGIO | R | 1 | S 
 
 .center
     **Totale costo**: 8 letture -> 16 accessi al giorno
@@ -259,18 +259,18 @@ Operazione per generare fatture per interventi completati. Naviga attraverso le 
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| INTERVENTO | E | 1 | L (Verify completed)
-| EFFETTUAZIONE | R | 1 | L (Get MOTO from INTERVENTO)
-| MOTO | E | 1 | L (Motorcycle details)
-| REALIZZAZIONE | R | 1 | L (Get MODELLO from MOTO)
-| MODELLO | E | 1 | L (Model details for invoice)
-| POSSESSIONE | R | 1 | L (Get CLIENTE from MOTO)
-| CLIENTE | E | 1 | L (Cliente details)
-| UTILIZZO | R | 2.5 | L (Parts used - average)
-| RICAMBIO | E | 2.5 | L (Part details and prices)
-| FATTURA | E | 1 | S (Create invoice)
-| EMISSIONE | R | 1 | S (Link LAVORO to FATTURA)
-| INTESTAZIONE | R | 1 | S (Link FATTURA to CLIENTE)
+| INTERVENTO | E | 1 | L
+| EFFETTUAZIONE | R | 1 | L
+| MOTO | E | 1 | L
+| REALIZZAZIONE | R | 1 | L
+| MODELLO | E | 1 | L
+| POSSESSIONE | R | 1 | L 
+| CLIENTE | E | 1 | L
+| UTILIZZO | R | 2.5 | L
+| RICAMBIO | E | 2.5 | L
+| FATTURA | E | 1 | S
+| EMISSIONE | R | 1 | S 
+| INTESTAZIONE | R | 1 | S 
 
 .center
     **Totale costo**: 16 letture -> 1600 accessi al mese
@@ -283,13 +283,13 @@ Operazione che fornisce una vista d'insieme completa delle attività dell'offici
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| APPUNTAMENTO | E | 50 | L (Upcoming appointments)
-| INTERVENTO | E | 100 | L (Recent/active interventions)
-| SESSIONE | E | 50 | L (Recent/active sessions)
-| FATTURA | E | 100 | L (Recent invoices for revenue)
-| RICAMBIO | E | 1200 | L (All parts for stock alerts)
-| STOCCAGGIO | R | 30 | L (All stock quantities)
-| MAGAZZINO | E | 3 | L (All warehouses)
+| APPUNTAMENTO | E | 50 | L
+| INTERVENTO | E | 100 | L 
+| SESSIONE | E | 50 | L
+| FATTURA | E | 100 | L
+| RICAMBIO | E | 1200 | L
+| STOCCAGGIO | R | 30 | L
+| MAGAZZINO | E | 3 | L
 
 .center
     **Totale costo**: 1533 letture -> 76650 accessi al giorno
@@ -299,8 +299,8 @@ Operazione per la gestione amministrativa del personale dell'officina. Permette 
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| PERSONA | E | 1 | L (Verify exists)
-| PERSONA | E | 1 | S (Update role/type)
+| PERSONA | E | 1 | L
+| PERSONA | E | 1 | S
 
 .center
     **Totale costo**: 3 letture -> 15 accessi all'anno
@@ -310,16 +310,16 @@ Operazione che permette la consultazione completa dello storico degli interventi
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| MOTO | E | 1 | L (Get motorcycle details)
-| EFFETTUAZIONE | R | 2.25 | L (Get all interventions)
-| INTERVENTO | E | 2.25 | L (Intervention details)
-| SVILUPPO | R | 0.75 | L (Get all sessions)
-| SESSIONE | E | 0.75 | L (Session details)
-| SVOLGIMENTO | R | 2.25 | L (Mechanics assigned to interventions)
-| AFFIANCAMENTO | R | 4.5 | L (Mechanics assigned to sessions)
-| PERSONA | E | 3 | L (Mechanic details)
-| UTILIZZO | R | 5.6 | L (Parts used in interventions)
-| RICAMBIO | E | 5.6 | L (Part details and costs)
+| MOTO | E | 1 | L
+| EFFETTUAZIONE | R | 2.25 | 
+| INTERVENTO | E | 2.25 |
+| SVILUPPO | R | 0.75 |
+| SESSIONE | E | 0.75 |
+| SVOLGIMENTO | R | 2.25 |
+| AFFIANCAMENTO | R | 4.5 | 
+| PERSONA | E | 3 | L
+| UTILIZZO | R | 5.6 | L
+| RICAMBIO | E | 5.6 | L
 
 .center
     **Totale costo**: 28 letture -> 2800 accessi al mese
@@ -329,11 +329,11 @@ Operazione che permette ai clienti di consultare in autonomia lo stato corrente 
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| CLIENTE | E | 1 | L (Cliente verification)
-| POSSESSIONE | R | 1 | L (Get motorcycle)
-| MOTO | E | 1 | L (Motorcycle details)
-| EFFETTUAZIONE | R | 1 | L (Get current intervention)
-| INTERVENTO | E | 1 | L (Intervention status)
+| CLIENTE | E | 1 | L
+| POSSESSIONE | R | 1 | L
+| MOTO | E | 1 | L
+| EFFETTUAZIONE | R | 1 | L
+| INTERVENTO | E | 1 | L
 
 .center
     **Totale costo**: 5 letture -> 125 accessi al giorno
