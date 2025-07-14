@@ -76,10 +76,10 @@ d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 
 1. Registrazione di nuovi clienti
 2. Inserimento di una nuova motocicletta nel garage
-3. Prenotazione e conferma / cancellazione appuntamenti
+3. Prenotazione appuntamenti
 4. Assegnazione tecnici agli interventi
 5. Visualizzazione inventario con soglie di riordino
-6. Registrazione acquisti da fornitori
+6. Rifornimento ricambi in magazzino
 7. Generazione fatture per interventi completati
 8. Visualizzazione dashboard con indicatori di performance
 9. Gestione ruoli e permessi del personale
@@ -540,21 +540,10 @@ Il cliente associa una moto già presente nel catalogo dei modelli al proprio ga
 
 
 ##### OP 3 - Prenotazione, conferma e cancellazione appuntamenti
-1) Inserimento richiesta in stato “attesa”.  
-2) Conferma da parte dell’officina.  
-3) Eventuale annullamento da parte del cliente.
 
 .code {sql}
     INSERT INTO APPUNTAMENTI (CodiceAppuntamento, DataAppuntamento, Descrizione, Stato, Tipo, CF)
     VALUES (?, ?, ?, 'attesa', ?, ?);
-
-    UPDATE APPUNTAMENTI
-    SET Stato = 'confermato'
-    WHERE CodiceAppuntamento = ?;
-
-    DELETE FROM APPUNTAMENTI
-    WHERE CodiceAppuntamento = ?;
-
 
 ##### OP 4 - Assegnazione tecnici agli interventi
 Collega uno o più meccanici ad un intervento specifico.
@@ -578,7 +567,7 @@ Elenco dei ricambi con quantità sotto la soglia impostata.
     HAVING disponibilita < r.SogliaMinima;
 
 
-##### OP 6 - Registrazione acquisti da fornitori
+##### OP 6 - Rifornimento ricambi in magazzino
 1) Aggiorna il prezzo del ricambio.  
 2) Aggiunge le unità acquistate nel magazzino indicato.
 
