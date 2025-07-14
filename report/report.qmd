@@ -58,13 +58,14 @@ Un'analisi testuale dell'intervista ha portato alla luce diverse ambiguità elen
 
 I **Clienti** rappresentano i proprietari delle motociclette che si registrano nel sistema fornendo i propri dati anagrafici e di contatto.
 Ogni cliente può possedere una o più **Motociclette**, caratterizzate da targa, marca, modello e note personali.
-Gli **Appuntamenti** costituiscono il collegamento tra clienti e officina, permettendo la prenotazione di interventi di manutenzione o prove al banco.
-Ogni appuntamento è associato a una specifica motocicletta e può trovarsi in diversi stati
-(in attesa di conferma, in progesso, completato, annullato). Durante la fase operativa, gli appuntamenti si trasformano in **Interventi** veri e propri,
+Gli **Appuntamenti** permettono la prenotazione di interventi di manutenzione o prove al banco e, una volta inseriti dagli utenti, devono essere confermati
+dall'officina in base alla disponibilità.
+Ogni appuntamento può trovarsi in diversi stati (in attesa di conferma, confermato, rifiutato).
+Durante la fase operativa, gli appuntamenti si trasformano in **Lavori** veri e propri,
 ai quali vengono assegnati uno o più **Tecnici** responsabili dell'esecuzione del lavoro.  
 Il **Magazzino** gestisce i **Ricambi**, ognuno identificato da un codice fornitore, categoria e livello di disponibilità. Esiste una
 relazione di compatibilità tra ricambi e modelli di motociclette per evitare errori di montaggio. Durante gli interventi, i ricambi
-utilizzati vengono registrati e collegati sia all'intervento che al fornitore di provenienza con i relativi prezzi.  
+utilizzati vengono registrati e collegati all'intervento con i relativi prezzi, in modo da poterli variare da intervento ad intervento.  
 Il **Personale** dell'officina comprende tecnici con diversi ruoli e permessi di accesso differenziati. Gli amministratori
 hanno accesso completo al sistema inclusa la generazione di fatture, mentre i tecnici possono aggiornare lo stato dei lavori a
 loro assegnati. Il sistema di **Fatturazione** collega gli interventi completati ai relativi clienti,
@@ -459,11 +460,9 @@ INTERVENTI (
   DataInizio,
   DataFine[0–1],
   KmMoto,
-  Causa[0–1],
   OreImpiegate,
   Stato,
   Note,
-  Nome,
   .text {NumTelaio} decoration:{underline}: MOTO
 )  
 MOTO (
