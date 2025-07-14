@@ -62,7 +62,7 @@ interface WorkOrder {
 interface Props {
     appointment: Appointment;
     customer: Customer;
-    motorcycle: Motorcycle;
+    motorcycle: Motorcycle | null;
     workOrders: WorkOrder[];
 }
 
@@ -97,6 +97,10 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
     };
 
     const handleCreateWorkOrder = () => {
+        if (!motorcycle) {
+            alert('Cannot create work order: No motorcycle associated with this customer.');
+            return;
+        }
         router.get(`/admin/work-orders/create?appointment_id=${appointment.id}&user_id=${customer.id}&motorcycle_id=${motorcycle.id}`);
     };
 
@@ -305,45 +309,55 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div>
-                                <label className="text-muted-foreground text-sm font-medium">Vehicle</label>
-                                <p className="text-lg font-medium">
-                                    {motorcycle.brand} {motorcycle.model}
-                                </p>
-                            </div>
+                            {motorcycle ? (
+                                <>
+                                    <div>
+                                        <label className="text-muted-foreground text-sm font-medium">Vehicle</label>
+                                        <p className="text-lg font-medium">
+                                            {motorcycle.brand} {motorcycle.model}
+                                        </p>
+                                    </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-muted-foreground text-sm font-medium">Year</label>
-                                    <p>{motorcycle.year}</p>
-                                </div>
-                                <div>
-                                    <label className="text-muted-foreground text-sm font-medium">Engine Size</label>
-                                    <p>{motorcycle.engine_size}</p>
-                                </div>
-                            </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-muted-foreground text-sm font-medium">Year</label>
+                                            <p>{motorcycle.year}</p>
+                                        </div>
+                                        <div>
+                                            <label className="text-muted-foreground text-sm font-medium">Engine Size</label>
+                                            <p>{motorcycle.engine_size}</p>
+                                        </div>
+                                    </div>
 
-                            <div className="grid grid-cols-1 gap-4">
-                                <div className="flex items-center gap-2">
-                                    <MapPin className="text-muted-foreground h-4 w-4" />
-                                    <span className="font-medium">License Plate:</span>
-                                    <span>{motorcycle.plate}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Hash className="text-muted-foreground h-4 w-4" />
-                                    <span className="font-medium">VIN:</span>
-                                    <span className="font-mono text-sm">{motorcycle.vin}</span>
-                                </div>
-                            </div>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <MapPin className="text-muted-foreground h-4 w-4" />
+                                            <span className="font-medium">License Plate:</span>
+                                            <span>{motorcycle.plate}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Hash className="text-muted-foreground h-4 w-4" />
+                                            <span className="font-medium">VIN:</span>
+                                            <span className="font-mono text-sm">{motorcycle.vin}</span>
+                                        </div>
+                                    </div>
 
-                            <div className="flex gap-2 pt-2">
-                                <Button asChild variant="outline" size="sm">
-                                    <Link href={`/admin/motorcycles/${motorcycle.id}`}>
-                                        <ExternalLink className="mr-2 h-4 w-4" />
-                                        View Motorcycle
-                                    </Link>
-                                </Button>
-                            </div>
+                                    <div className="flex gap-2 pt-2">
+                                        <Button asChild variant="outline" size="sm">
+                                            <Link href={`/admin/motorcycles/${motorcycle.id}`}>
+                                                <ExternalLink className="mr-2 h-4 w-4" />
+                                                View Motorcycle
+                                            </Link>
+                                        </Button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-muted-foreground py-6 text-center">
+                                    <Settings className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                                    <p>No motorcycle registered</p>
+                                    <p className="text-sm">This customer has no motorcycles on file</p>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -355,7 +369,7 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                                     <Wrench className="h-5 w-5" />
                                     Work Orders
                                 </CardTitle>
-                                {workOrders.length === 0 && appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
+                                {workOrders.length === 0 && motorcycle && appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
                                     <Button onClick={handleCreateWorkOrder} size="sm">
                                         <Plus className="mr-2 h-4 w-4" />
                                         Create Work Order
@@ -410,8 +424,11 @@ export default function AppointmentShow({ appointment, customer, motorcycle, wor
                                 <div className="text-muted-foreground py-6 text-center">
                                     <Wrench className="mx-auto mb-2 h-8 w-8 opacity-50" />
                                     <p>No work orders created yet</p>
-                                    {appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
+                                    {motorcycle && appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
                                         <p className="text-sm">Create a work order to track maintenance progress</p>
+                                    )}
+                                    {!motorcycle && (
+                                        <p className="text-sm">Cannot create work order without an associated motorcycle</p>
                                     )}
                                 </div>
                             )}

@@ -124,7 +124,7 @@ class ScheduleController extends Controller
      */
     public function appointments(Request $request): Response
     {
-        $query = Appointment::with(['user', 'motorcycle.motorcycleModel']);
+        $query = Appointment::with(['user']);
         
         // Apply filters
         if ($request->filled('status')) {
@@ -142,10 +142,8 @@ class ScheduleController extends Controller
                     $userQuery->where('first_name', 'like', "%{$search}%")
                              ->orWhere('last_name', 'like', "%{$search}%")
                              ->orWhere('email', 'like', "%{$search}%");
-                })
-                ->orWhereHas('motorcycle', function ($motorcycleQuery) use ($search) {
-                    $motorcycleQuery->where('license_plate', 'like', "%{$search}%");
                 });
+                // Note: Motorcycle search not available in simplified schema
             });
         }
         
@@ -189,7 +187,7 @@ class ScheduleController extends Controller
      */
     public function show(Appointment $appointment): Response
     {
-        $appointment->load(['user']); // Simplified schema - no motorcycle or work order links
+        $appointment->load(['user.motorcycles.motorcycleModel']); // Load user with their motorcycles
         
         $appointmentData = [
             'id' => $appointment->CodiceAppuntamento,
@@ -209,12 +207,46 @@ class ScheduleController extends Controller
             'tax_code' => $appointment->user->CF,
         ];
         
-        // No motorcycle or work orders in simplified schema
+        // Get customer's motorcycles - use the first one if available
+        $motorcycle = null;
+        if ($appointment->user->motorcycles->isNotEmpty()) {
+            $customerMotorcycle = $appointment->user->motorcycles->first();
+            $motorcycle = [
+                'id' => $customerMotorcycle->NumTelaio,
+                'brand' => $customerMotorcycle->motorcycleModel->Marca,
+                'model' => $customerMotorcycle->motorcycleModel->Nome,
+                'year' => $customerMotorcycle->AnnoImmatricolazione,
+                'plate' => $customerMotorcycle->Targa,
+                'vin' => $customerMotorcycle->NumTelaio,
+                'engine_size' => $customerMotorcycle->motorcycleModel->Cilindrata . 'cc',
+            ];
+        }
+        
+        // Get work orders related to the customer's motorcycles (if any)
+        $workOrders = [];
+        if ($appointment->user->motorcycles->isNotEmpty()) {
+            $motorcycleIds = $appointment->user->motorcycles->pluck('NumTelaio');
+            $workOrders = WorkOrder::whereIn('NumTelaio', $motorcycleIds)
+                ->orderBy('DataInizio', 'desc')
+                ->get()
+                ->map(function ($workOrder) {
+                    return [
+                        'id' => $workOrder->CodiceIntervento,
+                        'description' => $workOrder->Nome ?: 'Work Order',
+                        'status' => $workOrder->Stato,
+                        'started_at' => $workOrder->DataInizio ? $workOrder->DataInizio->format('M j, Y') : null,
+                        'completed_at' => $workOrder->DataFine ? $workOrder->DataFine->format('M j, Y') : null,
+                        'total_cost' => 0, // Simplified schema - no cost tracking
+                    ];
+                })
+                ->toArray();
+        }
+        
         return Inertia::render('admin/schedule/appointment-show', [
             'appointment' => $appointmentData,
             'customer' => $customer,
-            'motorcycle' => null, // Not available in simplified schema
-            'workOrders' => [], // Not linked in simplified schema
+            'motorcycle' => $motorcycle,
+            'workOrders' => $workOrders,
         ]);
     }
 
@@ -258,10 +290,9 @@ class ScheduleController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'motorcycle_id' => 'required|exists:motorcycles,id',
             'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required|date_format:H:i',
-            'type' => 'required|in:maintenance,dyno_testing,inspection',
+            'type' => 'required|in:maintenance,dyno_testing',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -288,7 +319,7 @@ class ScheduleController extends Controller
      */
     public function edit(Appointment $appointment): Response
     {
-        $appointment->load(['user', 'motorcycle.motorcycleModel']);
+        $appointment->load(['user']);
         
         // Get all customers with their motorcycles
         $customers = User::where('type', 'customer')
@@ -315,14 +346,16 @@ class ScheduleController extends Controller
 
         return Inertia::render('admin/schedule/appointment-edit', [
             'appointment' => [
-                'id' => $appointment->id,
-                'user_id' => $appointment->user_id,
-                'motorcycle_id' => $appointment->motorcycle_id,
-                'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                'appointment_time' => $appointment->appointment_time,
-                'type' => $appointment->type,
-                'status' => $appointment->status,
-                'notes' => $appointment->notes,
+                'id' => $appointment->CodiceAppuntamento,
+                'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+                'appointment_time' => '09:00', // Default time since not stored separately
+                'type' => $appointment->Tipo,
+                'status' => 'scheduled', // Simplified schema - all appointments are scheduled
+                'notes' => $appointment->Descrizione,
+                'customer' => $appointment->user ? [
+                    'id' => $appointment->user->id,
+                    'name' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
+                ] : null,
             ],
             'customers' => $customers,
         ]);
@@ -335,25 +368,28 @@ class ScheduleController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'motorcycle_id' => 'required|exists:motorcycles,id',
             'appointment_date' => 'required|date',
             'appointment_time' => 'required|date_format:H:i',
-            'type' => 'required|in:maintenance,dyno_testing,inspection',
-            'status' => 'required|in:pending,confirmed,in_progress,completed,cancelled',
+            'type' => 'required|in:maintenance,dyno_testing',
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Check if the time slot is available (excluding current appointment)
-        $existingAppointment = Appointment::where('appointment_date', $validated['appointment_date'])
-            ->where('appointment_time', $validated['appointment_time'])
-            ->where('id', '!=', $appointment->id)
-            ->first();
-
-        if ($existingAppointment) {
-            return back()->withErrors(['appointment_time' => 'This time slot is already booked.']);
+        // Find the user by ID to get their CF
+        $user = User::findOrFail($validated['user_id']);
+        
+        // Create description including time and notes
+        $description = $validated['notes'] ?? 'Appointment for ' . $validated['type'];
+        if (!empty($validated['appointment_time'])) {
+            $description .= ' at ' . $validated['appointment_time'];
         }
 
-        $appointment->update($validated);
+        // Update appointment with correct field mapping
+        $appointment->update([
+            'DataAppuntamento' => $validated['appointment_date'],
+            'Descrizione' => $description,
+            'Tipo' => $validated['type'],
+            'CF' => $user->CF,
+        ]);
 
         return redirect()->route('admin.schedule.show', $appointment)
             ->with('success', 'Appointment updated successfully!');
@@ -381,23 +417,34 @@ class ScheduleController extends Controller
     public function createWorkOrder(Appointment $appointment): RedirectResponse
     {
         // Check if work order already exists for this appointment
-        if ($appointment->workOrders()->exists()) {
-            return back()->with('error', 'Work order already exists for this appointment.');
+        // Note: In simplified schema, appointments don't directly link to work orders
+        // We need to get the user's motorcycle to create a work order
+        $appointment->load(['user.motorcycles']);
+        
+        if (!$appointment->user->motorcycles->isNotEmpty()) {
+            return back()->with('error', 'No motorcycles found for this customer.');
+        }
+
+        // Use the first motorcycle of the customer
+        $motorcycle = $appointment->user->motorcycles->first();
+        
+        // Generate a unique work order code
+        $workOrderCode = 'WO' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        while (WorkOrder::where('CodiceIntervento', $workOrderCode)->exists()) {
+            $workOrderCode = 'WO' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
         }
 
         $workOrder = WorkOrder::create([
-            'user_id' => $appointment->user_id,
-            'motorcycle_id' => $appointment->motorcycle_id,
-            'appointment_id' => $appointment->id,
-            'description' => 'Work order created from appointment: ' . ucfirst(str_replace('_', ' ', $appointment->type)),
-            'status' => 'pending',
-            'labor_cost' => 0,
-            'parts_cost' => 0,
-            'total_cost' => 0,
+            'CodiceIntervento' => $workOrderCode,
+            'NumTelaio' => $motorcycle->NumTelaio,
+            'KmMoto' => 0, // Default value
+            'Tipo' => $appointment->Tipo,
+            'Stato' => 'pending',
+            'Note' => 'Work order created from appointment: ' . ucfirst(str_replace('_', ' ', $appointment->Tipo)),
+            'Nome' => 'Appointment Work Order',
         ]);
 
-        // Update appointment status
-        $appointment->update(['status' => 'in_progress']);
+        // Note: Appointment status not tracked in simplified schema
 
         return redirect()->route('admin.work-orders.show', $workOrder)
             ->with('success', 'Work order created successfully from appointment!');
