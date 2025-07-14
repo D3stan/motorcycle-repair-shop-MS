@@ -77,13 +77,13 @@ d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 1. Registrazione di nuovi clienti
 2. Inserimento di una nuova motocicletta nel garage
 3. Prenotazione appuntamenti
-4. Assegnazione tecnici agli interventi
+4. Assegnazione tecnici ad un intervento
 5. Visualizzazione inventario con soglie di riordino
 6. Rifornimento ricambi in magazzino
 7. Generazione fattura per intervento completato
 8. Visualizzazione dashboard con indicatori di performance
 9. Gestione ruoli e permessi del personale
-10. Tracciamento storico interventi per ogni motocicletta
+10. Tracciamento storico interventi per una motocicletta
 11. Visualizzare lo stato di un intervento sulla propria moto
 
 # Progettazione Concettuale
@@ -214,7 +214,7 @@ Gestisce la prenotazione di appuntamenti da parte dei clienti tramite relazione 
 
 ![ER](imgs/navigazione3.png "Schema di navigazione per la gestione degli appuntamenti")
 
-#####! OP 4 - Assegnazione tecnici agli interventi
+#####! OP 4 - Assegnazione tecnici ad un intervento
 Operazione che permette l'assegnazione di uno o più meccanici agli interventi programmati. Verifica l'esistenza e lo stato dell'intervento e la disponibilità del meccanico prima di creare l'assegnazione tramite relazione SVOLGIMENTO.
 
 | Concetto | Tipo | Accessi | Operazione 
@@ -305,7 +305,7 @@ Operazione per la gestione amministrativa del personale dell'officina. Permette 
 .center
     **Totale costo**: 3 letture -> 15 accessi all'anno
 
-#####! OP 10 - Tracciamento storico interventi per ogni motocicletta
+#####! OP 10 - Tracciamento storico interventi per una motocicletta
 Operazione che permette la consultazione completa dello storico degli interventi e sessioni effettuati su una specifica motocicletta. Utilizza proporzioni realistiche basate sui volumi: 2.25 interventi e 0.75 sessioni per moto, con relativi meccanici e ricambi.
 
 | Concetto | Tipo | Accessi | Operazione 
@@ -543,7 +543,7 @@ Il cliente associa una moto già presente nel catalogo dei modelli al proprio ga
     INSERT INTO APPUNTAMENTI (CodiceAppuntamento, DataAppuntamento, Descrizione, Stato, Tipo, CF)
     VALUES (?, ?, ?, 'attesa', ?, ?);
 
-##### OP 4 - Assegnazione tecnici agli interventi
+##### OP 4 - Assegnazione tecnici ad un intervento
 Collega uno o più meccanici ad un intervento specifico.
 
 .code {sql}
