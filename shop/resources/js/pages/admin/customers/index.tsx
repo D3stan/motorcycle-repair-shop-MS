@@ -95,16 +95,6 @@ export default function CustomersIndex({ customers }: Props) {
             ),
         },
         {
-            key: 'status',
-            label: 'Status',
-            render: (customer: AdminCustomer) =>
-                (customer.pending_invoices_count || 0) > 0 ? (
-                    <StatusBadge status={`${customer.pending_invoices_count || 0} pending`} />
-                ) : (
-                    <StatusBadge status="Active" />
-                ),
-        },
-        {
             key: 'actions',
             label: 'Actions',
             render: (customer: AdminCustomer) => (
