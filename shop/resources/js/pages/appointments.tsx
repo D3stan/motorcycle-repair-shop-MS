@@ -15,11 +15,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface Motorcycle {
-    id: number;
-    label: string;
-}
-
 interface Appointment {
     id: string;
     appointment_date: string;
@@ -27,19 +22,13 @@ interface Appointment {
     type: string;
     type_display: string;
     status: string;
-    motorcycle: {
-        id: number;
-        brand: string;
-        model: string;
-        plate: string;
-    } | null;
+    description: string;
     notes: string;
 }
 
 interface AppointmentsProps {
     upcomingAppointments: Appointment[];
     pastAppointments: Appointment[];
-    motorcycles: Motorcycle[];
 }
 
 const getStatusColor = (status: string) => {
@@ -55,7 +44,7 @@ const getStatusColor = (status: string) => {
     }
 };
 
-export default function Appointments({ upcomingAppointments, pastAppointments, motorcycles }: AppointmentsProps) {
+export default function Appointments({ upcomingAppointments, pastAppointments }: AppointmentsProps) {
     const [isBookModalOpen, setIsBookModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -66,7 +55,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
     };
 
     const handleEditAppointment = (appointmentId: number) => {
-        const appointment = upcomingAppointments.find((apt) => apt.id === appointmentId);
+        const appointment = upcomingAppointments.find((apt) => Number.parseInt(apt.id) === (appointmentId));
         if (appointment) {
             setSelectedAppointment(appointment);
             setIsEditModalOpen(true);
@@ -74,7 +63,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
     };
 
     const handleCancelAppointment = (appointmentId: number) => {
-        const appointment = upcomingAppointments.find((apt) => apt.id === appointmentId);
+        const appointment = upcomingAppointments.find((apt) => Number.parseInt(apt.id) === appointmentId);
         if (appointment) {
             setSelectedAppointment(appointment);
             setIsCancelModalOpen(true);
@@ -89,7 +78,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold tracking-tight">Appointments</h1>
-                        <p className="text-muted-foreground">Manage your motorcycle service appointments</p>
+                        <p className="text-muted-foreground">Manage your service appointments</p>
                     </div>
                     <Button onClick={handleBookAppointment}>Book New Appointment</Button>
                 </div>
@@ -104,11 +93,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                 <Card key={appointment.id}>
                                     <CardHeader>
                                         <CardTitle className="flex items-center justify-between">
-                                            <span>
-                                                {appointment.motorcycle
-                                                    ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model}`
-                                                    : appointment.type_display}
-                                            </span>
+                                            <span>{appointment.type_display}</span>
                                             <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(appointment.status)}`}>
                                                 {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                                             </span>
@@ -120,14 +105,9 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                     </CardHeader>
                                     <CardContent className="space-y-4">
                                         <div className="text-sm">
-                                            {appointment.motorcycle && (
+                                            {appointment.description && (
                                                 <p>
-                                                    <strong>Motorcycle:</strong> {appointment.motorcycle.plate}
-                                                </p>
-                                            )}
-                                            {appointment.notes && (
-                                                <p>
-                                                    <strong>Notes:</strong> {appointment.notes}
+                                                    <strong>Description:</strong> {appointment.description}
                                                 </p>
                                             )}
                                         </div>
@@ -136,18 +116,18 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => handleEditAppointment(appointment.id)}
+                                                onClick={() => handleEditAppointment(Number.parseInt(appointment.id))}
                                                 className="flex-1"
-                                                disabled={appointment.status === 'in_progress'}
+                                                disabled={appointment.status === 'accepted'}
                                             >
                                                 Edit
                                             </Button>
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                onClick={() => handleCancelAppointment(appointment.id)}
+                                                onClick={() => handleCancelAppointment(Number.parseInt(appointment.id))}
                                                 className="flex-1"
-                                                disabled={appointment.status === 'in_progress'}
+                                                disabled={appointment.status === 'accepted'}
                                             >
                                                 Cancel
                                             </Button>
@@ -180,16 +160,11 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                     <CardContent className="pt-6">
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-1">
-                                                <p className="font-medium">
-                                                    {appointment.motorcycle
-                                                        ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model} • `
-                                                        : ''}
-                                                    {appointment.type_display}
-                                                </p>
+                                                <p className="font-medium">{appointment.type_display}</p>
                                                 <p className="text-muted-foreground text-sm">
                                                     {appointment.appointment_date} at {appointment.appointment_time}
                                                 </p>
-                                                {appointment.notes && <p className="text-muted-foreground text-sm">{appointment.notes}</p>}
+                                                {appointment.description && <p className="text-muted-foreground text-sm">{appointment.description}</p>}
                                             </div>
                                             <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(appointment.status)}`}>
                                                 {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
@@ -225,30 +200,29 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                             <CardTitle className="text-base">Completed</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{pastAppointments.filter((apt) => apt.status === 'completed').length}</div>
-                            <p className="text-muted-foreground text-sm">services done</p>
+                            <div className="text-2xl font-bold">{pastAppointments.filter((apt) => apt.status === 'accepted').length}</div>
+                            <p className="text-muted-foreground text-sm">accepted</p>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base">Motorcycles</CardTitle>
+                            <CardTitle className="text-base">Total</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{motorcycles.length}</div>
-                            <p className="text-muted-foreground text-sm">registered</p>
+                            <div className="text-2xl font-bold">{upcomingAppointments.length + pastAppointments.length}</div>
+                            <p className="text-muted-foreground text-sm">appointments</p>
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Modal Components */}
-                <BookAppointmentModal open={isBookModalOpen} onOpenChange={setIsBookModalOpen} motorcycles={motorcycles} />
+                <BookAppointmentModal open={isBookModalOpen} onOpenChange={setIsBookModalOpen} />
 
                 <EditAppointmentModal
                     open={isEditModalOpen}
                     onOpenChange={setIsEditModalOpen}
                     appointment={selectedAppointment}
-                    motorcycles={motorcycles}
                 />
 
                 <CancelAppointmentModal open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen} appointment={selectedAppointment} />

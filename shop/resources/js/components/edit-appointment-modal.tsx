@@ -8,11 +8,6 @@ import { useForm } from '@inertiajs/react';
 import { Calendar, ChevronDown, Clock, Settings, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-interface Motorcycle {
-    id: number;
-    label: string;
-}
-
 interface Appointment {
     id: string;
     appointment_date: string;
@@ -20,12 +15,7 @@ interface Appointment {
     type: string;
     type_display: string;
     status: string;
-    motorcycle: {
-        id: number;
-        brand: string;
-        model: string;
-        plate: string;
-    } | null;
+    description: string;
     notes: string;
 }
 
@@ -33,7 +23,6 @@ interface EditAppointmentModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     appointment: Appointment | null;
-    motorcycles: Motorcycle[];
 }
 
 interface AppointmentFormData {
@@ -57,9 +46,8 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
     // Generate available time slots (9:00 AM to 5:00 PM)
     const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
-    // Get minimum date (tomorrow)
+    // Get minimum date (today)
     const minDate = new Date();
-    minDate.setDate(minDate.getDate() + 1);
     const minDateString = minDate.toISOString().split('T')[0];
 
     // Populate form with appointment data when appointment changes
@@ -67,9 +55,9 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
         if (appointment) {
             setData({
                 appointment_date: appointment.appointment_date,
-                appointment_time: appointment.appointment_time.substring(0, 5), // Extract HH:MM
+                appointment_time: appointment.appointment_time || '09:00',
                 type: appointment.type as 'maintenance' | 'dyno_testing',
-                notes: appointment.notes || '',
+                notes: appointment.description || appointment.notes || '',
             });
             setSelectedType(appointment.type as 'maintenance' | 'dyno_testing');
         }
@@ -84,6 +72,9 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
             onSuccess: () => {
                 onOpenChange(false);
             },
+            onError: (errors) => {
+                console.error('Update failed:', errors);
+            },
         });
     };
 
@@ -97,19 +88,22 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
             // Reset to original appointment data
             setData({
                 appointment_date: appointment.appointment_date,
-                appointment_time: appointment.appointment_time.substring(0, 5),
+                appointment_time: appointment.appointment_time || '09:00',
                 type: appointment.type as 'maintenance' | 'dyno_testing',
-                notes: appointment.notes || '',
+                notes: appointment.description || appointment.notes || '',
             });
             setSelectedType(appointment.type as 'maintenance' | 'dyno_testing');
         }
         onOpenChange(false);
     };
 
-    if (!appointment) return null;
+    if (!appointment) {
+        console.error('No appointment data available');
+        return null;
+    };
 
-    // Check if appointment can be edited (not in progress or completed)
-    const canEdit = !['in_progress', 'completed'].includes(appointment.status);
+    // Check if appointment can be edited (not accepted)
+    const canEdit = appointment.status !== 'accepted';
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
@@ -117,7 +111,7 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
                 <DialogHeader>
                     <DialogTitle>Edit Appointment</DialogTitle>
                     <DialogDescription>
-                        Modify your appointment details. Note: Appointments in progress or completed cannot be edited.
+                        Modify your appointment details. Note: Accepted appointments cannot be edited.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -125,7 +119,7 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
                     <div className="space-y-4">
                         <div className="bg-muted rounded-lg p-4">
                             <p className="text-muted-foreground text-sm">
-                                This appointment cannot be edited because it is {appointment.status.replace('_', ' ')}.
+                                This appointment cannot be edited because it has been {appointment.status}.
                             </p>
                         </div>
                         <div className="flex justify-end">
@@ -136,16 +130,10 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Current Motorcycle Display */}
-                        {appointment.motorcycle && (
-                            <div className="space-y-2">
-                                <Label className="text-base font-medium">Motorcycle</Label>
-                                <div className="bg-muted rounded-lg p-3">
-                                    <p className="font-medium">
-                                        {appointment.motorcycle.brand} {appointment.motorcycle.model}
-                                    </p>
-                                    <p className="text-muted-foreground text-sm">License Plate: {appointment.motorcycle.plate}</p>
-                                </div>
+                        {/* General Error Display */}
+                        {errors.appointment && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                <p className="text-sm text-red-600">{errors.appointment}</p>
                             </div>
                         )}
 

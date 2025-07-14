@@ -9,12 +9,6 @@ interface Appointment {
     appointment_time: string;
     type: string;
     status: string;
-    motorcycle: {
-        id: number;
-        brand: string;
-        model: string;
-        plate: string;
-    } | null;
     notes: string;
 }
 
@@ -119,15 +113,6 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
                                     <Clock className="h-4 w-4" />
                                     <span>{formatTime(appointment.appointment_time)}</span>
                                 </div>
-
-                                {appointment.motorcycle && (
-                                    <div className="border-t pt-2">
-                                        <p className="text-sm font-medium">
-                                            {appointment.motorcycle.brand} {appointment.motorcycle.model}
-                                        </p>
-                                        <p className="text-muted-foreground text-sm">License Plate: {appointment.motorcycle.plate}</p>
-                                    </div>
-                                )}
 
                                 {appointment.notes && (
                                     <div className="border-t pt-2">

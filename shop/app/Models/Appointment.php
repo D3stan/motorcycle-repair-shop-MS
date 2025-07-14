@@ -32,6 +32,14 @@ class Appointment extends Model
     public $incrementing = false;
 
     /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'CodiceAppuntamento';
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

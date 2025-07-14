@@ -8,35 +8,27 @@ import { useForm } from '@inertiajs/react';
 import { Bike, Calendar, ChevronDown, Clock, Settings, Zap } from 'lucide-react';
 import { useState } from 'react';
 
-interface Motorcycle {
-    id: number;
-    label: string;
-}
-
 interface BookAppointmentModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    motorcycles: Motorcycle[];
 }
 
 interface AppointmentFormData {
-    NumTelaio: string;
-    DataAppuntamento: string;
-    Ora: string;
-    Tipo: 'maintenance' | 'dyno_testing';
-    Note: string;
+    appointment_date: string;
+    appointment_time: string;
+    type: 'maintenance' | 'dyno_testing';
+    notes: string;
     [key: string]: string | number | 'maintenance' | 'dyno_testing';
 }
 
-export default function BookAppointmentModal({ open, onOpenChange, motorcycles }: BookAppointmentModalProps) {
+export default function BookAppointmentModal({ open, onOpenChange }: BookAppointmentModalProps) {
     const [selectedType, setSelectedType] = useState<'maintenance' | 'dyno_testing' | ''>('');
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
-        NumTelaio: '',
-        DataAppuntamento: '',
-        Ora: '',
-        Tipo: 'maintenance',
-        Note: '',
+        appointment_date: '',
+        appointment_time: '',
+        type: 'maintenance',
+        notes: '',
     });
 
     // Generate available time slots (9:00 AM to 5:00 PM)
@@ -61,7 +53,7 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
 
     const handleTypeSelect = (type: 'maintenance' | 'dyno_testing') => {
         setSelectedType(type);
-        setData('Tipo', type);
+        setData('type', type);
     };
 
     const handleClose = () => {
@@ -111,62 +103,39 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                                 </CardContent>
                             </Card>
                         </div>
-                        {errors.Tipo && <p className="text-sm text-red-600">{errors.Tipo}</p>}
+                        {errors.type && <p className="text-sm text-red-600">{errors.type}</p>}
                     </div>
 
-                    {/* Motorcycle Selection */}
+                    {/* Service Description */}
                     <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                            <Bike className="h-4 w-4" />
-                            Motorcycle
-                        </Label>
-                        {motorcycles.length > 0 ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="w-full justify-between" type="button">
-                                        {data.NumTelaio
-                                            ? motorcycles.find((m) => m.id.toString() === data.NumTelaio)?.label || 'Select your motorcycle'
-                                            : 'Select your motorcycle'}
-                                        <ChevronDown className="h-4 w-4 opacity-50" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-                                    {motorcycles.map((motorcycle) => (
-                                        <DropdownMenuItem
-                                            key={motorcycle.id}
-                                            onClick={() => setData('NumTelaio', motorcycle.id.toString())}
-                                            className="cursor-pointer"
-                                        >
-                                            {motorcycle.label}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        ) : (
-                            <div className="border-muted-foreground/25 rounded-lg border-2 border-dashed p-4 text-center">
-                                <p className="text-muted-foreground mb-2 text-sm">No motorcycles registered</p>
-                                <p className="text-muted-foreground text-xs">Please add a motorcycle to your garage first</p>
-                            </div>
-                        )}
-                        {errors.NumTelaio && <p className="text-sm text-red-600">{errors.NumTelaio}</p>}
+                        <Label htmlFor="notes">Service Description (Optional)</Label>
+                        <textarea
+                            id="notes"
+                            value={data.notes}
+                            onChange={(e) => setData('notes', e.target.value)}
+                            placeholder="Describe any specific issues or requests for your appointment..."
+                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                            rows={3}
+                        />
+                        {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
                     </div>
 
                     {/* Date and Time Selection */}
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="DataAppuntamento" className="flex items-center gap-2">
+                            <Label htmlFor="appointment_date" className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
                                 Date
                             </Label>
                             <Input
-                                id="DataAppuntamento"
+                                id="appointment_date"
                                 type="date"
                                 min={minDateString}
-                                value={data.DataAppuntamento}
-                                onChange={(e) => setData('DataAppuntamento', e.target.value)}
+                                value={data.appointment_date}
+                                onChange={(e) => setData('appointment_date', e.target.value)}
                                 className="w-full"
                             />
-                            {errors.DataAppuntamento && <p className="text-sm text-red-600">{errors.DataAppuntamento}</p>}
+                            {errors.appointment_date && <p className="text-sm text-red-600">{errors.appointment_date}</p>}
                         </div>
 
                         <div className="space-y-2">
@@ -177,35 +146,22 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" className="w-full justify-between" type="button">
-                                        {data.Ora || 'Select time'}
+                                        {data.appointment_time || 'Select time'}
                                         <ChevronDown className="h-4 w-4 opacity-50" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                                     {timeSlots.map((time) => (
-                                        <DropdownMenuItem key={time} onClick={() => setData('Ora', time)} className="cursor-pointer">
+                                        <DropdownMenuItem key={time} onClick={() => setData('appointment_time', time)} className="cursor-pointer">
                                             {time}
                                         </DropdownMenuItem>
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            {errors.Ora && <p className="text-sm text-red-600">{errors.Ora}</p>}
+                            {errors.appointment_time && <p className="text-sm text-red-600">{errors.appointment_time}</p>}
                         </div>
                     </div>
 
-                    {/* Notes */}
-                    <div className="space-y-2">
-                        <Label htmlFor="Note">Additional Notes (Optional)</Label>
-                        <textarea
-                            id="Note"
-                            placeholder="Describe any specific issues, requirements, or preferences..."
-                            value={data.Note}
-                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('Note', e.target.value)}
-                            rows={3}
-                            className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        {errors.Note && <p className="text-sm text-red-600">{errors.Note}</p>}
-                    </div>
 
                     {/* Form Actions */}
                     <div className="flex justify-end gap-3 pt-4">
@@ -215,11 +171,10 @@ export default function BookAppointmentModal({ open, onOpenChange, motorcycles }
                         <Button
                             type="submit"
                             disabled={
-                                processing || motorcycles.length === 0 || !selectedType || !data.NumTelaio || !data.DataAppuntamento || !data.Ora
+                                processing || !selectedType || !data.appointment_date || !data.appointment_time
                             }
-                            className={motorcycles.length === 0 ? 'cursor-not-allowed' : ''}
                         >
-                            {processing ? 'Booking...' : motorcycles.length === 0 ? 'Add Motorcycle First' : 'Book Appointment'}
+                            {processing ? 'Booking...' : 'Book Appointment'}
                         </Button>
                     </div>
                 </form>

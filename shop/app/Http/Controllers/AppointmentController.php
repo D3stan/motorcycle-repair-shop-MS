@@ -29,7 +29,6 @@ class AppointmentController extends Controller
                     'type_display' => ucfirst(str_replace('_', ' ', $appointment->Tipo)), // Formatted for display
                     'description' => $appointment->Descrizione,
                     'status' => $appointment->Stato,
-                    'motorcycle' => null, // Appointments don't link to motorcycles in simplified schema
                     'notes' => $appointment->Descrizione ?? '', // Use description as notes
                 ];
             });
@@ -44,22 +43,9 @@ class AppointmentController extends Controller
             return $appointment['appointment_date'] < $today;
         });
 
-        // Get user's motorcycles for booking form
-        $motorcycles = $user->motorcycles()
-            ->with('motorcycleModel')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($motorcycle) {
-                return [
-                    'id' => $motorcycle->NumTelaio,
-                    'label' => $motorcycle->motorcycleModel->Marca . ' ' . $motorcycle->motorcycleModel->Nome . ' (' . $motorcycle->Targa . ')',
-                ];
-            });
-
         return Inertia::render('appointments', [
             'upcomingAppointments' => $upcomingAppointments->values()->all(),
             'pastAppointments' => $pastAppointments->values()->all(),
-            'motorcycles' => $motorcycles->values()->all(),
         ]);
     }
 
@@ -69,15 +55,11 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'NumTelaio' => 'required|exists:MOTO,NumTelaio',
-            'DataAppuntamento' => 'required|date|after:today',
-            'Ora' => 'nullable|date_format:H:i',
-            'Tipo' => 'required|in:maintenance,dyno_testing',
-            'Note' => 'nullable|string|max:1000',
+            'appointment_date' => 'required|date|after:today',
+            'appointment_time' => 'nullable|date_format:H:i',
+            'type' => 'required|in:maintenance,dyno_testing',
+            'notes' => 'nullable|string|max:1000',
         ]);
-
-        // Ensure the motorcycle belongs to the authenticated user
-        $motorcycle = $request->user()->motorcycles()->where('NumTelaio', $validated['NumTelaio'])->firstOrFail();
 
         // Generate a unique appointment code
         $appointmentCode = 'APP' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
@@ -88,16 +70,17 @@ class AppointmentController extends Controller
         }
 
         // Create description including time if provided
-        $description = $validated['Note'] ?? 'Appointment for ' . $motorcycle->motorcycleModel->Marca . ' ' . $motorcycle->motorcycleModel->Nome;
-        if (!empty($validated['Ora'])) {
-            $description .= ' at ' . $validated['Ora'];
+        $description = $validated['notes'] ?? 'Appointment for ' . ucfirst(str_replace('_', ' ', $validated['type']));
+        if (!empty($validated['appointment_time'])) {
+            $description .= ' at ' . $validated['appointment_time'];
         }
 
         $appointment = Appointment::create([
             'CodiceAppuntamento' => $appointmentCode,
-            'DataAppuntamento' => $validated['DataAppuntamento'],
+            'DataAppuntamento' => $validated['appointment_date'],
             'Descrizione' => $description,
-            'Tipo' => $validated['Tipo'],
+            'Tipo' => $validated['type'],
+            'Stato' => 'pending',
             'CF' => $request->user()->CF,
         ]);
 
@@ -114,16 +97,27 @@ class AppointmentController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        // Check if appointment can be edited (not accepted)                                                      
+        if ($appointment->Stato === 'accepted') {                                                                 
+            return back()->withErrors(['appointment' => 'Cannot edit accepted appointments.']);                   
+        }
+
         $validated = $request->validate([
-            'appointment_date' => 'required|date|after:today',
+            'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required|date_format:H:i',
             'type' => 'required|in:maintenance,dyno_testing',
             'notes' => 'nullable|string|max:1000',
         ]);
 
+        // Create description including time if provided
+        $description = $validated['notes'] ?? $appointment->Descrizione;
+        if (!empty($validated['appointment_time'])) {
+            $description .= ' at ' . $validated['appointment_time'];
+        }
+
         $appointment->update([
             'DataAppuntamento' => $validated['appointment_date'],
-            'Descrizione' => $validated['notes'] ?? $appointment->Descrizione,
+            'Descrizione' => $description,
             'Tipo' => $validated['type'],
         ]);
 
@@ -138,6 +132,11 @@ class AppointmentController extends Controller
         // Ensure the appointment belongs to the authenticated user
         if ($appointment->CF !== $request->user()->CF) {
             abort(403, 'Unauthorized action.');
+        }
+
+        // Check if appointment can be cancelled (not accepted)
+        if ($appointment->Stato === 'accepted') {
+            return back()->withErrors(['appointment' => 'Cannot cancel accepted appointments.']);
         }
 
         // In simplified schema, we just delete the appointment
