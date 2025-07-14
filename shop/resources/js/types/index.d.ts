@@ -420,8 +420,8 @@ export interface AdminTopCustomerRevenue {
 export interface AdminScheduleStatistics {
     today_appointments: number;
     pending_appointments: number;
-    confirmed_appointments: number;
-    completed_appointments: number;
+    accepted_appointments: number;
+    rejected_appointments: number;
 }
 
 export interface AdminWeeklySchedule {
@@ -492,6 +492,5 @@ export interface AdminUpcomingAppointment {
     type: string;
     status: string;
     customer: string;
-    motorcycle: string;
-    plate: string;
+    description: string;
 }

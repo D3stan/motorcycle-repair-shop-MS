@@ -46,11 +46,11 @@ class ScheduleController extends Controller
                 ];
             });
             
-        // Schedule statistics (simplified schema)
+        // Schedule statistics
         $todayAppointments = Appointment::whereDate('DataAppuntamento', now())->count();
-        $pendingAppointments = 0; // No status field in simplified schema
-        $confirmedAppointments = Appointment::count(); // All appointments are considered confirmed
-        $completedAppointments = 0; // No status field in simplified schema
+        $pendingAppointments = Appointment::where('Stato', 'pending')->count();
+        $acceptedAppointments = Appointment::where('Stato', 'accepted')->count();
+        $rejectedAppointments = Appointment::where('Stato', 'rejected')->count();
         
         // Daily schedule for the week
         $weeklySchedule = collect(range(0, 6))->map(function ($dayOffset) use ($startOfWeek) {
@@ -63,9 +63,8 @@ class ScheduleController extends Controller
                         'id' => $appointment->CodiceAppuntamento,
                         'time' => null, // No time field in simplified schema
                         'type' => $appointment->Tipo,
-                        'status' => 'scheduled',
+                        'status' => $appointment->Stato,
                         'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                        'motorcycle' => 'Not linked',
                         'description' => $appointment->Descrizione,
                     ];
                 });
@@ -97,9 +96,8 @@ class ScheduleController extends Controller
                     'appointment_date' => $appointment->DataAppuntamento->format('M j, Y'),
                     'appointment_time' => null, // No time field in simplified schema
                     'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
-                    'status' => 'scheduled',
+                    'status' => $appointment->Stato,
                     'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                    'motorcycle' => 'Not linked',
                     'description' => $appointment->Descrizione,
                 ];
             });
@@ -111,8 +109,8 @@ class ScheduleController extends Controller
             'statistics' => [
                 'today_appointments' => $todayAppointments,
                 'pending_appointments' => $pendingAppointments,
-                'confirmed_appointments' => $confirmedAppointments,
-                'completed_appointments' => $completedAppointments,
+                'accepted_appointments' => $acceptedAppointments,
+                'rejected_appointments' => $rejectedAppointments,
             ],
             'availableTimeSlots' => $availableTimeSlots,
             'upcomingAppointments' => $upcomingAppointments,
@@ -125,10 +123,10 @@ class ScheduleController extends Controller
     public function appointments(Request $request): Response
     {
         $query = Appointment::with(['user']);
-        
+
         // Apply filters
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('stato', $request->status);
         }
         
         if ($request->filled('type')) {
@@ -165,11 +163,10 @@ class ScheduleController extends Controller
                 'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
                 'appointment_time' => null, // No time field in simplified schema
                 'type' => $appointment->Tipo,
-                'status' => 'scheduled',
+                'status' => $appointment->Stato,
                 'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
                 'customer_email' => $appointment->user->email,
                 'customer_phone' => $appointment->user->phone,
-                'motorcycle' => 'Not linked in simplified schema',
                 'description' => $appointment->Descrizione,
                 'created_at' => $appointment->created_at->format('Y-m-d H:i'),
                 'has_work_order' => false, // No direct link in simplified schema

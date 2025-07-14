@@ -27,16 +27,12 @@ interface Props {
 export default function ScheduleIndex({ currentDate, weeklySchedule, statistics, upcomingAppointments }: Props) {
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'confirmed':
-                return <Badge className="bg-green-100 text-green-800">Confirmed</Badge>;
+            case 'accepted':
+                return <Badge className="bg-green-100 text-green-800">Accepted</Badge>;
             case 'pending':
                 return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-            case 'in_progress':
-                return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-            case 'completed':
-                return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>;
-            case 'cancelled':
-                return <Badge variant="destructive">Cancelled</Badge>;
+            case 'rejected':
+                return <Badge variant="destructive">Rejected</Badge>;
             default:
                 return <Badge variant="secondary">{status}</Badge>;
         }
@@ -149,13 +145,13 @@ export default function ScheduleIndex({ currentDate, weeklySchedule, statistics,
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Users className="h-4 w-4" />
-                                Confirmed
+                                Accepted
                             </CardTitle>
-                            <CardDescription>Ready to go</CardDescription>
+                            <CardDescription>Ready to proceed</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="mb-2 text-2xl font-bold">{statistics.confirmed_appointments}</div>
-                            <div className="text-muted-foreground text-sm">Scheduled appointments</div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.accepted_appointments}</div>
+                            <div className="text-muted-foreground text-sm">Accepted appointments</div>
                         </CardContent>
                     </Card>
 
@@ -164,13 +160,13 @@ export default function ScheduleIndex({ currentDate, weeklySchedule, statistics,
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <Calendar className="h-4 w-4" />
-                                Completed
+                                Rejected
                             </CardTitle>
-                            <CardDescription>This month</CardDescription>
+                            <CardDescription>Not scheduled</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="mb-2 text-2xl font-bold">{statistics.completed_appointments}</div>
-                            <div className="text-muted-foreground text-sm">Services completed</div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.rejected_appointments}</div>
+                            <div className="text-muted-foreground text-sm">Rejected appointments</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -249,7 +245,7 @@ export default function ScheduleIndex({ currentDate, weeklySchedule, statistics,
                                                     </Link>
                                                 </p>
                                                 <p className="text-muted-foreground text-xs">
-                                                    {appointment.motorcycle} ({appointment.plate})
+                                                    {appointment.description}
                                                 </p>
                                                 <div className="flex gap-2">
                                                     {getTypeBadge(appointment.type)}
@@ -292,9 +288,9 @@ export default function ScheduleIndex({ currentDate, weeklySchedule, statistics,
                                 </Link>
                             </Button>
                             <Button asChild variant="outline" className="w-full justify-start">
-                                <Link href="/admin/schedule/appointments?status=confirmed">
+                                <Link href="/admin/schedule/appointments?status=accepted">
                                     <Users className="mr-2 h-4 w-4" />
-                                    Today's Confirmed
+                                    Today's Accepted
                                 </Link>
                             </Button>
                             <Button asChild variant="outline" className="w-full justify-start">

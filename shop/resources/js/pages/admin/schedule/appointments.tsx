@@ -18,8 +18,7 @@ interface Appointment {
     customer: string;
     customer_email: string;
     customer_phone: string;
-    motorcycle: string;
-    notes: string;
+    description: string;
     created_at: string;
     has_work_order: boolean;
 }
@@ -90,16 +89,12 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'confirmed':
-                return <Badge className="bg-green-100 text-green-800">Confirmed</Badge>;
+            case 'accepted':
+                return <Badge className="bg-green-100 text-green-800">Accepted</Badge>;
             case 'pending':
                 return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-            case 'in_progress':
-                return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-            case 'completed':
-                return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>;
-            case 'cancelled':
-                return <Badge variant="destructive">Cancelled</Badge>;
+            case 'rejected':
+                return <Badge variant="destructive">Rejected</Badge>;
             default:
                 return <Badge variant="secondary">{status}</Badge>;
         }
@@ -173,7 +168,7 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                                 <div className="relative">
                                     <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                                     <Input
-                                        placeholder="Customer name, email, plate..."
+                                        placeholder="Customer name, email..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="pl-9"
@@ -200,10 +195,8 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                                 >
                                     <option value="">All Statuses</option>
                                     <option value="pending">Pending</option>
-                                    <option value="confirmed">Confirmed</option>
-                                    <option value="in_progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="cancelled">Cancelled</option>
+                                    <option value="accepted">Accepted</option>
+                                    <option value="rejected">Rejected</option>
                                 </select>
                             </div>
 
@@ -226,7 +219,6 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                                     <option value="">All Types</option>
                                     <option value="maintenance">Maintenance</option>
                                     <option value="dyno_testing">Dyno Testing</option>
-                                    <option value="inspection">Inspection</option>
                                 </select>
                             </div>
 
@@ -286,24 +278,20 @@ export default function AppointmentsIndex({ appointments, filters }: Props) {
                                                     </div>
                                                 </div>
 
-                                                <div className="grid grid-cols-1 gap-4 text-sm text-gray-600 md:grid-cols-2 lg:grid-cols-3">
+                                                <div className="grid grid-cols-1 gap-4 text-sm text-gray-600 md:grid-cols-2">
                                                     <div className="flex items-center gap-2">
                                                         <Calendar className="h-4 w-4" />
-                                                        {formatDate(appointment.appointment_date)} at {appointment.appointment_time}
+                                                        {formatDate(appointment.appointment_date)}
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Mail className="h-4 w-4" />
                                                         {appointment.customer_email}
                                                     </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Settings className="h-4 w-4" />
-                                                        {appointment.motorcycle}
-                                                    </div>
                                                 </div>
 
-                                                {appointment.notes && (
+                                                {appointment.description && (
                                                     <div className="text-sm text-gray-700">
-                                                        <span className="font-medium text-gray-600">Notes:</span> {appointment.notes}
+                                                        <span className="font-medium text-gray-600">Description:</span> {appointment.description}
                                                     </div>
                                                 )}
                                             </div>
