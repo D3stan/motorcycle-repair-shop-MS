@@ -25,7 +25,8 @@ class AppointmentController extends Controller
                     'id' => $appointment->CodiceAppuntamento,
                     'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
                     'appointment_time' => '09:00', // Default time since not stored separately
-                    'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
+                    'type' => $appointment->Tipo, // Send raw type value for form population
+                    'type_display' => ucfirst(str_replace('_', ' ', $appointment->Tipo)), // Formatted for display
                     'description' => $appointment->Descrizione,
                     'status' => 'scheduled', // Simplified schema - all appointments are scheduled
                     'motorcycle' => null, // Appointments don't link to motorcycles in simplified schema
@@ -117,12 +118,12 @@ class AppointmentController extends Controller
             'appointment_date' => 'required|date|after:today',
             'appointment_time' => 'required|date_format:H:i',
             'type' => 'required|in:maintenance,dyno_testing',
-            'description' => 'nullable|string|max:1000',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $appointment->update([
             'DataAppuntamento' => $validated['appointment_date'],
-            'Descrizione' => $validated['description'] ?? $appointment->Descrizione,
+            'Descrizione' => $validated['notes'] ?? $appointment->Descrizione,
             'Tipo' => $validated['type'],
         ]);
 

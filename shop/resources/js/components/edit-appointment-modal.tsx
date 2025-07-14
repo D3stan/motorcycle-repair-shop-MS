@@ -18,6 +18,7 @@ interface Appointment {
     appointment_date: string;
     appointment_time: string;
     type: string;
+    type_display: string;
     status: string;
     motorcycle: {
         id: number;

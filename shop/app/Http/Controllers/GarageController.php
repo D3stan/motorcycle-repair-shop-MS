@@ -25,7 +25,7 @@ class GarageController extends Controller
             ->map(function ($motorcycle) {
                 return [
                     'id' => $motorcycle->NumTelaio,
-                    'CodiceModello' => $motorcycle->CodiceModello,
+                    'motorcycle_model_id' => $motorcycle->CodiceModello,
                     'brand' => $motorcycle->motorcycleModel->Marca,
                     'model' => $motorcycle->motorcycleModel->Nome,
                     'year' => $motorcycle->AnnoImmatricolazione,
@@ -85,14 +85,35 @@ class GarageController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'CodiceModello' => 'required|exists:MODELLI,CodiceModello',
-            'Targa' => 'required|string|max:20|unique:MOTO,Targa',
-            'AnnoImmatricolazione' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'NumTelaio' => 'required|string|max:17|unique:MOTO,NumTelaio',
-            'Note' => 'nullable|string|max:1000',
+            'motorcycle_model_id' => 'required|exists:MODELLI,CodiceModello',
+            'license_plate' => 'required|string|max:20|unique:MOTO,Targa',
+            'registration_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'vin' => 'required|string|max:17|unique:MOTO,NumTelaio',
+            'notes' => 'nullable|string|max:1000',
+        ], [
+            'motorcycle_model_id.required' => 'Please select a motorcycle model.',
+            'motorcycle_model_id.exists' => 'The selected motorcycle model is invalid.',
+            'license_plate.required' => 'License plate is required.',
+            'license_plate.unique' => 'This license plate is already registered.',
+            'registration_year.required' => 'Registration year is required.',
+            'registration_year.min' => 'Registration year must be 1900 or later.',
+            'registration_year.max' => 'Registration year cannot be in the future.',
+            'vin.required' => 'VIN is required.',
+            'vin.max' => 'VIN must be 17 characters or less.',
+            'vin.unique' => 'This VIN is already registered.',
+            'notes.max' => 'Notes must be 1000 characters or less.',
         ]);
 
-        $motorcycle = $request->user()->motorcycles()->create($validated);
+        // Map frontend field names to database column names
+        $motorcycleData = [
+            'CodiceModello' => $validated['motorcycle_model_id'],
+            'Targa' => $validated['license_plate'],
+            'AnnoImmatricolazione' => $validated['registration_year'],
+            'NumTelaio' => $validated['vin'],
+            'Note' => $validated['notes'],
+        ];
+
+        $motorcycle = $request->user()->motorcycles()->create($motorcycleData);
 
         return redirect()->route('garage')->with('success', 'Motorcycle added successfully!');
     }
@@ -108,14 +129,35 @@ class GarageController extends Controller
         }
 
         $validated = $request->validate([
-            'CodiceModello' => 'required|exists:MODELLI,CodiceModello',
-            'Targa' => 'required|string|max:20|unique:MOTO,Targa,' . $motorcycle->NumTelaio . ',NumTelaio',
-            'AnnoImmatricolazione' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'NumTelaio' => 'required|string|max:17|unique:MOTO,NumTelaio,' . $motorcycle->NumTelaio . ',NumTelaio',
-            'Note' => 'nullable|string|max:1000',
+            'motorcycle_model_id' => 'required|exists:MODELLI,CodiceModello',
+            'license_plate' => 'required|string|max:20|unique:MOTO,Targa,' . $motorcycle->NumTelaio . ',NumTelaio',
+            'registration_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
+            'vin' => 'required|string|max:17|unique:MOTO,NumTelaio,' . $motorcycle->NumTelaio . ',NumTelaio',
+            'notes' => 'nullable|string|max:1000',
+        ], [
+            'motorcycle_model_id.required' => 'Please select a motorcycle model.',
+            'motorcycle_model_id.exists' => 'The selected motorcycle model is invalid.',
+            'license_plate.required' => 'License plate is required.',
+            'license_plate.unique' => 'This license plate is already registered.',
+            'registration_year.required' => 'Registration year is required.',
+            'registration_year.min' => 'Registration year must be 1900 or later.',
+            'registration_year.max' => 'Registration year cannot be in the future.',
+            'vin.required' => 'VIN is required.',
+            'vin.max' => 'VIN must be 17 characters or less.',
+            'vin.unique' => 'This VIN is already registered.',
+            'notes.max' => 'Notes must be 1000 characters or less.',
         ]);
 
-        $motorcycle->update($validated);
+        // Map frontend field names to database column names
+        $motorcycleData = [
+            'CodiceModello' => $validated['motorcycle_model_id'],
+            'Targa' => $validated['license_plate'],
+            'AnnoImmatricolazione' => $validated['registration_year'],
+            'NumTelaio' => $validated['vin'],
+            'Note' => $validated['notes'],
+        ];
+
+        $motorcycle->update($motorcycleData);
 
         return redirect()->route('garage')->with('success', 'Motorcycle updated successfully!');
     }

@@ -25,6 +25,7 @@ interface Appointment {
     appointment_date: string;
     appointment_time: string;
     type: string;
+    type_display: string;
     status: string;
     motorcycle: {
         id: number;
@@ -110,7 +111,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                             <span>
                                                 {appointment.motorcycle
                                                     ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model}`
-                                                    : appointment.type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                                                    : appointment.type_display}
                                             </span>
                                             <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(appointment.status)}`}>
                                                 {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
@@ -118,7 +119,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                         </CardTitle>
                                         <CardDescription>
                                             {appointment.appointment_date} at {appointment.appointment_time} •{' '}
-                                            {appointment.type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                                            {appointment.type_display}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
@@ -187,7 +188,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments, m
                                                     {appointment.motorcycle
                                                         ? `${appointment.motorcycle.brand} ${appointment.motorcycle.model} • `
                                                         : ''}
-                                                    {appointment.type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                                                    {appointment.type_display}
                                                 </p>
                                                 <p className="text-muted-foreground text-sm">
                                                     {appointment.appointment_date} at {appointment.appointment_time}
