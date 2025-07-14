@@ -80,7 +80,7 @@ d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 4. Assegnazione tecnici agli interventi
 5. Visualizzazione inventario con soglie di riordino
 6. Rifornimento ricambi in magazzino
-7. Generazione fatture per interventi completati
+7. Generazione fattura per intervento completato
 8. Visualizzazione dashboard con indicatori di performance
 9. Gestione ruoli e permessi del personale
 10. Tracciamento storico interventi per ogni motocicletta
@@ -172,175 +172,171 @@ Vengono di seguito riportate le operazioni descritte in precedenza con una stima
 Si elencano le operazioni con una breve descrizione e la tabella degli accessi dove, per semplicità, si considera il costo di una scrittura equivalente a due letture. Per operazioni particolarmente complesse viene anche riportato uno schema di navigazione.
 
 #####! OP 1 - Registrazione di nuovi clienti
-Questa operazione permette la registrazione di nuovi utenti nel sistema. La registrazione richiede l'inserimento di dati anagrafici (nome, cognome, codice fiscale, telefono, email). L'autenticazione verifica le credenziali per consentire l'accesso alle funzionalità appropriate al ruolo.
+Questa operazione permette la registrazione di nuovi utenti nel sistema. La registrazione richiede l'inserimento di dati anagrafici (nome, cognome, codice fiscale, telefono, email) con controlli di unicità per CF ed Email per garantire l'integrità dei dati.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| PERSONA | E | 1 | L
-| PERSONA | E | 1 | S
+| PERSONA | E | 1 | L (CF uniqueness check)
+| PERSONA | E | 1 | L (Email uniqueness check)
+| PERSONA | E | 1 | S (Insert new cliente)
 
 .center
-    **Totale costo**: 3 letture -> 30 accessi al mese
+    **Totale costo**: 4 letture -> 40 accessi al mese
 
 #####! OP 2 - Inserimento di una nuova motocicletta nel garage
-Operazione che consente ai clienti di aggiungere le proprie motociclette al garage virtuale specificando targa, anno di immatricolazione, numero di telaio (VIN) e note personali. Richiede anche la selezione del modello di motocicletta dal catalogo esistente per garantire compatibilità con i ricambi.
+Operazione che consente ai clienti di aggiungere le proprie motociclette al garage virtuale specificando targa, anno di immatricolazione, numero di telaio (VIN) e note personali. Include controlli di unicità per NumTelaio e Targa e verifica dell'esistenza del modello selezionato.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| MOTO | E | 1 | L
-| MOTO | E | 1 | S
-| MODELLO | E | 1 | L
-| REALIZZAZIONE | R | 1 | S
-| PERSONA | E | 1 | L
-| POSSESSIONE | R | 1 | S
+| MOTO | E | 1 | L (NumTelaio uniqueness)
+| MOTO | E | 1 | L (Targa uniqueness)
+| MODELLO | E | 1 | L (Verify exists)
+| PERSONA | E | 1 | L (Verify exists)
+| MOTO | E | 1 | S (Insert motorcycle)
+| REALIZZAZIONE | R | 1 | S (Link MODELLO to MOTO)
+| POSSESSIONE | R | 1 | S (Link PERSONA to MOTO)
 
 .center
-    **Totale costo**: 9 letture -> 1260 accessi all'anno
+    **Totale costo**: 10 letture -> 1400 accessi all'anno
 
-#####! OP 3 - Prenotazione e conferma / cancellazione appuntamenti
-Gestisce il ciclo completo degli appuntamenti dall'inserimento della richiesta da parte del cliente fino alla conferma o cancellazione da parte dell'officina. Include la verifica della disponibilità, la selezione del tipo di intervento (manutenzione o prova al banco) e la gestione degli stati.
+#####! OP 3 - Prenotazione appuntamenti
+Gestisce la prenotazione di appuntamenti da parte dei clienti tramite relazione CREAZIONE diretta. L'operazione include la creazione dell'appuntamento e la successiva gestione degli stati (conferma/cancellazione) da parte dell'officina.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| PERSONA | E | 1 | L
-| MOTO | E | 1 | L
-| POSSESSIONE | R | 1 | L
-| REALIZZAZIONE | R | 1 | L
-| MODELLO | E | 1 | L
-| APPUNTAMENTO | E | 3 | L
-| APPUNTAMENTO | E | 2 | S
-| CREAZIONE | R | 1 | S
+| CLIENTE | E | 1 | L (Verify cliente exists)
+| APPUNTAMENTO | E | 1 | S (Create appointment)
+| CREAZIONE | R | 1 | S (Link CLIENTE to APPUNTAMENTO)
+| APPUNTAMENTO | E | 1 | S (Update for confirmation/cancellation)
 
 .center
-    **Totale costo**: 14 letture -> 210 accessi al giorno
+    **Totale costo**: 6 letture -> 90 accessi al giorno
 
 ![ER](imgs/navigazione3.png "Schema di navigazione per la gestione degli appuntamenti")
 
 #####! OP 4 - Assegnazione tecnici agli interventi
-Operazione che permette l'assegnazione di uno o più meccanici agli interventi programmati. Richiede la verifica della disponibilità dei tecnici e della presenza di altri meccanici.
+Operazione che permette l'assegnazione di uno o più meccanici agli interventi programmati. Verifica l'esistenza e lo stato dell'intervento e la disponibilità del meccanico prima di creare l'assegnazione tramite relazione SVOLGIMENTO.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| INTERVENTO | E | 1 | L
-| MECCANICO | E | 1 | L
-| SVOLGIMENTO | R | 1 | L
-| SVOLGIMENTO | R | 1 | S
+| INTERVENTO | E | 1 | L (Verify exists and status)
+| MECCANICO | E | 1 | L (Verify mechanic exists)
+| SVOLGIMENTO | R | 1 | S (Create assignment)
 
 .center
-    **Totale costo**: 5 letture -> 50 accessi al giorno
+    **Totale costo**: 4 letture -> 40 accessi al giorno
 
 #####! OP 5 - Visualizzazione inventario con soglie di riordino
-Operazione che permette la consultazione dell'inventario corrente con evidenziazione dei ricambi sotto soglia minima. Include la visualizzazione delle quantità disponibili per magazzino e i dettagli sui fornitori per facilitar il riordino.
+Operazione che permette la consultazione dell'inventario corrente con evidenziazione dei ricambi sotto soglia minima. Per una verifica completa delle soglie, deve accedere a tutti i ricambi del sistema e le relative relazioni di stoccaggio.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| RICAMBIO | E | 10 | L
-| MAGAZZINO | E | 3 | L
-| STOCCAGGIO | R | 10 | L
-| FORNITORE | E | 5 | L
-| FORNITURA | R | 5 | L
+| RICAMBIO | E | 1200 | L (All parts for threshold check)
+| STOCCAGGIO | R | 30 | L (All stock relationships)
+| MAGAZZINO | E | 3 | L (All warehouses)
+| FORNITORE | E | 25 | L (All suppliers for reorder info)
 
 .center
-    **Totale costo**: 33 letture -> 1320 accessi al mese
+    **Totale costo**: 1258 letture -> 50320 accessi al mese
 
-#####! OP 6 - Registrazione acquisti da fornitori
-Gestisce il processo di registrazione degli acquisti di ricambi dai fornitori. Include la verifica della disponibilità del fornitore, la registrazione dei prezzi di acquisto e l'aggiornamento delle quantità in magazzino.
+#####! OP 6 - Rifornimento ricambi in magazzino
+Gestisce il processo di rifornimento dell'inventario con ricambi dai fornitori. Include la verifica del fornitore, del ricambio e del magazzino, seguito dall'aggiornamento delle quantità in magazzino tramite relazione STOCCAGGIO.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| FORNITORE | E | 1 | L
-| RICAMBIO | E | 3 | L
-| FORNITURA | R | 3 | L
-| FORNITURA | R | 3 | S
-| MAGAZZINO | E | 1 | L
-| STOCCAGGIO | R | 3 | L
-| STOCCAGGIO | R | 3 | S
+| FORNITORE | E | 1 | L (Verify supplier)
+| RICAMBIO | E | 1 | L (Verify part)
+| FORNITURA | R | 1 | L (Get current supplier info)
+| MAGAZZINO | E | 1 | L (Verify warehouse)
+| STOCCAGGIO | R | 1 | L (Check existing stock)
+| STOCCAGGIO | R | 1 | S (Update quantity)
 
 .center
-    **Totale costo**: 20 letture -> 40 accessi al giorno
+    **Totale costo**: 8 letture -> 16 accessi al giorno
 
-#####! OP 7 - Generazione fatture per interventi completati
-Operazione per generare le fatture per gli interventi completati. Include il calcolo dei costi di manodopera e dei ricambi utilizzati. La fattura viene intestata al cliente proprietario della motocicletta.
+#####! OP 7 - Generazione fattura per intervento completato
+Operazione per generare fatture per interventi completati. Naviga attraverso le relazioni EFFETTUAZIONE, REALIZZAZIONE, POSSESSIONE e INTESTAZIONE per collegare intervento, moto, modello e cliente. Include il calcolo dei costi di manodopera e ricambi utilizzati.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| INTERVENTO | E | 1 | L
-| MOTO | E | 1 | L
-| REALIZZAZIONE | R | 1 | L
-| MODELLO | E | 1 | L
-| POSSESSIONE | R | 1 | L
-| PERSONA | E | 1 | L
-| UTILIZZO | R | 5 | L
-| RICAMBIO | E | 5 | L
-| FATTURA | E | 1 | S
-| EMISSIONE | R | 1 | S
-| RIFERIMENTO | R | 1 | S
+| INTERVENTO | E | 1 | L (Verify completed)
+| EFFETTUAZIONE | R | 1 | L (Get MOTO from INTERVENTO)
+| MOTO | E | 1 | L (Motorcycle details)
+| REALIZZAZIONE | R | 1 | L (Get MODELLO from MOTO)
+| MODELLO | E | 1 | L (Model details for invoice)
+| POSSESSIONE | R | 1 | L (Get CLIENTE from MOTO)
+| CLIENTE | E | 1 | L (Cliente details)
+| UTILIZZO | R | 2.5 | L (Parts used - average)
+| RICAMBIO | E | 2.5 | L (Part details and prices)
+| FATTURA | E | 1 | S (Create invoice)
+| EMISSIONE | R | 1 | S (Link LAVORO to FATTURA)
+| INTESTAZIONE | R | 1 | S (Link FATTURA to CLIENTE)
 
 .center
-    **Totale costo**: 21 letture -> 2100 accessi al mese
+    **Totale costo**: 16 letture -> 1600 accessi al mese
 
 ![ER](imgs/navigazione7.png "Schema di navigazione per la gestione delle fatture")
 
 
 #####! OP 8 - Visualizzazione dashboard con indicatori di performance
-Operazione che fornisce una vista d'insieme delle attività dell'officina attraverso indicatori chiave di performance. Include appuntamenti imminenti, interventi in corso, ricavi mensili e stato del magazzino con soglie di riordino.
+Operazione che fornisce una vista d'insieme completa delle attività dell'officina attraverso indicatori chiave di performance. Per fornire informazioni accurate, deve accedere a dati recenti da tutte le entità principali inclusi tutti i ricambi per gli avvisi di scorta.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| APPUNTAMENTO | E | 10 | L
-| INTERVENTO | E | 8 | L
-| FATTURA | E | 20 | L
-| RICAMBIO | E | 15 | L
-| STOCCAGGIO | R | 15 | L
-| MAGAZZINO | E | 3 | L
+| APPUNTAMENTO | E | 50 | L (Upcoming appointments)
+| INTERVENTO | E | 100 | L (Recent/active interventions)
+| SESSIONE | E | 50 | L (Recent/active sessions)
+| FATTURA | E | 100 | L (Recent invoices for revenue)
+| RICAMBIO | E | 1200 | L (All parts for stock alerts)
+| STOCCAGGIO | R | 30 | L (All stock quantities)
+| MAGAZZINO | E | 3 | L (All warehouses)
 
 .center
-    **Totale costo**: 71 letture -> 355 accessi al giorno
+    **Totale costo**: 1533 letture -> 76650 accessi al giorno
 
 #####! OP 9 - Gestione ruoli e permessi del personale
-Operazione per la gestione amministrativa del personale dell'officina. Permette la definizione dei ruoli (meccanico, amministratore), l'assegnazione dei permessi di accesso e la modifica delle credenziali. Operazione riservata agli amministratori.
+Operazione per la gestione amministrativa del personale dell'officina. Permette la modifica del tipo di persona (cliente/meccanico) accedendo direttamente all'entità PERSONA. Operazione riservata agli amministratori.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| MECCANICO | E | 3 | L
-| MECCANICO | E | 1 | S
+| PERSONA | E | 1 | L (Verify exists)
+| PERSONA | E | 1 | S (Update role/type)
 
 .center
-    **Totale costo**: 5 letture -> 25 accessi all'anno
+    **Totale costo**: 3 letture -> 15 accessi all'anno
 
 #####! OP 10 - Tracciamento storico interventi per ogni motocicletta
-Operazione che permette la consultazione completa dello storico degli interventi effettuati su una specifica motocicletta. Include dettagli su sessioni, ricambi utilizzati, meccanici coinvolti e costi sostenuti. Utile per diagnosi e manutenzione predittiva.
+Operazione che permette la consultazione completa dello storico degli interventi e sessioni effettuati su una specifica motocicletta. Utilizza proporzioni realistiche basate sui volumi: 2.25 interventi e 0.75 sessioni per moto, con relativi meccanici e ricambi.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| MOTO | E | 1 | L
-| SVOLGIMENTO | R | 3 | L
-| INTERVENTO | E | 3 | L
-| SESSIONE | E | 2 | L
-| EFFETTUAZIONE | R | 2 | L
-| AFFIANCAMENTO | R | 5 | L
-| MECCANICO | E | 3 | L
-| UTILIZZO | R | 8 | L
-| RICAMBIO | E | 8 | L
+| MOTO | E | 1 | L (Get motorcycle details)
+| EFFETTUAZIONE | R | 2.25 | L (Get all interventions)
+| INTERVENTO | E | 2.25 | L (Intervention details)
+| SVILUPPO | R | 0.75 | L (Get all sessions)
+| SESSIONE | E | 0.75 | L (Session details)
+| SVOLGIMENTO | R | 2.25 | L (Mechanics assigned to interventions)
+| AFFIANCAMENTO | R | 4.5 | L (Mechanics assigned to sessions)
+| PERSONA | E | 3 | L (Mechanic details)
+| UTILIZZO | R | 5.6 | L (Parts used in interventions)
+| RICAMBIO | E | 5.6 | L (Part details and costs)
 
 .center
-    **Totale costo**: 35 letture -> 3500 accessi al mese
+    **Totale costo**: 28 letture -> 2800 accessi al mese
 
 #####! OP 11 - Visualizzare lo stato di un intervento sulla propria moto
-Operazione che permette ai clienti di consultare in autonomia lo stato corrente degli interventi sulle proprie motociclette. Include informazioni su fase di lavorazione, meccanici assegnati e tempo stimato di completamento.
+Operazione che permette ai clienti di consultare in autonomia lo stato corrente degli interventi sulle proprie motociclette. Lo stato dell'intervento è contenuto nell'entità INTERVENTO, quindi non sono necessari accessi ai meccanici.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| PERSONA | E | 1 | L
-| POSSESSIONE | R | 1 | L
-| MOTO | E | 1 | L
-| SVOLGIMENTO | R | 1 | L
-| INTERVENTO | E | 1 | L
-| AFFIANCAMENTO | R | 2 | L
-| MECCANICO | E | 2 | L
+| CLIENTE | E | 1 | L (Cliente verification)
+| POSSESSIONE | R | 1 | L (Get motorcycle)
+| MOTO | E | 1 | L (Motorcycle details)
+| EFFETTUAZIONE | R | 1 | L (Get current intervention)
+| INTERVENTO | E | 1 | L (Intervention status)
 
 .center
-    **Totale costo**: 9 letture -> 225 accessi al giorno
+    **Totale costo**: 5 letture -> 125 accessi al giorno
 
 
 ## Raffinamento dello schema
@@ -568,20 +564,16 @@ Elenco dei ricambi con quantità sotto la soglia impostata.
 
 
 ##### OP 6 - Rifornimento ricambi in magazzino
-1) Aggiorna il prezzo del ricambio.  
-2) Aggiunge le unità acquistate nel magazzino indicato.
+Aggiunge le unità di ricambi acquistate nel magazzino specificato aggiornando la relazione STOCCAGGIO.
 
 .code {sql}
-    UPDATE RICAMBI
-    SET PrezzoFornitore = ?
-    WHERE CodiceRicambio = ?;
-
     INSERT INTO STOCCAGGI (CodiceMagazzino, CodiceRicambio, Quantita)
-    VALUES (?, ?, ?);
+    VALUES (?, ?, ?)
+    ON DUPLICATE KEY UPDATE Quantita = Quantita + VALUES(Quantita);
 
 
-##### OP 7 - Generazione fatture per interventi completati
-Inserisce la fattura passando il totale già calcolato dall'applicazione.
+##### OP 7 - Generazione fattura per intervento completato
+Inserisce la fattura per un intervento completato collegandola al cliente tramite relazione INTESTAZIONE.
 
 .code {sql}
     INSERT INTO FATTURE (CodiceFattura, Importo, Data, Note, CF, CodiceIntervento)
