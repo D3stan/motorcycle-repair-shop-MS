@@ -410,7 +410,7 @@ Partendo dallo schema ER sono state modificate le seguenti relazioni:
 
 ## Traduzione di entità e associazioni in relazioni
 
-PERSONE (
+**PERSONE** (
   .text {CF} decoration:{underline},
   Nome,
   Cognome,
@@ -418,7 +418,8 @@ PERSONE (
   Email,
   Tipo
 )  
-APPUNTAMENTI (
+UNIQUE(Email)  
+**APPUNTAMENTI** (
   .text {CodiceAppuntamento} decoration:{underline},
   DataAppuntamento,
   Descrizione,
@@ -426,15 +427,15 @@ APPUNTAMENTI (
   Tipo,
   .text {CF} decoration:{underline}: PERSONE
 )  
-AFFIANCAMENTI (
+**AFFIANCAMENTI** (
   .text {CodiceSessione} decoration:{underline},
   .text {CF} decoration:{underline}: PERSONE
 )  
-SVOLGIMENTI (
+**SVOLGIMENTI** (
   .text {CodiceIntervento} decoration:{underline},
   .text {CF} decoration:{underline}: PERSONE
 )  
-FATTURE (
+**FATTURE** (
   .text {CodiceFattura} decoration:{underline},
   Importo,
   Data,
@@ -443,7 +444,7 @@ FATTURE (
   .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
   .text {CodiceSessione} decoration:{underline}: SESSIONI
 )  
-SESSIONI (
+**SESSIONI** (
   .text {CodiceSessione} decoration:{underline},
   Data,
   OreImpiegate,
@@ -451,7 +452,7 @@ SESSIONI (
   Note,
   .text {NumTelaio} decoration:{underline}: MOTO
 )  
-INTERVENTI (
+**INTERVENTI** (
   .text {CodiceIntervento} decoration:{underline},
   DataInizio,
   DataFine[0–1],
@@ -461,7 +462,7 @@ INTERVENTI (
   Note,
   .text {NumTelaio} decoration:{underline}: MOTO
 )  
-MOTO (
+**MOTO** (
   .text {NumTelaio} decoration:{underline},
   Targa,
   AnnoImmatricolazione,
@@ -469,7 +470,8 @@ MOTO (
   .text {CodiceModello} decoration:{underline}: MODELLI,
   .text {CF} decoration:{underline}: PERSONE
 )  
-MODELLI (
+UNIQUE(Targa)  
+**MODELLI** (
   .text {CodiceModello} decoration:{underline},
   Marca,
   Nome,
@@ -477,13 +479,13 @@ MODELLI (
   Segmento,
   Potenza
 )  
-FORNITORI (
+**FORNITORI** (
   .text {CodiceFornitore} decoration:{underline},
   Nome,
   Telefono,
   Email
 )  
-RICAMBI (
+**RICAMBI** (
   .text {CodiceRicambio} decoration:{underline},
   Marca,
   Nome,
@@ -492,20 +494,20 @@ RICAMBI (
   PrezzoFornitore,
   .text {CodiceFornitore} decoration:{underline}: FORNITORI
 )  
-MAGAZZINI (
+**MAGAZZINI** (
   .text {CodiceMagazzino} decoration:{underline}
 )  
-STOCCAGGI (
+**STOCCAGGI** (
   .text {CodiceMagazzino} decoration:{underline}: MAGAZZINI,
   .text {CodiceRicambio} decoration:{underline}: RICAMBI
   Quantità
   QuantitàMinima
 )  
-APPARTENENZE (
+**APPARTENENZE** (
   .text {CodiceRicambio} decoration:{underline}: RICAMBI,
   .text {CodiceModello} decoration:{underline}: MODELLI
 )  
-UTILIZZI (
+**UTILIZZI** (
   .text {CodiceRicambio} decoration:{underline}: RICAMBI,
   .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
   Quantità,
