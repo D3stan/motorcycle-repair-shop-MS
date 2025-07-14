@@ -51,7 +51,7 @@ class WorkOrderController extends Controller
                     'invoice' => $workOrder->invoice ? [
                         'id' => $workOrder->invoice->CodiceFattura,
                         'invoice_number' => $workOrder->invoice->CodiceFattura,
-                        'status' => 'paid', // All invoices considered paid in simplified schema
+                        // Status field removed - not available in FATTURE schema
                     ] : null,
                     'notes' => $workOrder->Note,
                 ];
@@ -121,7 +121,7 @@ class WorkOrderController extends Controller
                 'invoice_number' => $workOrder->invoice->CodiceFattura,
                 'issue_date' => $workOrder->invoice->Data->format('Y-m-d'),
                 'due_date' => $workOrder->invoice->Data->format('Y-m-d'), // Use issue date as due date for compatibility
-                'status' => 'paid', // All invoices considered paid in simplified schema
+                // Status field removed - not available in FATTURE schema
                 'total_amount' => $workOrder->invoice->Importo ? (float) $workOrder->invoice->Importo : 0.0,
             ] : null,
             'notes' => $workOrder->Note,

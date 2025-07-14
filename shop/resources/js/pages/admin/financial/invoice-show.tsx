@@ -143,33 +143,8 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                     </div>
                 </div>
 
-                {/* Status and Amounts */}
+                {/* Amounts */}
                 <div className="grid gap-4 md:grid-cols-4">
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <FileText className="h-4 w-4" />
-                                Status
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-2">{getStatusBadge(invoice.status)}</div>
-                            {invoice.paid_at && <p className="text-muted-foreground mt-2 text-sm">Paid on {formatDateTime(invoice.paid_at)}</p>}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <Euro className="h-4 w-4" />
-                                Subtotal
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{formatCurrency(invoice.subtotal)}</div>
-                        </CardContent>
-                    </Card>
-
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-base">
@@ -282,16 +257,8 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                                         </div>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-sm font-medium">Status:</span>
-                                        <Badge variant="secondary">{workOrder.status}</Badge>
-                                    </div>
-                                    <div className="flex justify-between">
                                         <span className="text-muted-foreground text-sm font-medium">Started:</span>
                                         <span>{workOrder.started_at ? formatDate(workOrder.started_at) : 'Not started'}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground text-sm font-medium">Completed:</span>
-                                        <span>{workOrder.completed_at ? formatDate(workOrder.completed_at) : 'Not completed'}</span>
                                     </div>
                                 </div>
                                 <div className="space-y-2">

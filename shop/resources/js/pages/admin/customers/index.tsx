@@ -46,12 +46,6 @@ export default function CustomersIndex({ customers }: Props) {
             value: customers.data.reduce((sum, c) => sum + (c.motorcycles_count || 0), 0),
             icon: Bike,
         },
-        {
-            title: 'Pending Invoices',
-            value: customers.data.reduce((sum, c) => sum + (c.pending_invoices_count || 0), 0),
-            variant: customers.data.reduce((sum, c) => sum + (c.pending_invoices_count || 0), 0) > 0 ? ('warning' as const) : ('default' as const),
-            icon: FileText,
-        },
     ];
 
     // Prepare table columns

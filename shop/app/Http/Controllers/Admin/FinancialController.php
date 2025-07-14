@@ -96,7 +96,7 @@ class FinancialController extends Controller
                     'issue_date' => $invoice->Data->format('Y-m-d'),
                     'due_date' => null, // No due date in simplified schema
                     'total_amount' => (float) $invoice->Importo,
-                    'status' => 'paid', // All invoices considered paid in simplified schema
+                    // Status field removed - not available in FATTURE schema
                     'paid_at' => $invoice->Data?->format('Y-m-d'),
                     'is_overdue' => false, // No overdue tracking in simplified schema
                 ];
@@ -158,16 +158,8 @@ class FinancialController extends Controller
             }
         }
         
-        // Legacy status filter support (for backward compatibility)
-        if ($request->filled('status') && $request->status !== 'all') {
-            // In our simplified schema, all invoices are considered "paid"
-            // We only filter when user specifically selects "pending" or "overdue" to show no results
-            if ($request->status === 'pending' || $request->status === 'overdue') {
-                // Show no results for pending/overdue since all invoices are paid in our schema
-                $query->whereRaw('1 = 0');
-            }
-            // For "paid" status, we don't need to filter since all invoices are paid
-        }
+        // Legacy status filter removed - no status field in FATTURE schema
+        // All invoices are treated equally without status distinction
         
         if ($request->filled('search')) {
             $search = $request->search;
@@ -222,7 +214,7 @@ class FinancialController extends Controller
                 'issue_date' => $invoice->Data->format('Y-m-d'),
                 'due_date' => null, // No due date in simplified schema
                 'total_amount' => (float) $invoice->Importo,
-                'status' => 'paid', // All invoices considered paid in simplified schema
+                // Status field removed - not available in FATTURE schema
                 'paid_at' => $invoice->Data->format('Y-m-d'),
                 'is_overdue' => false, // No overdue tracking in simplified schema
                 'created_at' => $invoice->created_at->format('Y-m-d H:i'),
@@ -248,7 +240,7 @@ class FinancialController extends Controller
             'issue_date' => $invoice->Data->format('Y-m-d'),
             'due_date' => null, // No due date in simplified schema
             'total_amount' => (float) $invoice->Importo,
-            'status' => 'paid', // All invoices considered paid in simplified schema
+            // Status field removed - not available in FATTURE schema
             'paid_at' => $invoice->Data->format('Y-m-d H:i'),
             'created_at' => $invoice->created_at->format('Y-m-d H:i'),
         ];

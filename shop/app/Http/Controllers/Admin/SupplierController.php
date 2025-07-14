@@ -27,11 +27,6 @@ class SupplierController extends Controller
                 'name' => $supplier->Nome,
                 'phone' => $supplier->Telefono,
                 'email' => $supplier->Email,
-                'address' => $supplier->Indirizzo,
-                'city' => $supplier->Citta,
-                'postal_code' => $supplier->CAP,
-                'country' => $supplier->Paese,
-                'notes' => $supplier->Note,
                 'parts_count' => $supplier->parts_count,
                 'created_at' => $supplier->created_at->format('Y-m-d'),
             ];
@@ -60,11 +55,6 @@ class SupplierController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|string|email|max:255',
-            'address' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:10',
-            'country' => 'required|string|max:255',
-            'notes' => 'nullable|string',
         ]);
 
         $supplier = Supplier::create([
@@ -72,11 +62,6 @@ class SupplierController extends Controller
             'Nome' => $validated['name'],
             'Telefono' => $validated['phone'],
             'Email' => $validated['email'],
-            'Indirizzo' => $validated['address'],
-            'Citta' => $validated['city'],
-            'CAP' => $validated['postal_code'],
-            'Paese' => $validated['country'],
-            'Note' => $validated['notes'],
         ]);
 
         return redirect()->route('admin.suppliers.show', $supplier)
@@ -96,11 +81,6 @@ class SupplierController extends Controller
             'name' => $supplier->Nome,
             'phone' => $supplier->Telefono,
             'email' => $supplier->Email,
-            'address' => $supplier->Indirizzo,
-            'city' => $supplier->Citta,
-            'postal_code' => $supplier->CAP,
-            'country' => $supplier->Paese,
-            'notes' => $supplier->Note,
             'created_at' => $supplier->created_at->format('Y-m-d H:i'),
         ];
 
@@ -113,10 +93,11 @@ class SupplierController extends Controller
                 'name' => $part->Nome,
                 'category' => $part->Categoria,
                 'supplier_price' => (float) $part->PrezzoFornitore,
-                'selling_price' => (float) $part->PrezzoVendita,
-                'stock_quantity' => $part->QuantitaDisponibile,
-                'minimum_stock' => $part->ScortaMinima,
-                'is_low_stock' => $part->isLowStock(),
+                // Fields below removed as they don't exist in RICAMBI schema
+                // 'selling_price' => (float) $part->PrezzoVendita,
+                // 'stock_quantity' => $part->QuantitaDisponibile,
+                // 'minimum_stock' => $part->ScortaMinima,
+                // 'is_low_stock' => $part->isLowStock(),
             ];
         });
 
@@ -138,11 +119,6 @@ class SupplierController extends Controller
                 'name' => $supplier->Nome,
                 'phone' => $supplier->Telefono,
                 'email' => $supplier->Email,
-                'address' => $supplier->Indirizzo,
-                'city' => $supplier->Citta,
-                'postal_code' => $supplier->CAP,
-                'country' => $supplier->Paese,
-                'notes' => $supplier->Note,
             ],
         ]);
     }
@@ -157,11 +133,6 @@ class SupplierController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'required|string|email|max:255',
-            'address' => 'nullable|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'postal_code' => 'nullable|string|max:10',
-            'country' => 'required|string|max:255',
-            'notes' => 'nullable|string',
         ]);
 
         $supplier->update([
@@ -169,11 +140,6 @@ class SupplierController extends Controller
             'Nome' => $validated['name'],
             'Telefono' => $validated['phone'],
             'Email' => $validated['email'],
-            'Indirizzo' => $validated['address'],
-            'Citta' => $validated['city'],
-            'CAP' => $validated['postal_code'],
-            'Paese' => $validated['country'],
-            'Note' => $validated['notes'],
         ]);
 
         return redirect()->route('admin.suppliers.show', $supplier)

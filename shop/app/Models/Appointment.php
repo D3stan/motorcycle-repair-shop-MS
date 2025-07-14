@@ -74,14 +74,9 @@ class Appointment extends Model
     }
 
     /**
-     * Get work orders that could be related to this appointment.
-     * Since appointments don't directly link to motorcycles in the simplified schema,
-     * we can get work orders through the user's motorcycles.
+
+     * Work orders are linked to motorcycles via NumTelaio, 
+     * while appointments are linked to users via CF.
+     * 
      */
-    public function workOrders(): HasMany  
-    {
-        // Note: This is an indirect relationship - appointments don't directly link to work orders in schema
-        // This is kept for backward compatibility but may return empty results
-        return $this->hasMany(WorkOrder::class, 'NonExistentField', 'NonExistentField')->whereRaw('1=0');
-    }
 } 

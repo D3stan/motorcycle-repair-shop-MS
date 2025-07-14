@@ -53,10 +53,11 @@ class InvoiceController extends Controller
             ->filter(); // Remove null entries
 
         // Calculate summary statistics
-        $totalOutstanding = $invoices->where('status', '!=', 'paid')->sum('total_amount');
-        $totalPaid = $invoices->where('status', 'paid')->sum('total_amount');
-        $pendingCount = $invoices->where('status', 'pending')->count();
-        $overdueCount = $invoices->where('status', 'overdue')->count();
+        // Status field not available in FATTURE schema - treating all invoices as paid
+        $totalOutstanding = 0; // No outstanding invoices in simplified schema
+        $totalPaid = $invoices->sum('total_amount');
+        $pendingCount = 0; // No pending invoices in simplified schema
+        $overdueCount = 0; // No overdue invoices in simplified schema
 
         return Inertia::render('invoices', [
             'invoices' => $invoices,

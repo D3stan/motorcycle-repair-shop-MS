@@ -103,39 +103,7 @@ export default function FinancialIndex({ revenueAnalytics, invoiceStatistics, re
                         <CardContent>
                             <div className="mb-2 text-2xl font-bold">{invoiceStatistics.total_invoices}</div>
                             <div className="text-muted-foreground text-sm">
-                                {invoiceStatistics.paid_invoices} paid, {invoiceStatistics.pending_invoices} pending
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Outstanding Payments */}
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <Clock className="h-4 w-4" />
-                                Outstanding
-                            </CardTitle>
-                            <CardDescription>Pending payments</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mb-2 text-2xl font-bold">{formatCurrency(invoiceStatistics.outstanding_payments)}</div>
-                            <div className="text-muted-foreground text-sm">From {invoiceStatistics.pending_invoices} invoices</div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Overdue Invoices */}
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="flex items-center gap-2 text-base">
-                                <AlertTriangle className="h-4 w-4" />
-                                Overdue
-                            </CardTitle>
-                            <CardDescription>Require attention</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="mb-2 text-2xl font-bold text-red-600">{invoiceStatistics.overdue_invoices}</div>
-                            <div className="text-muted-foreground text-sm">
-                                {invoiceStatistics.overdue_invoices > 0 ? 'Need follow-up' : 'All up to date'}
+                                {invoiceStatistics.paid_invoices} paid
                             </div>
                         </CardContent>
                     </Card>

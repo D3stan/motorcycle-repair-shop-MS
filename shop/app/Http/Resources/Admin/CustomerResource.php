@@ -21,7 +21,7 @@ class CustomerResource extends UserResource
             'invoices_count' => $this->whenCounted('invoices'),
             'pending_invoices_count' => $this->when(
                 $this->relationLoaded('invoices'),
-                fn() => $this->invoices->where('status', 'pending')->count()
+                fn() => 0 // Status field not available in FATTURE schema
             ),
         ]);
     }
