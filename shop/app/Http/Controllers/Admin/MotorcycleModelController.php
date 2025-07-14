@@ -17,19 +17,19 @@ class MotorcycleModelController extends Controller
     public function index(): Response
     {
         $motorcycleModels = MotorcycleModel::withCount('motorcycles')
-            ->orderBy('brand')
-            ->orderBy('name')
+            ->orderBy('Marca')
+            ->orderBy('Nome')
             ->paginate(20);
 
         $modelsData = $motorcycleModels->through(function ($model) {
             return [
-                'id' => $model->id,
-                'brand' => $model->brand,
-                'name' => $model->name,
-                'model_code' => $model->model_code,
-                'engine_size' => $model->engine_size,
-                'segment' => $model->segment,
-                'power' => $model->power,
+                'id' => $model->CodiceModello,
+                'brand' => $model->Marca,
+                'name' => $model->Nome,
+                'model_code' => $model->CodiceModello,
+                'engine_size' => $model->Cilindrata,
+                'segment' => $model->Segmento,
+                'power' => $model->Potenza,
                 'motorcycles_count' => $model->motorcycles_count,
                 'created_at' => $model->created_at->format('Y-m-d'),
             ];
@@ -56,13 +56,20 @@ class MotorcycleModelController extends Controller
         $validated = $request->validate([
             'brand' => 'required|string|max:255',
             'name' => 'required|string|max:255',
-            'model_code' => 'required|string|max:255|unique:motorcycle_models,model_code',
+            'model_code' => 'required|string|max:255|unique:MODELLI,CodiceModello',
             'engine_size' => 'required|integer|min:50|max:2500',
             'segment' => 'required|string|in:sport,touring,naked,cruiser,adventure,enduro,scooter',
             'power' => 'required|integer|min:5|max:300',
         ]);
 
-        $model = MotorcycleModel::create($validated);
+        $model = MotorcycleModel::create([
+            'Marca' => $validated['brand'],
+            'Nome' => $validated['name'],
+            'CodiceModello' => $validated['model_code'],
+            'Cilindrata' => $validated['engine_size'],
+            'Segmento' => $validated['segment'],
+            'Potenza' => $validated['power'],
+        ]);
 
         return redirect()->route('admin.motorcycles.index')
             ->with('success', 'Motorcycle model created successfully!');
@@ -76,22 +83,22 @@ class MotorcycleModelController extends Controller
         $motorcycle->load(['motorcycles.user']);
 
         $modelData = [
-            'id' => $motorcycle->id,
-            'brand' => $motorcycle->brand,
-            'name' => $motorcycle->name,
-            'model_code' => $motorcycle->model_code,
-            'engine_size' => $motorcycle->engine_size,
-            'segment' => $motorcycle->segment,
-            'power' => $motorcycle->power,
+            'id' => $motorcycle->CodiceModello,
+            'brand' => $motorcycle->Marca,
+            'name' => $motorcycle->Nome,
+            'model_code' => $motorcycle->CodiceModello,
+            'engine_size' => $motorcycle->Cilindrata,
+            'segment' => $motorcycle->Segmento,
+            'power' => $motorcycle->Potenza,
             'created_at' => $motorcycle->created_at->format('Y-m-d H:i'),
         ];
 
         $motorcycles = $motorcycle->motorcycles->map(function ($bike) {
             return [
-                'id' => $bike->id,
-                'license_plate' => $bike->license_plate,
-                'registration_year' => $bike->registration_year,
-                'vin' => $bike->vin,
+                'id' => $bike->NumTelaio,
+                'license_plate' => $bike->Targa,
+                'registration_year' => $bike->AnnoImmatricolazione,
+                'vin' => $bike->NumTelaio,
                 'owner' => $bike->user->first_name . ' ' . $bike->user->last_name,
                 'owner_email' => $bike->user->email,
             ];
@@ -110,13 +117,13 @@ class MotorcycleModelController extends Controller
     {
         return Inertia::render('admin/motorcycles/edit', [
             'motorcycleModel' => [
-                'id' => $motorcycle->id,
-                'brand' => $motorcycle->brand,
-                'name' => $motorcycle->name,
-                'model_code' => $motorcycle->model_code,
-                'engine_size' => $motorcycle->engine_size,
-                'segment' => $motorcycle->segment,
-                'power' => $motorcycle->power,
+                'id' => $motorcycle->CodiceModello,
+                'brand' => $motorcycle->Marca,
+                'name' => $motorcycle->Nome,
+                'model_code' => $motorcycle->CodiceModello,
+                'engine_size' => $motorcycle->Cilindrata,
+                'segment' => $motorcycle->Segmento,
+                'power' => $motorcycle->Potenza,
             ],
         ]);
     }
@@ -129,13 +136,20 @@ class MotorcycleModelController extends Controller
         $validated = $request->validate([
             'brand' => 'required|string|max:255',
             'name' => 'required|string|max:255',
-            'model_code' => 'required|string|max:255|unique:motorcycle_models,model_code,' . $motorcycle->id,
+            'model_code' => 'required|string|max:255|unique:MODELLI,CodiceModello,' . $motorcycle->CodiceModello . ',CodiceModello',
             'engine_size' => 'required|integer|min:50|max:2500',
             'segment' => 'required|string|in:sport,touring,naked,cruiser,adventure,enduro,scooter',
             'power' => 'required|integer|min:5|max:300',
         ]);
 
-        $motorcycle->update($validated);
+        $motorcycle->update([
+            'Marca' => $validated['brand'],
+            'Nome' => $validated['name'],
+            'CodiceModello' => $validated['model_code'],
+            'Cilindrata' => $validated['engine_size'],
+            'Segmento' => $validated['segment'],
+            'Potenza' => $validated['power'],
+        ]);
 
         return redirect()->route('admin.motorcycles.show', $motorcycle)
             ->with('success', 'Motorcycle model updated successfully!');
@@ -146,12 +160,10 @@ class MotorcycleModelController extends Controller
      */
     public function destroy(MotorcycleModel $motorcycle): RedirectResponse
     {
-        // Check if any motorcycles use this model
-        $motorcyclesCount = $motorcycle->motorcycles()->count();
-
-        if ($motorcyclesCount > 0) {
+        // Check if model has any motorcycles
+        if ($motorcycle->motorcycles()->count() > 0) {
             return redirect()->route('admin.motorcycles.index')
-                ->with('error', 'Cannot delete motorcycle model that is in use by motorcycles.');
+                ->with('error', 'Cannot delete motorcycle model that has associated motorcycles.');
         }
 
         $motorcycle->delete();

@@ -1,18 +1,18 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
-import { 
-    type BreadcrumbItem, 
-    type User, 
-    type CustomerMotorcycle, 
-    type CustomerAppointment, 
-    type CustomerWorkOrder, 
-    type CustomerInvoice 
+import {
+    type BreadcrumbItem,
+    type CustomerAppointment,
+    type CustomerInvoice,
+    type CustomerMotorcycle,
+    type CustomerWorkOrder,
+    type User,
 } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, Mail, Phone, CreditCard, Calendar, Wrench, FileText, Bike } from 'lucide-react';
+import { ArrowLeft, Bike, Calendar, CreditCard, Edit, FileText, Mail, Phone, Wrench } from 'lucide-react';
 
 interface Props {
     customer: User;
@@ -58,7 +58,7 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${customer.first_name} ${customer.last_name} - Customer Details`} />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -78,7 +78,7 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                     </div>
                     <Button asChild>
                         <Link href={route('admin.customers.edit', customer.id)}>
-                            <Edit className="h-4 w-4 mr-2" />
+                            <Edit className="mr-2 h-4 w-4" />
                             Edit Customer
                         </Link>
                     </Button>
@@ -93,25 +93,23 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center gap-2">
-                                <Mail className="h-4 w-4 text-muted-foreground" />
+                                <Mail className="text-muted-foreground h-4 w-4" />
                                 <span className="text-sm">{customer.email}</span>
                             </div>
                             {customer.phone && (
                                 <div className="flex items-center gap-2">
-                                    <Phone className="h-4 w-4 text-muted-foreground" />
+                                    <Phone className="text-muted-foreground h-4 w-4" />
                                     <span className="text-sm">{customer.phone}</span>
                                 </div>
                             )}
                             {customer.tax_code && (
                                 <div className="flex items-center gap-2">
-                                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                                    <CreditCard className="text-muted-foreground h-4 w-4" />
                                     <span className="text-sm">{customer.tax_code}</span>
                                 </div>
                             )}
                             <Separator />
-                            <div className="text-sm text-muted-foreground">
-                                Customer since {customer.created_at}
-                            </div>
+                            <div className="text-muted-foreground text-sm">Customer since {customer.created_at}</div>
                         </CardContent>
                     </Card>
 
@@ -123,28 +121,28 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Bike className="h-4 w-4 text-muted-foreground" />
+                                    <Bike className="text-muted-foreground h-4 w-4" />
                                     <span className="text-sm">Motorcycles</span>
                                 </div>
                                 <Badge variant="secondary">{motorcycles.length}</Badge>
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                                    <Calendar className="text-muted-foreground h-4 w-4" />
                                     <span className="text-sm">Appointments</span>
                                 </div>
                                 <Badge variant="secondary">{appointments.length}</Badge>
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Wrench className="h-4 w-4 text-muted-foreground" />
+                                    <Wrench className="text-muted-foreground h-4 w-4" />
                                     <span className="text-sm">Work Orders</span>
                                 </div>
                                 <Badge variant="secondary">{workOrders.length}</Badge>
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-muted-foreground" />
+                                    <FileText className="text-muted-foreground h-4 w-4" />
                                     <span className="text-sm">Invoices</span>
                                 </div>
                                 <Badge variant="secondary">{invoices.length}</Badge>
@@ -160,21 +158,15 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <span className="text-sm">Total Invoiced</span>
-                                <span className="font-medium">
-                                    €{invoices.reduce((sum, inv) => sum + inv.total_amount, 0).toFixed(2)}
-                                </span>
+                                <span className="font-medium">€{invoices.reduce((sum, inv) => sum + (inv.total_amount || 0), 0).toFixed(2)}</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm">Pending Invoices</span>
-                                <span className="font-medium">
-                                    {invoices.filter(inv => inv.status === 'pending').length}
-                                </span>
+                                <span className="font-medium">{invoices.filter((inv) => inv.status === 'pending').length}</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm">Total Work Orders</span>
-                                <span className="font-medium">
-                                    €{workOrders.reduce((sum, wo) => sum + wo.total_cost, 0).toFixed(2)}
-                                </span>
+                                <span className="font-medium">€{workOrders.reduce((sum, wo) => sum + (wo.total_cost || 0), 0).toFixed(2)}</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -190,11 +182,11 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                         <CardContent>
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 {motorcycles.map((motorcycle) => (
-                                    <div key={motorcycle.id} className="border rounded-lg p-4">
+                                    <div key={motorcycle.id} className="rounded-lg border p-4">
                                         <div className="font-medium">
                                             {motorcycle.brand} {motorcycle.model}
                                         </div>
-                                        <div className="text-sm text-muted-foreground space-y-1">
+                                        <div className="text-muted-foreground space-y-1 text-sm">
                                             <div>Year: {motorcycle.year}</div>
                                             <div>Plate: {motorcycle.plate}</div>
                                             <div>Engine: {motorcycle.engine_size}cc</div>
@@ -222,19 +214,17 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                                         <div key={appointment.id} className="flex items-center justify-between border-b pb-2">
                                             <div>
                                                 <div className="font-medium">{appointment.type}</div>
-                                                <div className="text-sm text-muted-foreground">
+                                                <div className="text-muted-foreground text-sm">
                                                     {appointment.appointment_date} at {appointment.appointment_time}
                                                 </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {appointment.motorcycle}
-                                                </div>
+                                                <div className="text-muted-foreground text-xs">{appointment.motorcycle}</div>
                                             </div>
                                             {getStatusBadge(appointment.status)}
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-muted-foreground">
+                                <div className="text-muted-foreground py-6 text-center">
                                     <p>No appointments found</p>
                                 </div>
                             )}
@@ -254,25 +244,21 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                                         <div key={workOrder.id} className="flex items-center justify-between border-b pb-2">
                                             <div>
                                                 <div className="font-medium">{workOrder.description}</div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    {workOrder.motorcycle}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">
+                                                <div className="text-muted-foreground text-sm">{workOrder.motorcycle}</div>
+                                                <div className="text-muted-foreground text-xs">
                                                     {workOrder.started_at && `Started: ${workOrder.started_at}`}
                                                     {workOrder.completed_at && ` • Completed: ${workOrder.completed_at}`}
                                                 </div>
                                             </div>
                                             <div className="text-right">
                                                 {getStatusBadge(workOrder.status)}
-                                                <div className="text-sm font-medium mt-1">
-                                                    €{workOrder.total_cost.toFixed(2)}
-                                                </div>
+                                                <div className="mt-1 text-sm font-medium">€{(workOrder.total_cost || 0).toFixed(2)}</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-muted-foreground">
+                                <div className="text-muted-foreground py-6 text-center">
                                     <p>No work orders found</p>
                                 </div>
                             )}
@@ -292,12 +278,12 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                                 <table className="w-full">
                                     <thead>
                                         <tr className="border-b">
-                                            <th className="text-left p-2">Invoice #</th>
-                                            <th className="text-left p-2">Issue Date</th>
-                                            <th className="text-left p-2">Due Date</th>
-                                            <th className="text-left p-2">Amount</th>
-                                            <th className="text-left p-2">Status</th>
-                                            <th className="text-left p-2">Paid Date</th>
+                                            <th className="p-2 text-left">Invoice #</th>
+                                            <th className="p-2 text-left">Issue Date</th>
+                                            <th className="p-2 text-left">Due Date</th>
+                                            <th className="p-2 text-left">Amount</th>
+                                            <th className="p-2 text-left">Status</th>
+                                            <th className="p-2 text-left">Paid Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -306,7 +292,7 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
                                                 <td className="p-2 font-medium">{invoice.invoice_number}</td>
                                                 <td className="p-2">{invoice.issue_date}</td>
                                                 <td className="p-2">{invoice.due_date}</td>
-                                                <td className="p-2">€{invoice.total_amount.toFixed(2)}</td>
+                                                <td className="p-2">€{(invoice.total_amount || 0).toFixed(2)}</td>
                                                 <td className="p-2">{getStatusBadge(invoice.status)}</td>
                                                 <td className="p-2">{invoice.paid_at || '-'}</td>
                                             </tr>
@@ -320,4 +306,4 @@ export default function CustomerShow({ customer, motorcycles, appointments, work
             </div>
         </AppLayout>
     );
-} 
+}

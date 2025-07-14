@@ -9,7 +9,7 @@ use App\Models\{
     Supplier,
     Part,
     Warehouse,
-    Status,
+    Stoccaggio,
     WorkSession,
     Appointment,
     WorkOrder,
@@ -27,20 +27,18 @@ class DatabaseSeeder extends Seeder
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         
-        // Create predefined statuses first
-        $this->createStatuses();
-        
         // Create admin user
         $admin = User::factory()->admin()->create([
             'first_name' => 'Admin',
             'last_name' => 'User',
             'email' => 'admin@shop.com',
-            'tax_code' => 'ADMIN001234567890',
+            'CF' => 'ADMIN001234567890',
             'phone' => '+39 123 456 7890',
         ]);
 
         // Create mechanics
         $mechanics = User::factory()->mechanic()->count(5)->create();
+        $this->command->info("Created {$mechanics->count()} mechanics with CFs: " . $mechanics->pluck('CF')->implode(', '));
 
         // Create customers
         $customers = User::factory()->customer()->count(20)->create();
@@ -57,188 +55,327 @@ class DatabaseSeeder extends Seeder
         // Create parts
         $parts = Part::factory()->count(100)->create();
 
+        // Create STOCCAGGI relationships (Parts in Warehouses) using factory
+        $stoccaggi = collect();
+        $parts->each(function ($part) use ($warehouses, &$stoccaggi) {
+            // Each part is stored in 1-2 random warehouses
+            $randomWarehouses = $warehouses->random(rand(1, 2));
+            foreach ($randomWarehouses as $warehouse) {
+                // Create different stock scenarios
+                $stockType = fake()->randomElement(['wellStocked', 'lowStock', 'outOfStock']);
+                $weights = ['wellStocked' => 70, 'lowStock' => 25, 'outOfStock' => 5];
+                $stockType = fake()->randomElement(array_merge(
+                    array_fill(0, $weights['wellStocked'], 'wellStocked'),
+                    array_fill(0, $weights['lowStock'], 'lowStock'),
+                    array_fill(0, $weights['outOfStock'], 'outOfStock')
+                ));
+                
+                $stoccaggio = Stoccaggio::factory()
+                    ->forWarehouseAndPart($warehouse->CodiceMagazzino, $part->CodiceRicambio)
+                    ->{$stockType}()
+                    ->create();
+                    
+                $stoccaggi->push($stoccaggio);
+            }
+        });
+
         // Create motorcycles for customers
         $motorcycles = collect();
         $customers->each(function ($customer) use ($motorcycleModels, &$motorcycles) {
             $customerMotorcycles = Motorcycle::factory()
                 ->count(rand(1, 3))
                 ->create([
-                    'user_id' => $customer->id,
-                    'motorcycle_model_id' => $motorcycleModels->random()->id,
+                    'CF' => $customer->CF,
+                    'CodiceModello' => $motorcycleModels->random()->CodiceModello,
                 ]);
             $motorcycles = $motorcycles->merge($customerMotorcycles);
         });
 
         // Create appointments
         $appointments = collect();
-        $motorcycles->take(30)->each(function ($motorcycle) use (&$appointments) {
-            $motorcycleAppointments = Appointment::factory()
-                ->count(rand(1, 4))
-                ->state(function () {
-                    // Ensure most appointments are in the past
-                    $appointmentDate = fake()->dateTimeBetween('-4 months', '-1 day');
-                    $status = fake()->randomElement(['completed', 'completed', 'completed', 'cancelled', 'pending']); // Bias toward completed
-                    
-                    return [
-                        'appointment_date' => $appointmentDate->format('Y-m-d'),
-                        'status' => $status,
-                    ];
-                })
-                ->create([
-                    'user_id' => $motorcycle->user_id,
-                    'motorcycle_id' => $motorcycle->id,
+        $customers->take(15)->each(function ($customer) use (&$appointments) {
+            $appointmentData = Appointment::factory()
+                ->count(rand(1, 2))
+                ->make([
+                    'CF' => $customer->CF,
                 ]);
-            $appointments = $appointments->merge($motorcycleAppointments);
+            
+            foreach ($appointmentData as $appointment) {
+                $createdAppointment = Appointment::create($appointment->toArray());
+                $appointments->push($createdAppointment);
+            }
         });
 
         // Create work orders
         $workOrders = collect();
-        $motorcycles->take(25)->each(function ($motorcycle) use ($appointments, &$workOrders) {
-            $motorcycleWorkOrders = WorkOrder::factory()
-                ->count(rand(1, 3))
-                ->state(function () {
-                    // Ensure completed work orders have dates in the past
-                    $startDate = fake()->dateTimeBetween('-6 months', '-1 week');
-                    $status = fake()->randomElement(['pending', 'in_progress', 'completed', 'cancelled']);
-                    
-                    return [
-                        'started_at' => in_array($status, ['in_progress', 'completed']) ? $startDate : null,
-                        'completed_at' => $status === 'completed' ? fake()->dateTimeBetween($startDate, '-1 day') : null,
-                        'status' => $status,
-                    ];
-                })
-                ->create([
-                    'user_id' => $motorcycle->user_id,
-                    'motorcycle_id' => $motorcycle->id,
-                    'appointment_id' => $appointments->where('motorcycle_id', $motorcycle->id)->random()->id ?? null,
-                ]);
-            $workOrders = $workOrders->merge($motorcycleWorkOrders);
-        });
-
-        // Create work sessions
-        $workSessions = WorkSession::factory()
-            ->count(40)
-            ->state(function () {
-                // Ensure all work sessions are in the past
-                $startTime = fake()->dateTimeBetween('-6 months', '-1 day');
-                $hoursWorked = fake()->randomFloat(2, 0.5, 8);
-                $endTime = (clone $startTime)->modify("+{$hoursWorked} hours");
+        $customers->take(12)->each(function ($customer) use ($motorcycles, &$workOrders) {
+            $customerMotorcycles = $motorcycles->where('CF', $customer->CF);
+            if ($customerMotorcycles->isNotEmpty()) {
+                $motorcycle = $customerMotorcycles->random();
                 
-                return [
-                    'start_time' => $startTime,
-                    'end_time' => fake()->boolean(90) ? $endTime : null, // 90% completed sessions
-                ];
-            })
-            ->create();
-
-        // Create invoices for completed work orders
-        $completedWorkOrders = $workOrders->where('status', 'completed');
-        $completedWorkOrders->each(function ($workOrder) {
-            // Ensure invoice dates are in the past, after work completion
-            $issueDate = fake()->dateTimeBetween($workOrder->completed_at ?? '-6 months', '-1 day');
-            $dueDate = (clone $issueDate)->modify('+30 days');
-            $status = fake()->randomElement(['paid', 'paid', 'pending', 'overdue']); // Bias toward paid
-            
-            Invoice::factory()
-                ->forWorkOrder($workOrder)
-                ->state([
-                    'issue_date' => $issueDate->format('Y-m-d'),
-                    'due_date' => $dueDate->format('Y-m-d'),
-                    'status' => $status,
-                    'paid_at' => $status === 'paid' ? fake()->dateTimeBetween($issueDate, '-1 day') : null,
-                ])
-                ->create();
+                // Create 1-2 work orders per customer
+                $numWorkOrders = rand(1, 2);
+                for ($i = 0; $i < $numWorkOrders; $i++) {
+                    try {
+                        $createdWorkOrder = WorkOrder::factory()->create([
+                            'NumTelaio' => $motorcycle->NumTelaio,
+                        ]);
+                        $workOrders->push($createdWorkOrder);
+                    } catch (\Exception $e) {
+                        $this->command->error("Failed to create work order: " . $e->getMessage());
+                    }
+                }
+            }
         });
 
-        // Create relationships
-        $this->createRelationships($workOrders, $mechanics, $parts, $motorcycleModels, $warehouses, $workSessions);
+        // Create work sessions for some work orders
+        $workSessions = collect();
+        $workOrders->take(8)->each(function ($workOrder) use (&$workSessions) {
+            // Create 1-3 work sessions per selected work order
+            $numSessions = rand(1, 3);
+            for ($i = 0; $i < $numSessions; $i++) {
+                $createdSession = WorkSession::factory()->create([
+                    'NumTelaio' => $workOrder->NumTelaio,
+                ]);
+                $workSessions->push($createdSession);
+            }
+        });
+
+        // Assign mechanics to work orders (SVOLGIMENTI table)  
+        $mechanicsAssigned = 0;
+        $this->command->info("About to assign mechanics to work orders. Mechanics count: {$mechanics->count()}, Work orders count: {$workOrders->count()}");
+        
+        $command = $this->command;
+        $workOrders->each(function ($workOrder) use ($mechanics, &$mechanicsAssigned, $command) {
+            // Ensure we have mechanics to assign
+            if ($mechanics->isEmpty()) {
+                $command->warn("No mechanics available for assignment!");
+                return;
+            }
+            
+            $numMechanics = rand(1, min(2, $mechanics->count()));
+            $assignedMechanics = $mechanics->random($numMechanics);
+            
+            // Convert to collection if single item
+            if (!$assignedMechanics instanceof \Illuminate\Support\Collection) {
+                $assignedMechanics = collect([$assignedMechanics]);
+            }
+            
+            // Prepare data for pivot table
+            $mechanicCFs = [];
+            foreach ($assignedMechanics as $mechanic) {
+                $mechanicCFs[] = $mechanic->CF;
+            }
+            
+            // Attach mechanics using sync to avoid duplicates
+            try {
+                $syncResult = $workOrder->mechanics()->sync($mechanicCFs);
+                $mechanicsAssigned++;
+                
+                // Debug info for first few work orders
+                if ($mechanicsAssigned <= 3) {
+                    $command->info("Work Order {$workOrder->CodiceIntervento}: Assigned mechanics " . implode(', ', $mechanicCFs));
+                }
+            } catch (\Exception $e) {
+                $command->error("Failed to assign mechanics to work order {$workOrder->CodiceIntervento}: " . $e->getMessage());
+            }
+        });
+
+        // Assign mechanics to work sessions (AFFIANCAMENTI table)
+        $workSessions->each(function ($workSession) use ($mechanics) {
+            // Ensure we have mechanics to assign
+            if ($mechanics->isEmpty()) {
+                return;
+            }
+            
+            $numMechanics = rand(1, min(2, $mechanics->count()));
+            $assignedMechanics = $mechanics->random($numMechanics);
+            
+            // Convert to collection if single item
+            if (!$assignedMechanics instanceof \Illuminate\Support\Collection) {
+                $assignedMechanics = collect([$assignedMechanics]);
+            }
+            
+            // Prepare data for pivot table
+            $mechanicCFs = [];
+            foreach ($assignedMechanics as $mechanic) {
+                $mechanicCFs[] = $mechanic->CF;
+            }
+            
+            // Attach mechanics using sync to avoid duplicates
+            $workSession->mechanics()->sync($mechanicCFs);
+        });
+
+        // Create UTILIZZI relationships (Parts used in Work Orders)
+        $workOrders->each(function ($workOrder) use ($parts) {
+            $usedParts = $parts->random(rand(0, 5));
+            foreach ($usedParts as $part) {
+                // Calculate selling price as markup over supplier price
+                $sellingPrice = $part->PrezzoFornitore * fake()->randomFloat(2, 1.2, 2.5);
+                
+                DB::table('UTILIZZI')->insert([
+                    'CodiceRicambio' => $part->CodiceRicambio,
+                    'CodiceIntervento' => $workOrder->CodiceIntervento,
+                    'Quantita' => rand(1, 5),
+                    'Prezzo' => $sellingPrice,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+
+        // Create invoices for completed work (orders, sessions, or both)
+        $completedWorkOrders = $workOrders->where('Stato', 'completed');
+        $completedWorkSessions = $workSessions->where('Stato', 'completed');
+        $invoices = collect();
+
+        // Scenario 1: Invoice for work order only (60% of completed work orders)
+        $workOrderOnlyInvoices = $completedWorkOrders->random(min($completedWorkOrders->count(), (int)($completedWorkOrders->count() * 0.6)));
+        $workOrderOnlyInvoices->each(function ($workOrder, $index) use ($motorcycles, &$invoices) {
+            $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
+            if ($motorcycle) {
+                // Mix of current month and recent months invoices
+                $isCurrentMonth = $index < 3 || fake()->boolean(40); // First 3 + 40% chance for current month
+                $invoiceDate = $isCurrentMonth 
+                    ? fake()->dateTimeBetween(now()->startOfMonth(), now())
+                    : fake()->dateTimeBetween('-3 months', now());
+                    
+                $invoice = Invoice::factory()->forWorkOrder($workOrder)->create([
+                    'CodiceSessione' => null,
+                    'Data' => $invoiceDate,
+                ]);
+                $invoices->push($invoice);
+            }
+        });
+
+        // Scenario 2: Invoice for work session only (40% of completed work sessions)
+        $workSessionOnlyInvoices = $completedWorkSessions->random(min($completedWorkSessions->count(), (int)($completedWorkSessions->count() * 0.4)));
+        $workSessionOnlyInvoices->each(function ($workSession, $index) use ($motorcycles, &$invoices) {
+            $motorcycle = $motorcycles->where('NumTelaio', $workSession->NumTelaio)->first();
+            if ($motorcycle) {
+                // Mix of current month and recent months invoices
+                $isCurrentMonth = $index < 2 || fake()->boolean(40); // First 2 + 40% chance for current month
+                $invoiceDate = $isCurrentMonth 
+                    ? fake()->dateTimeBetween(now()->startOfMonth(), now())
+                    : fake()->dateTimeBetween('-3 months', now());
+                    
+                $invoice = Invoice::factory()->create([
+                    'CF' => $motorcycle->CF,
+                    'CodiceIntervento' => null,
+                    'CodiceSessione' => $workSession->CodiceSessione,
+                    'Data' => $invoiceDate,
+                ]);
+                $invoices->push($invoice);
+            }
+        });
+
+        // Scenario 3: Invoice for both work order and session (for same motorcycle)
+        // Find completed work orders and sessions for the same motorcycle
+        $remainingWorkOrders = $completedWorkOrders->diff($workOrderOnlyInvoices);
+        $remainingWorkSessions = $completedWorkSessions->diff($workSessionOnlyInvoices);
+        
+        $combinedInvoices = collect();
+        $remainingWorkOrders->each(function ($workOrder, $index) use ($remainingWorkSessions, $motorcycles, &$invoices, &$combinedInvoices) {
+            // Find a work session for the same motorcycle
+            $matchingSession = $remainingWorkSessions->where('NumTelaio', $workOrder->NumTelaio)->first();
+            if ($matchingSession && fake()->boolean(30)) { // 30% chance of combined invoice
+                $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
+                if ($motorcycle) {
+                    // Mix of current month and recent months invoices
+                    $isCurrentMonth = $index < 1 || fake()->boolean(30); // First 1 + 30% chance for current month
+                    $invoiceDate = $isCurrentMonth 
+                        ? fake()->dateTimeBetween(now()->startOfMonth(), now())
+                        : fake()->dateTimeBetween('-3 months', now());
+                        
+                    $invoice = Invoice::factory()->forWorkOrder($workOrder)->create([
+                        'CodiceSessione' => $matchingSession->CodiceSessione,
+                        'Data' => $invoiceDate,
+                    ]);
+                    $invoices->push($invoice);
+                    $combinedInvoices->push(['workOrder' => $workOrder, 'session' => $matchingSession]);
+                }
+            }
+        });
+
+        // Create additional current month invoices linked to existing work
+        $remainingCompletedWorkOrders = $completedWorkOrders->diff($workOrderOnlyInvoices)->diff($combinedInvoices->pluck('workOrder'));
+        $remainingCompletedWorkSessions = $completedWorkSessions->diff($workSessionOnlyInvoices)->diff($combinedInvoices->pluck('session'));
+        
+        // Add more current month work order invoices
+        $remainingCompletedWorkOrders->take(3)->each(function ($workOrder, $index) use ($motorcycles, &$invoices) {
+            $motorcycle = $motorcycles->where('NumTelaio', $workOrder->NumTelaio)->first();
+            if ($motorcycle) {
+                $invoice = Invoice::factory()->forWorkOrder($workOrder)->create([
+                    'CodiceSessione' => null,
+                    'Data' => fake()->dateTimeBetween(now()->startOfMonth(), now()),
+                ]);
+                $invoices->push($invoice);
+            }
+        });
+        
+        // Add more current month work session invoices  
+        $remainingCompletedWorkSessions->take(2)->each(function ($workSession, $index) use ($motorcycles, &$invoices) {
+            $motorcycle = $motorcycles->where('NumTelaio', $workSession->NumTelaio)->first();
+            if ($motorcycle) {
+                $invoice = Invoice::factory()->create([
+                    'CF' => $motorcycle->CF,
+                    'CodiceIntervento' => null,
+                    'CodiceSessione' => $workSession->CodiceSessione,
+                    'Data' => fake()->dateTimeBetween(now()->startOfMonth(), now()),
+                    'Importo' => fake()->randomFloat(2, 200, 1500),
+                ]);
+                $invoices->push($invoice);
+            }
+        });
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
-        $invoiceCount = Invoice::count();
+        
+        // Calculate invoice statistics
+        $workOrderOnlyCount = $workOrderOnlyInvoices->count();
+        $workSessionOnlyCount = $workSessionOnlyInvoices->count();
+        $combinedCount = $combinedInvoices->count();
+        $totalInvoices = $invoices->count();
+        
+        // Calculate stock statistics
+        $wellStockedCount = $stoccaggi->filter(function ($stoccaggio) {
+            return $stoccaggio->Quantita > $stoccaggio->QuantitaMinima + 10;
+        })->count();
+        $lowStockCount = $stoccaggi->filter(function ($stoccaggio) {
+            return $stoccaggio->Quantita <= $stoccaggio->QuantitaMinima && $stoccaggio->Quantita > 0;
+        })->count();
+        $outOfStockCount = $stoccaggi->filter(function ($stoccaggio) {
+            return $stoccaggio->Quantita === 0;
+        })->count();
         
         $this->command->info('Database seeded successfully!');
         $this->command->info('Admin user created: admin@shop.com (password: password)');
         $this->command->info("Created {$customers->count()} customers, {$mechanics->count()} mechanics");
         $this->command->info("Created {$motorcycles->count()} motorcycles from {$motorcycleModels->count()} models");
         $this->command->info("Created {$parts->count()} parts from {$suppliers->count()} suppliers");
-        $this->command->info("Created {$workOrders->count()} work orders and {$appointments->count()} appointments");
-        $this->command->info("Created {$invoiceCount} invoices for completed work orders");
-    }
-
-    private function createStatuses(): void
-    {
-        $statuses = [
-            ['name' => 'Pending', 'description' => 'Work order created, waiting to be assigned', 'color' => '#FFC107', 'sort_order' => 1],
-            ['name' => 'Assigned', 'description' => 'Work order assigned to mechanic', 'color' => '#17A2B8', 'sort_order' => 2],
-            ['name' => 'In Progress', 'description' => 'Work is currently being performed', 'color' => '#007BFF', 'sort_order' => 3],
-            ['name' => 'Waiting Parts', 'description' => 'Work paused waiting for parts', 'color' => '#FD7E14', 'sort_order' => 4],
-            ['name' => 'Quality Check', 'description' => 'Work completed, undergoing quality check', 'color' => '#6F42C1', 'sort_order' => 5],
-            ['name' => 'Completed', 'description' => 'Work order completed successfully', 'color' => '#28A745', 'sort_order' => 6],
-            ['name' => 'Cancelled', 'description' => 'Work order cancelled', 'color' => '#DC3545', 'sort_order' => 7],
-        ];
-
-        foreach ($statuses as $status) {
-            Status::create(array_merge($status, ['type' => 'work_order', 'is_active' => true]));
+        $this->command->info("Created {$warehouses->count()} warehouses");
+        $this->command->info("Created {$stoccaggi->count()} warehouse-part relationships (STOCCAGGI):");
+        $this->command->info("  - {$wellStockedCount} well stocked");
+        $this->command->info("  - {$lowStockCount} low stock");
+        $this->command->info("  - {$outOfStockCount} out of stock");
+        $this->command->info("Created {$appointments->count()} appointments");
+        $this->command->info("Created {$workOrders->count()} work orders");
+        $this->command->info("Created {$workSessions->count()} work sessions");
+        $this->command->info("Assigned mechanics to {$mechanicsAssigned} work orders");
+        
+        // Verify the assignments by checking the database directly
+        $svolgimentiCount = DB::table('SVOLGIMENTI')->count();
+        $this->command->info("SVOLGIMENTI table has {$svolgimentiCount} records");
+        
+        // Check a sample work order
+        $sampleWorkOrder = $workOrders->first();
+        if ($sampleWorkOrder) {
+            $sampleMechanics = $sampleWorkOrder->mechanics()->get();
+            $this->command->info("Sample work order {$sampleWorkOrder->CodiceIntervento} has {$sampleMechanics->count()} mechanics assigned");
         }
-    }
-
-    private function createRelationships($workOrders, $mechanics, $parts, $motorcycleModels, $warehouses, $workSessions): void
-    {
-        // Assign mechanics to work orders
-        $workOrders->each(function ($workOrder) use ($mechanics) {
-            if (rand(1, 100) <= 80) { // 80% of work orders have assigned mechanics
-                $assignedMechanics = $mechanics->random(rand(1, 2));
-                $workOrder->mechanics()->attach($assignedMechanics->pluck('id')->toArray(), [
-                    'assigned_at' => $workOrder->created_at,
-                    'started_at' => $workOrder->started_at,
-                    'completed_at' => $workOrder->completed_at,
-                ]);
-            }
-        });
-
-        // Assign parts to work orders (UTILIZZO relationship)
-        $workOrders->each(function ($workOrder) use ($parts) {
-            if (rand(1, 100) <= 70) { // 70% of work orders use parts
-                $usedParts = $parts->random(rand(1, 5));
-                $usedParts->each(function ($part) use ($workOrder) {
-                    $quantity = rand(1, 3);
-                    $unitPrice = $part->selling_price ?? $part->supplier_price * 1.5;
-                    $workOrder->parts()->attach($part->id, [
-                        'quantity' => $quantity,
-                        'unit_price' => $unitPrice,
-                        'total_price' => $quantity * $unitPrice,
-                    ]);
-                });
-            }
-        });
-
-        // Assign parts to motorcycle models (APPARTENENZA relationship)
-        $motorcycleModels->each(function ($model) use ($parts) {
-            $compatibleParts = $parts->random(rand(5, 15));
-            $model->parts()->attach($compatibleParts->pluck('id')->toArray(), [
-                'is_compatible' => true,
-            ]);
-        });
-
-        // Assign parts to warehouses (STOCCAGGIO relationship)
-        $parts->each(function ($part) use ($warehouses) {
-            $warehousesToStock = $warehouses->random(rand(1, 2));
-            $warehousesToStock->each(function ($warehouse) use ($part) {
-                $warehouse->parts()->attach($part->id, [
-                    'quantity' => rand(0, 20),
-                    'location_in_warehouse' => 'Shelf ' . chr(65 + rand(0, 25)) . '-' . rand(1, 20),
-                ]);
-            });
-        });
-
-        // Assign mechanics to work sessions (AFFIANCAMENTO relationship)
-        $workSessions->each(function ($session) use ($mechanics) {
-            $assignedMechanics = $mechanics->random(rand(1, 3));
-            $assignedMechanics->each(function ($mechanic, $index) use ($session) {
-                $role = $index === 0 ? 'primary' : 'assistant';
-                $session->mechanics()->attach($mechanic->id, ['role' => $role]);
-            });
-        });
+        $this->command->info("Created {$totalInvoices} invoices:");
+        $this->command->info("  - {$workOrderOnlyCount} for work orders only");
+        $this->command->info("  - {$workSessionOnlyCount} for work sessions only");
+        $this->command->info("  - {$combinedCount} for both work orders and sessions");
+        $this->command->info("Italian schema structure populated successfully!");
     }
 }

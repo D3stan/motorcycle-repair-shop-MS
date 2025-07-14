@@ -16,8 +16,6 @@ import { BookOpen, Folder, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
-
-
 const rightNavItems: NavItem[] = [
     {
         title: 'Repository',

@@ -1,21 +1,12 @@
-.docname {report template}
+.docname {report}
 .doctype {paged}
 .doclang {Italian}
 .docauthors
-    - Name Surname
-        - email: name.surname@studio.unibo.it
-        - matricula: 123456789
-    - Name Surname
-        - email: name.surname@studio.unibo.it
-        - matricula: 123456789
-    - Name Surname
-        - email: name.surname@studio.unibo.it
-        - matricula: 123456789
-    - Name Surname
-        - email: name.surname@studio.unibo.it
-        - matricula: 123456789
+    - Alessandro Porcheddu
+        - email: alessandro.porcheddu@studio.unibo.it
+        - matricula: 0001114093
 
-.var {project} {Project Name}
+.var {project} {Motorcycle Repair Shop}
 .var {academicyear} {2024-2025}
 
 .theme {paperwhite} layout:{latex}

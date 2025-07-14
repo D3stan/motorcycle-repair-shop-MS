@@ -1,10 +1,10 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminScheduleStatistics, type AdminWeeklySchedule, type AdminUpcomingAppointment } from '@/types';
+import { type AdminScheduleStatistics, type AdminUpcomingAppointment, type AdminWeeklySchedule, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, Users, Plus, ChevronLeft, ChevronRight, CalendarDays, AlertCircle } from 'lucide-react';
+import { AlertCircle, Calendar, CalendarDays, ChevronLeft, ChevronRight, Clock, Plus, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -24,24 +24,15 @@ interface Props {
     upcomingAppointments: AdminUpcomingAppointment[];
 }
 
-export default function ScheduleIndex({ 
-    currentDate, 
-    weeklySchedule, 
-    statistics, 
-    upcomingAppointments 
-}: Props) {
+export default function ScheduleIndex({ currentDate, weeklySchedule, statistics, upcomingAppointments }: Props) {
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'confirmed':
-                return <Badge className="bg-green-100 text-green-800">Confirmed</Badge>;
+            case 'accepted':
+                return <Badge className="bg-green-100 text-green-800">Accepted</Badge>;
             case 'pending':
                 return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-            case 'in_progress':
-                return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-            case 'completed':
-                return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>;
-            case 'cancelled':
-                return <Badge variant="destructive">Cancelled</Badge>;
+            case 'rejected':
+                return <Badge variant="destructive">Rejected</Badge>;
             default:
                 return <Badge variant="secondary">{status}</Badge>;
         }
@@ -50,11 +41,23 @@ export default function ScheduleIndex({
     const getTypeBadge = (type: string) => {
         switch (type) {
             case 'maintenance':
-                return <Badge variant="outline" className="text-blue-600 border-blue-200">Maintenance</Badge>;
+                return (
+                    <Badge variant="outline" className="border-blue-200 text-blue-600">
+                        Maintenance
+                    </Badge>
+                );
             case 'dyno_testing':
-                return <Badge variant="outline" className="text-purple-600 border-purple-200">Dyno Testing</Badge>;
+                return (
+                    <Badge variant="outline" className="border-purple-200 text-purple-600">
+                        Dyno Testing
+                    </Badge>
+                );
             case 'inspection':
-                return <Badge variant="outline" className="text-orange-600 border-orange-200">Inspection</Badge>;
+                return (
+                    <Badge variant="outline" className="border-orange-200 text-orange-600">
+                        Inspection
+                    </Badge>
+                );
             default:
                 return <Badge variant="outline">{type}</Badge>;
         }
@@ -63,13 +66,13 @@ export default function ScheduleIndex({
     const navigateWeek = (direction: 'prev' | 'next') => {
         const current = new Date(currentDate);
         const newDate = new Date(current);
-        
+
         if (direction === 'prev') {
             newDate.setDate(current.getDate() - 7);
         } else {
             newDate.setDate(current.getDate() + 7);
         }
-        
+
         router.get('/admin/schedule', { date: newDate.toISOString().split('T')[0] });
     };
 
@@ -78,7 +81,7 @@ export default function ScheduleIndex({
             weekday: 'long',
             year: 'numeric',
             month: 'long',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
@@ -95,7 +98,7 @@ export default function ScheduleIndex({
                     <div className="flex gap-2">
                         <Button asChild>
                             <Link href="/admin/schedule/appointments/create">
-                                <Plus className="h-4 w-4 mr-2" />
+                                <Plus className="mr-2 h-4 w-4" />
                                 New Appointment
                             </Link>
                         </Button>
@@ -110,68 +113,60 @@ export default function ScheduleIndex({
                     {/* Today's Appointments */}
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <CalendarDays className="h-4 w-4" />
                                 Today
                             </CardTitle>
                             <CardDescription>Appointments today</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{statistics.today_appointments}</div>
-                            <div className="text-sm text-muted-foreground">
-                                {new Date().toLocaleDateString()}
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.today_appointments}</div>
+                            <div className="text-muted-foreground text-sm">{new Date().toLocaleDateString()}</div>
                         </CardContent>
                     </Card>
 
                     {/* Pending Appointments */}
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <Clock className="h-4 w-4" />
                                 Pending
                             </CardTitle>
                             <CardDescription>Awaiting confirmation</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{statistics.pending_appointments}</div>
-                            <div className="text-sm text-muted-foreground">
-                                Need attention
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.pending_appointments}</div>
+                            <div className="text-muted-foreground text-sm">Need attention</div>
                         </CardContent>
                     </Card>
 
                     {/* Confirmed Appointments */}
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <Users className="h-4 w-4" />
-                                Confirmed
+                                Accepted
                             </CardTitle>
-                            <CardDescription>Ready to go</CardDescription>
+                            <CardDescription>Ready to proceed</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{statistics.confirmed_appointments}</div>
-                            <div className="text-sm text-muted-foreground">
-                                Scheduled appointments
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.accepted_appointments}</div>
+                            <div className="text-muted-foreground text-sm">Accepted appointments</div>
                         </CardContent>
                     </Card>
 
                     {/* Completed Appointments */}
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <Calendar className="h-4 w-4" />
-                                Completed
+                                Rejected
                             </CardTitle>
-                            <CardDescription>This month</CardDescription>
+                            <CardDescription>Not scheduled</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{statistics.completed_appointments}</div>
-                            <div className="text-sm text-muted-foreground">
-                                Services completed
-                            </div>
+                            <div className="mb-2 text-2xl font-bold">{statistics.rejected_appointments}</div>
+                            <div className="text-muted-foreground text-sm">Rejected appointments</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -185,23 +180,13 @@ export default function ScheduleIndex({
                                     <Calendar className="h-5 w-5" />
                                     Weekly Schedule
                                 </CardTitle>
-                                <CardDescription>
-                                    Week of {formatDate(weeklySchedule[0]?.date || currentDate)}
-                                </CardDescription>
+                                <CardDescription>Week of {formatDate(weeklySchedule[0]?.date || currentDate)}</CardDescription>
                             </div>
                             <div className="flex gap-2">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => navigateWeek('prev')}
-                                >
+                                <Button variant="outline" size="sm" onClick={() => navigateWeek('prev')}>
                                     <ChevronLeft className="h-4 w-4" />
                                 </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => navigateWeek('next')}
-                                >
+                                <Button variant="outline" size="sm" onClick={() => navigateWeek('next')}>
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -210,39 +195,29 @@ export default function ScheduleIndex({
                     <CardContent>
                         <div className="grid grid-cols-7 gap-2">
                             {weeklySchedule.map((day) => (
-                                <div key={day.date} className="border rounded-lg p-3 min-h-[120px]">
-                                    <div className="font-medium text-sm mb-2">
-                                        {day.day_name}
-                                    </div>
-                                    <div className="text-xl font-bold mb-2 text-muted-foreground">
-                                        {day.day_number}
-                                    </div>
+                                <div key={day.date} className="min-h-[120px] rounded-lg border p-3">
+                                    <div className="mb-2 text-sm font-medium">{day.day_name}</div>
+                                    <div className="text-muted-foreground mb-2 text-xl font-bold">{day.day_number}</div>
                                     <div className="space-y-1">
                                         {day.appointments.slice(0, 2).map((appointment) => (
                                             <Link
-                                                key={appointment.id} 
+                                                key={appointment.id}
                                                 href={`/admin/schedule/appointments/${appointment.id}`}
-                                                className="block text-xs p-1 bg-blue-50 hover:bg-blue-100 rounded border-l-2 border-blue-500 transition-colors cursor-pointer"
+                                                className="block cursor-pointer rounded border-l-2 border-blue-500 bg-blue-50 p-1 text-xs transition-colors hover:bg-blue-100"
                                             >
                                                 <div className="font-medium text-blue-900">{appointment.time}</div>
-                                                <div className="text-blue-700 truncate">
-                                                    {appointment.customer}
-                                                </div>
+                                                <div className="truncate text-blue-700">{appointment.customer}</div>
                                             </Link>
                                         ))}
                                         {day.appointments.length > 2 && (
                                             <Link
                                                 href={`/admin/schedule/appointments?date_from=${day.date}&date_to=${day.date}`}
-                                                className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                                                className="cursor-pointer text-xs text-blue-600 hover:text-blue-800 hover:underline"
                                             >
                                                 +{day.appointments.length - 2} more
                                             </Link>
                                         )}
-                                        {day.appointments.length === 0 && (
-                                            <div className="text-xs text-muted-foreground">
-                                                No appointments
-                                            </div>
-                                        )}
+                                        {day.appointments.length === 0 && <div className="text-muted-foreground text-xs">No appointments</div>}
                                     </div>
                                 </div>
                             ))}
@@ -265,35 +240,26 @@ export default function ScheduleIndex({
                                         <div key={appointment.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                             <div className="space-y-1">
                                                 <p className="text-sm font-medium">
-                                                    <Link 
-                                                        href={`/admin/schedule/appointments/${appointment.id}`}
-                                                        className="hover:underline"
-                                                    >
+                                                    <Link href={`/admin/schedule/appointments/${appointment.id}`} className="hover:underline">
                                                         {appointment.customer}
                                                     </Link>
                                                 </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {appointment.motorcycle} ({appointment.plate})
-                                                </p>
+                                                <p className="text-muted-foreground text-xs">{appointment.description}</p>
                                                 <div className="flex gap-2">
                                                     {getTypeBadge(appointment.type)}
                                                     {getStatusBadge(appointment.status)}
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-sm font-medium">
-                                                    {appointment.appointment_date}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {appointment.appointment_time}
-                                                </div>
+                                                <div className="text-sm font-medium">{appointment.appointment_date}</div>
+                                                <div className="text-muted-foreground text-xs">{appointment.appointment_time}</div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-6 text-muted-foreground">
-                                    <Calendar className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <div className="text-muted-foreground py-6 text-center">
+                                    <Calendar className="mx-auto mb-2 h-8 w-8 opacity-50" />
                                     <p>No upcoming appointments</p>
                                 </div>
                             )}
@@ -309,25 +275,25 @@ export default function ScheduleIndex({
                         <CardContent className="space-y-3">
                             <Button asChild className="w-full justify-start">
                                 <Link href="/admin/schedule/appointments/create">
-                                    <Plus className="h-4 w-4 mr-2" />
+                                    <Plus className="mr-2 h-4 w-4" />
                                     Schedule New Appointment
                                 </Link>
                             </Button>
                             <Button asChild variant="outline" className="w-full justify-start">
                                 <Link href="/admin/schedule/appointments?status=pending">
-                                    <Clock className="h-4 w-4 mr-2" />
+                                    <Clock className="mr-2 h-4 w-4" />
                                     Review Pending
                                 </Link>
                             </Button>
                             <Button asChild variant="outline" className="w-full justify-start">
-                                <Link href="/admin/schedule/appointments?status=confirmed">
-                                    <Users className="h-4 w-4 mr-2" />
-                                    Today's Confirmed
+                                <Link href="/admin/schedule/appointments?status=accepted">
+                                    <Users className="mr-2 h-4 w-4" />
+                                    Today's Accepted
                                 </Link>
                             </Button>
                             <Button asChild variant="outline" className="w-full justify-start">
                                 <Link href="/admin/work-orders">
-                                    <AlertCircle className="h-4 w-4 mr-2" />
+                                    <AlertCircle className="mr-2 h-4 w-4" />
                                     Manage Work Orders
                                 </Link>
                             </Button>
@@ -337,4 +303,4 @@ export default function ScheduleIndex({
             </div>
         </AppLayout>
     );
-} 
+}

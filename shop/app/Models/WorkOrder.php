@@ -7,10 +7,41 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+use App\Models\User;
+use App\Models\Motorcycle;
 
 class WorkOrder extends Model
 {
     use HasFactory;
+
+    /**
+     * The table associated with the model.
+     */
+    protected $table = 'INTERVENTI';
+
+    /**
+     * The primary key for the model.
+     */
+    protected $primaryKey = 'CodiceIntervento';
+
+    /**
+     * The "type" of the primary key ID.
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = false;
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'CodiceIntervento';
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -18,17 +49,17 @@ class WorkOrder extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
-        'motorcycle_id',
-        'appointment_id',
-        'description',
-        'status',
-        'started_at',
-        'completed_at',
-        'labor_cost',
-        'parts_cost',
-        'total_cost',
-        'notes',
+        'CodiceIntervento',
+        'DataInizio',
+        'DataFine',
+        'KmMoto',
+        'Tipo',
+        'Stato',
+        'Causa',
+        'OreImpiegate',
+        'Note',
+        'Nome',
+        'NumTelaio',
     ];
 
     /**
@@ -39,20 +70,11 @@ class WorkOrder extends Model
     protected function casts(): array
     {
         return [
-            'started_at' => 'datetime',
-            'completed_at' => 'datetime',
-            'labor_cost' => 'decimal:2',
-            'parts_cost' => 'decimal:2',
-            'total_cost' => 'decimal:2',
+            'DataInizio' => 'datetime',
+            'DataFine' => 'datetime',
+            'OreImpiegate' => 'decimal:2',
+            'KmMoto' => 'integer',
         ];
-    }
-
-    /**
-     * Get the user that owns the work order.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 
     /**
@@ -60,15 +82,7 @@ class WorkOrder extends Model
      */
     public function motorcycle(): BelongsTo
     {
-        return $this->belongsTo(Motorcycle::class);
-    }
-
-    /**
-     * Get the appointment that created this work order.
-     */
-    public function appointment(): BelongsTo
-    {
-        return $this->belongsTo(Appointment::class);
+        return $this->belongsTo(Motorcycle::class, 'NumTelaio', 'NumTelaio');
     }
 
     /**
@@ -76,26 +90,40 @@ class WorkOrder extends Model
      */
     public function invoice(): HasOne
     {
-        return $this->hasOne(Invoice::class);
+        return $this->hasOne(Invoice::class, 'CodiceIntervento', 'CodiceIntervento');
     }
 
     /**
-     * Get the mechanics assigned to this work order.
-     */
-    public function mechanics(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'mechanic_work_orders')
-            ->withPivot('assigned_at', 'started_at', 'completed_at', 'notes')
-            ->withTimestamps();
-    }
-
-    /**
-     * Get the parts used in this work order.
+     * Get the parts used in this work order (UTILIZZI relationship).
      */
     public function parts(): BelongsToMany
     {
-        return $this->belongsToMany(Part::class, 'work_order_parts')
-            ->withPivot('quantity', 'unit_price', 'total_price')
+        return $this->belongsToMany(Part::class, 'UTILIZZI', 'CodiceIntervento', 'CodiceRicambio')
+            ->withPivot('Quantita', 'Prezzo')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the mechanics directly assigned to this work order (SVOLGIMENTI relationship).
+     */
+    public function mechanics(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'SVOLGIMENTI', 'CodiceIntervento', 'CF', null, 'CF')
+            ->withTimestamps();
+    }
+
+    /**
+     * Customer owning this work order via the motorcycle.
+     */
+    public function user(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            User::class,        // Final model
+            Motorcycle::class,  // Intermediate model
+            'NumTelaio',        // Foreign key on MOTO table
+            'CF',               // Foreign key on users table  
+            'NumTelaio',        // Local key on INTERVENTI table
+            'CF'                // Local key on MOTO table
+        );
     }
 } 

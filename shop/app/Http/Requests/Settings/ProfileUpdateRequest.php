@@ -19,6 +19,7 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'first_name' => ['required', 'string', 'min:1', 'max:255', 'regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/'],
             'last_name' => ['required', 'string', 'min:1', 'max:255', 'regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/'],
+            'phone' => ['required', 'string', 'regex:/^(\+39\s?)?[0-9]{9,10}$/'],
 
             'email' => [
                 'required',
@@ -50,6 +51,8 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'first_name.regex' => 'First name can only contain letters, spaces, hyphens, and apostrophes.',
             'last_name.regex' => 'Last name can only contain letters, spaces, hyphens, and apostrophes.',
+            'phone.required' => 'Phone number is required.',
+            'phone.regex' => 'Invalid phone number format.',
         ];
     }
 }

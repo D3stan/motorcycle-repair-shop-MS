@@ -18,29 +18,17 @@ class InvoiceFactory extends Factory
      */
     public function definition(): array
     {
-        $issueDate = fake()->dateTimeBetween('-6 months', '-1 day');
-        $dueDate = (clone $issueDate)->modify('+30 days');
-        
-        // Generate realistic subtotal range - will be overridden when used with actual work orders
-        $subtotal = fake()->randomFloat(2, 100, 1000);
-        $taxRate = 0.22; // 22% VAT (Italian standard)
-        $taxAmount = round($subtotal * $taxRate, 2);
-        $totalAmount = round($subtotal + $taxAmount, 2);
-        
-        $status = fake()->randomElement(['pending', 'paid', 'overdue', 'cancelled']);
-        $paidAt = $status === 'paid' ? fake()->dateTimeBetween($issueDate, '-1 day') : null;
+        $issueDate = fake()->dateTimeBetween('-1 year', 'now');
+        $amount = fake()->randomFloat(2, 100, 2000);
 
         return [
-            'user_id' => User::factory()->customer(),
-            'work_order_id' => WorkOrder::factory()->completed(),
-            'invoice_number' => fake()->unique()->regexify('INV[0-9]{6}'),
-            'issue_date' => $issueDate->format('Y-m-d'),
-            'due_date' => $dueDate->format('Y-m-d'),
-            'subtotal' => $subtotal,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $totalAmount,
-            'status' => $status,
-            'paid_at' => $paidAt,
+            'CodiceFattura' => fake()->unique()->regexify('INV[0-9]{6}'),
+            'Importo' => $amount,
+            'Data' => $issueDate,
+            'Note' => fake()->optional()->sentence(),
+            'CF' => User::factory()->customer(),
+            'CodiceIntervento' => WorkOrder::factory(),
+            'CodiceSessione' => null, // Will be set manually when needed
         ];
     }
 
@@ -49,40 +37,31 @@ class InvoiceFactory extends Factory
      */
     public function forWorkOrder(WorkOrder $workOrder): static
     {
-        $subtotal = round((float) $workOrder->total_cost, 2);
-        $taxRate = 0.22; // 22% VAT (Italian standard)
-        $taxAmount = round($subtotal * $taxRate, 2);
-        $totalAmount = round($subtotal + $taxAmount, 2);
+        // Load the work order with parts to calculate proper amount
+        $workOrder->load('parts');
+        
+        // Calculate parts cost
+        $partsTotal = $workOrder->parts->sum(function ($part) {
+            return $part->pivot->Quantita * $part->pivot->Prezzo;
+        });
+        
+        // Calculate labor cost (40 EUR/hour)
+        $laborHours = $workOrder->OreImpiegate ?? 0;
+        $hourlyRate = 40;
+        $laborCost = $laborHours * $hourlyRate;
+        
+        // Total amount
+        $totalAmount = $partsTotal + $laborCost;
+        
+        // Ensure minimum amount if calculation results in 0
+        if ($totalAmount <= 0) {
+            $totalAmount = fake()->randomFloat(2, 100, 500);
+        }
 
         return $this->state([
-            'user_id' => $workOrder->user_id,
-            'work_order_id' => $workOrder->id,
-            'subtotal' => $subtotal,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $totalAmount,
-        ]);
-    }
-
-    /**
-     * Create a paid invoice.
-     */
-    public function paid(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => 'paid',
-            'paid_at' => fake()->dateTimeBetween($attributes['issue_date'] ?? '-6 months', '-1 day'),
-        ]);
-    }
-
-    /**
-     * Create an overdue invoice.
-     */
-    public function overdue(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => 'overdue',
-            'due_date' => fake()->dateTimeBetween('-2 months', '-1 day')->format('Y-m-d'),
-            'paid_at' => null,
+            'CF' => $workOrder->motorcycle->CF,
+            'CodiceIntervento' => $workOrder->CodiceIntervento,
+            'Importo' => $totalAmount,
         ]);
     }
 } 

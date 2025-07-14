@@ -1,10 +1,10 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminSupplier } from '@/types';
+import { type AdminSupplier, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Edit, Trash2, Plus, Building2, Phone, Mail, Package } from 'lucide-react';
+import { Building2, Edit, Eye, Mail, Package, Phone, Plus, Trash2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -67,9 +67,7 @@ export default function SuppliersIndex({ suppliers }: Props) {
                             <CardDescription>With parts in stock</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {suppliers.data.filter(supplier => supplier.parts_count > 0).length}
-                            </div>
+                            <div className="text-2xl font-bold">{suppliers.data.filter((supplier) => supplier.parts_count > 0).length}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -78,9 +76,7 @@ export default function SuppliersIndex({ suppliers }: Props) {
                             <CardDescription>From all suppliers</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {suppliers.data.reduce((sum, supplier) => sum + supplier.parts_count, 0)}
-                            </div>
+                            <div className="text-2xl font-bold">{suppliers.data.reduce((sum, supplier) => sum + supplier.parts_count, 0)}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -89,9 +85,7 @@ export default function SuppliersIndex({ suppliers }: Props) {
                             <CardDescription>Global reach</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {new Set(suppliers.data.map(supplier => supplier.country)).size}
-                            </div>
+                            <div className="text-2xl font-bold">{new Set(suppliers.data.map((supplier) => supplier.country)).size}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -111,7 +105,7 @@ export default function SuppliersIndex({ suppliers }: Props) {
                                 {suppliers.data.map((supplier) => (
                                     <div key={supplier.id} className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0">
                                         <div className="flex items-center gap-4">
-                                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+                                            <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-lg">
                                                 <Building2 className="h-6 w-6" />
                                             </div>
                                             <div className="space-y-1">
@@ -123,7 +117,7 @@ export default function SuppliersIndex({ suppliers }: Props) {
                                                         {supplier.parts_count} parts
                                                     </Badge>
                                                 </div>
-                                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                                <div className="text-muted-foreground flex items-center gap-4 text-sm">
                                                     <span className="flex items-center gap-1">
                                                         <Phone className="h-3 w-3" />
                                                         {supplier.phone}
@@ -132,11 +126,11 @@ export default function SuppliersIndex({ suppliers }: Props) {
                                                         <Mail className="h-3 w-3" />
                                                         {supplier.email}
                                                     </span>
-                                                    <span>{supplier.city}, {supplier.country}</span>
+                                                    <span>
+                                                        {supplier.city}, {supplier.country}
+                                                    </span>
                                                 </div>
-                                                {supplier.notes && (
-                                                    <p className="text-sm text-muted-foreground">{supplier.notes}</p>
-                                                )}
+                                                {supplier.notes && <p className="text-muted-foreground text-sm">{supplier.notes}</p>}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -158,12 +152,10 @@ export default function SuppliersIndex({ suppliers }: Props) {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12">
-                                <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <div className="py-12 text-center">
+                                <Building2 className="text-muted-foreground mx-auto h-12 w-12" />
                                 <h3 className="mt-4 text-lg font-medium">No suppliers found</h3>
-                                <p className="mt-2 text-muted-foreground">
-                                    Get started by adding your first supplier.
-                                </p>
+                                <p className="text-muted-foreground mt-2">Get started by adding your first supplier.</p>
                                 <Button asChild className="mt-4">
                                     <Link href={route('admin.suppliers.create')}>
                                         <Plus className="mr-2 h-4 w-4" />
@@ -177,4 +169,4 @@ export default function SuppliersIndex({ suppliers }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

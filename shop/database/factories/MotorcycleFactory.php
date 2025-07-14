@@ -19,12 +19,12 @@ class MotorcycleFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory()->customer(),
-            'motorcycle_model_id' => MotorcycleModel::factory(),
-            'license_plate' => fake()->unique()->regexify('[A-Z]{2}[0-9]{3}[A-Z]{2}'), // Italian plate format
-            'registration_year' => fake()->numberBetween(2000, 2024),
-            'vin' => fake()->unique()->regexify('[A-HJ-NPR-Z0-9]{17}'), // VIN format
-            'notes' => fake()->optional()->sentence(),
+            'NumTelaio' => fake()->unique()->regexify('[A-HJ-NPR-Z0-9]{17}'), // VIN format
+            'Targa' => fake()->unique()->regexify('[A-Z]{2}[0-9]{3}[A-Z]{2}'), // Italian plate format
+            'AnnoImmatricolazione' => fake()->numberBetween(2000, 2024),
+            'Note' => fake()->optional()->sentence(),
+            'CodiceModello' => MotorcycleModel::factory(),
+            'CF' => User::factory()->customer(),
         ];
     }
 } 

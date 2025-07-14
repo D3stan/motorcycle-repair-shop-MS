@@ -1,14 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type CustomerOption, type MechanicOption } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Wrench } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,26 +23,27 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface WorkOrderEditData {
     id: number;
+    type: 'work_order' | 'work_session';
     user_id: number;
     motorcycle_id: number;
     appointment_id?: number;
     description: string;
     status: string;
-    labor_cost: number;
-    parts_cost: number;
+    hours_worked: number;
     notes?: string;
-    assigned_mechanics: number[];
+    assigned_mechanics: string[];
 }
 
 interface Props {
     workOrder: WorkOrderEditData;
     customers: CustomerOption[];
     mechanics: MechanicOption[];
+    isSession?: boolean;
 }
 
-export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props) {
+export default function WorkOrderEdit({ workOrder, customers, mechanics, isSession = false }: Props) {
     const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
-    const [selectedMechanics, setSelectedMechanics] = useState<number[]>(workOrder.assigned_mechanics || []);
+    const [selectedMechanics, setSelectedMechanics] = useState<string[]>(workOrder.assigned_mechanics || []);
 
     const breadcrumbsWithEdit: BreadcrumbItem[] = [
         ...breadcrumbs,
@@ -57,20 +58,19 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
     ];
 
     const { data, setData, put, processing, errors } = useForm({
-        user_id: workOrder.user_id.toString(),
-        motorcycle_id: workOrder.motorcycle_id.toString(),
+        user_id: workOrder.user_id?.toString() || '',
+        motorcycle_id: workOrder.motorcycle_id?.toString() || '',
         appointment_id: workOrder.appointment_id?.toString() || '',
         description: workOrder.description || '',
         status: workOrder.status || 'pending',
-        labor_cost: workOrder.labor_cost?.toString() || '',
-        parts_cost: workOrder.parts_cost?.toString() || '',
+        hours_worked: workOrder.hours_worked?.toString() || '',
         notes: workOrder.notes || '',
-        mechanics: workOrder.assigned_mechanics || [] as number[],
+        mechanics: workOrder.assigned_mechanics || ([] as string[]),
     });
 
     // Initialize selected customer on mount
     useEffect(() => {
-        const customer = customers.find(c => c.id.toString() === data.user_id);
+        const customer = customers.find((c) => c.id.toString() === data.user_id);
         setSelectedCustomer(customer || null);
     }, [customers, data.user_id]);
 
@@ -78,11 +78,16 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
         e.preventDefault();
         // Update the form data with selected mechanics before submitting
         setData('mechanics', selectedMechanics);
-        put(`/admin/work-orders/${workOrder.id}`);
+
+        if (isSession) {
+            put(`/admin/work-orders/${workOrder.id}?type=work_session`);
+        } else {
+            put(`/admin/work-orders/${workOrder.id}`);
+        }
     };
 
     const handleCustomerChange = (customerId: string) => {
-        const customer = customers.find(c => c.id.toString() === customerId);
+        const customer = customers.find((c) => c.id.toString() === customerId);
         setSelectedCustomer(customer || null);
         setData('user_id', customerId);
         // Only reset motorcycle if changing to a different customer
@@ -91,10 +96,10 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
         }
     };
 
-    const handleMechanicToggle = (mechanicId: number) => {
-        setSelectedMechanics(prev => {
+    const handleMechanicToggle = (mechanicId: string) => {
+        setSelectedMechanics((prev) => {
             if (prev.includes(mechanicId)) {
-                return prev.filter(id => id !== mechanicId);
+                return prev.filter((id) => id !== mechanicId);
             } else {
                 return [...prev, mechanicId];
             }
@@ -104,16 +109,18 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
     return (
         <AppLayout breadcrumbs={breadcrumbsWithEdit}>
             <Head title={`Edit Work Order #${workOrder.id}`} />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Edit Work Order #{workOrder.id}</h1>
-                        <p className="text-muted-foreground">Update work order details and assignments</p>
+                        <h1 className="text-3xl font-bold">
+                            Edit {isSession ? 'Session' : 'Maintenance'} #{workOrder.id}
+                        </h1>
+                        <p className="text-muted-foreground">Update {isSession ? 'session' : 'maintenance'} details and assignments</p>
                     </div>
                     <Button variant="outline" asChild>
-                        <Link href={`/admin/work-orders/${workOrder.id}`}>
+                        <Link href={`/admin/work-orders/${workOrder.id}${isSession ? '?type=work_session' : ''}`}>
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Details
                         </Link>
@@ -127,14 +134,12 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                             <Wrench className="mr-2 h-5 w-5" />
                             Work Order Information
                         </CardTitle>
-                        <CardDescription>
-                            Update the details for this work order
-                        </CardDescription>
+                        <CardDescription>Update the details for this work order</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Customer and Motorcycle Selection */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="user_id">Customer *</Label>
                                     <Select value={data.user_id} onValueChange={handleCustomerChange}>
@@ -149,15 +154,13 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.user_id && (
-                                        <p className="text-sm text-red-500">{errors.user_id}</p>
-                                    )}
+                                    {errors.user_id && <p className="text-sm text-red-500">{errors.user_id}</p>}
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="motorcycle_id">Motorcycle *</Label>
-                                    <Select 
-                                        value={data.motorcycle_id} 
+                                    <Select
+                                        value={data.motorcycle_id}
                                         onValueChange={(value) => setData('motorcycle_id', value)}
                                         disabled={!selectedCustomer}
                                     >
@@ -172,9 +175,7 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.motorcycle_id && (
-                                        <p className="text-sm text-red-500">{errors.motorcycle_id}</p>
-                                    )}
+                                    {errors.motorcycle_id && <p className="text-sm text-red-500">{errors.motorcycle_id}</p>}
                                 </div>
                             </div>
 
@@ -185,17 +186,15 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                                     id="description"
                                     value={data.description}
                                     onChange={(e) => setData('description', e.target.value)}
-                                    className={`w-full min-h-[100px] px-3 py-2 border rounded-md resize-none ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+                                    className={`min-h-[100px] w-full resize-none rounded-md border px-3 py-2 ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
                                     placeholder="Describe the work to be performed..."
                                     required
                                 />
-                                {errors.description && (
-                                    <p className="text-sm text-red-500">{errors.description}</p>
-                                )}
+                                {errors.description && <p className="text-sm text-red-500">{errors.description}</p>}
                             </div>
 
-                            {/* Status and Costs */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Status and Hours Worked */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="status">Status *</Label>
                                     <Select value={data.status} onValueChange={(value) => setData('status', value)}>
@@ -212,50 +211,31 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="labor_cost">Labor Cost (€)</Label>
+                                    <Label htmlFor="hours_worked">Hours Worked</Label>
                                     <Input
-                                        id="labor_cost"
+                                        id="hours_worked"
                                         type="number"
-                                        step="0.01"
+                                        step="0.25"
                                         min="0"
-                                        value={data.labor_cost}
-                                        onChange={(e) => setData('labor_cost', e.target.value)}
-                                        className={errors.labor_cost ? 'border-red-500' : ''}
+                                        value={data.hours_worked}
+                                        onChange={(e) => setData('hours_worked', e.target.value)}
+                                        className={errors.hours_worked ? 'border-red-500' : ''}
                                         placeholder="0.00"
                                     />
-                                    {errors.labor_cost && (
-                                        <p className="text-sm text-red-500">{errors.labor_cost}</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="parts_cost">Parts Cost (€)</Label>
-                                    <Input
-                                        id="parts_cost"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={data.parts_cost}
-                                        onChange={(e) => setData('parts_cost', e.target.value)}
-                                        className={errors.parts_cost ? 'border-red-500' : ''}
-                                        placeholder="0.00"
-                                    />
-                                    {errors.parts_cost && (
-                                        <p className="text-sm text-red-500">{errors.parts_cost}</p>
-                                    )}
+                                    {errors.hours_worked && <p className="text-sm text-red-500">{errors.hours_worked}</p>}
                                 </div>
                             </div>
 
                             {/* Mechanics Assignment */}
                             <div className="space-y-2">
                                 <Label>Assign Mechanics</Label>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                                     {mechanics.map((mechanic) => (
                                         <div key={mechanic.id} className="flex items-center space-x-2">
                                             <Checkbox
                                                 id={`mechanic-${mechanic.id}`}
-                                                checked={selectedMechanics.includes(mechanic.id)}
-                                                onCheckedChange={() => handleMechanicToggle(mechanic.id)}
+                                                checked={selectedMechanics.includes(mechanic.id.toString())}
+                                                onCheckedChange={() => handleMechanicToggle(mechanic.id.toString())}
                                             />
                                             <Label htmlFor={`mechanic-${mechanic.id}`} className="text-sm">
                                                 {mechanic.name} ({mechanic.email})
@@ -272,17 +252,17 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
                                     id="notes"
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
-                                    className="w-full min-h-[80px] px-3 py-2 border border-gray-300 rounded-md resize-none"
+                                    className="min-h-[80px] w-full resize-none rounded-md border border-gray-300 px-3 py-2"
                                     placeholder="Additional notes or instructions..."
                                 />
                             </div>
 
                             <div className="flex items-center justify-end space-x-2">
                                 <Button type="button" variant="outline" asChild>
-                                    <Link href={`/admin/work-orders/${workOrder.id}`}>Cancel</Link>
+                                    <Link href={`/admin/work-orders/${workOrder.id}${isSession ? '?type=work_session' : ''}`}>Cancel</Link>
                                 </Button>
                                 <Button type="submit" disabled={processing}>
-                                    {processing ? 'Updating...' : 'Update Work Order'}
+                                    {processing ? 'Updating...' : `Update ${isSession ? 'Session' : 'Maintenance'}`}
                                 </Button>
                             </div>
                         </form>
@@ -291,4 +271,4 @@ export default function WorkOrderEdit({ workOrder, customers, mechanics }: Props
             </div>
         </AppLayout>
     );
-} 
+}

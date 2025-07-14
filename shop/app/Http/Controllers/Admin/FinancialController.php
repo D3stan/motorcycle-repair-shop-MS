@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\WorkOrder;
+use App\Models\WorkSession;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -25,16 +26,14 @@ class FinancialController extends Controller
         $previousMonth = now()->subMonth()->startOfMonth();
         
         // Current month revenue
-        $currentMonthRevenue = Invoice::whereMonth('issue_date', $currentMonth->month)
-            ->whereYear('issue_date', $currentMonth->year)
-            ->where('status', 'paid')
-            ->sum('total_amount');
+        $currentMonthRevenue = Invoice::whereMonth('Data', $currentMonth->month)
+            ->whereYear('Data', $currentMonth->year)
+            ->sum('Importo');
             
         // Previous month revenue for comparison
-        $previousMonthRevenue = Invoice::whereMonth('issue_date', $previousMonth->month)
-            ->whereYear('issue_date', $previousMonth->year)
-            ->where('status', 'paid')
-            ->sum('total_amount');
+        $previousMonthRevenue = Invoice::whereMonth('Data', $previousMonth->month)
+            ->whereYear('Data', $previousMonth->year)
+            ->sum('Importo');
             
         // Revenue growth percentage
         $revenueGrowth = $previousMonthRevenue > 0 
@@ -44,10 +43,9 @@ class FinancialController extends Controller
         // Monthly revenue for last 12 months
         $monthlyRevenue = collect(range(11, 0))->map(function ($monthsBack) {
             $date = now()->subMonths($monthsBack);
-            $revenue = Invoice::whereMonth('issue_date', $date->month)
-                ->whereYear('issue_date', $date->year)
-                ->where('status', 'paid')
-                ->sum('total_amount');
+            $revenue = Invoice::whereMonth('Data', $date->month)
+                ->whereYear('Data', $date->year)
+                ->sum('Importo');
                 
             return [
                 'month' => $date->format('M Y'),
@@ -55,48 +53,60 @@ class FinancialController extends Controller
             ];
         });
         
-        // Invoice statistics
+        // Invoice statistics (simplified for schema)
         $totalInvoices = Invoice::count();
-        $paidInvoices = Invoice::where('status', 'paid')->count();
-        $pendingInvoices = Invoice::where('status', 'pending')->count();
-        $overdueInvoices = Invoice::where('status', 'pending')
-            ->where('due_date', '<', now())
-            ->count();
+        $paidInvoices = Invoice::count(); // All invoices considered paid in simplified schema
+        $pendingInvoices = 0;
+        $overdueInvoices = 0;
             
-        // Outstanding payments (total amount of pending invoices)
-        $outstandingPayments = Invoice::where('status', 'pending')
-            ->sum('total_amount');
+        // Outstanding payments (no pending invoices in simplified schema)
+        $outstandingPayments = 0;
             
         // Recent invoices
-        $recentInvoices = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel'])
+        $recentInvoices = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel', 'workSession.motorcycle.motorcycleModel'])
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get()
             ->map(function ($invoice) {
+                // Determine motorcycle info based on whether it's linked to work order or session
+                $motorcycle = null;
+                $workType = 'Unknown';
+                
+                if ($invoice->workOrder && $invoice->workOrder->motorcycle) {
+                    $motorcycle = $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
+                                 $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
+                                 $invoice->workOrder->motorcycle->Targa . ')';
+                    $workType = 'Maintenance';
+                } elseif ($invoice->workSession && $invoice->workSession->motorcycle) {
+                    $motorcycle = $invoice->workSession->motorcycle->motorcycleModel->Marca . ' ' . 
+                                 $invoice->workSession->motorcycle->motorcycleModel->Nome . ' (' . 
+                                 $invoice->workSession->motorcycle->Targa . ')';
+                    $workType = 'Session';
+                } else {
+                    $motorcycle = 'N/A';
+                }
+                
                 return [
-                    'id' => $invoice->id,
-                    'invoice_number' => $invoice->invoice_number,
+                    'id' => $invoice->CodiceFattura,
+                    'invoice_number' => $invoice->CodiceFattura,
                     'customer' => $invoice->user->first_name . ' ' . $invoice->user->last_name,
                     'customer_email' => $invoice->user->email,
-                    'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->brand . ' ' . 
-                                   $invoice->workOrder->motorcycle->motorcycleModel->name . ' (' . 
-                                   $invoice->workOrder->motorcycle->license_plate . ')',
-                    'issue_date' => $invoice->issue_date->format('Y-m-d'),
-                    'due_date' => $invoice->due_date->format('Y-m-d'),
-                    'total_amount' => (float) $invoice->total_amount,
-                    'status' => $invoice->status,
-                    'paid_at' => $invoice->paid_at?->format('Y-m-d'),
-                    'is_overdue' => $invoice->status === 'pending' && $invoice->due_date < now(),
+                    'motorcycle' => $motorcycle,
+                    'work_type' => $workType,
+                    'issue_date' => $invoice->Data->format('Y-m-d'),
+                    'due_date' => null, // No due date in simplified schema
+                    'total_amount' => (float) $invoice->Importo,
+                    'status' => 'paid', // All invoices considered paid in simplified schema
+                    'paid_at' => $invoice->Data?->format('Y-m-d'),
+                    'is_overdue' => false, // No overdue tracking in simplified schema
                 ];
             });
             
         // Top customers by revenue
         $topCustomers = User::where('type', 'customer')
-            ->withSum(['invoices' => function($query) {
-                $query->where('status', 'paid');
-            }], 'total_amount')
-            ->having('invoices_sum_total_amount', '>', 0)
-            ->orderBy('invoices_sum_total_amount', 'desc')
+            ->withSum('invoices', 'Importo')
+            ->having('invoices_sum_importo', '>', 0)
+            ->orderBy('invoices_sum_importo', 'desc')
             ->limit(5)
             ->get()
             ->map(function ($customer) {
@@ -104,7 +114,7 @@ class FinancialController extends Controller
                     'id' => $customer->id,
                     'name' => $customer->first_name . ' ' . $customer->last_name,
                     'email' => $customer->email,
-                    'total_revenue' => (float) ($customer->invoices_sum_total_amount ?? 0),
+                    'total_revenue' => (float) ($customer->invoices_sum_importo ?? 0),
                 ];
             });
 
@@ -132,23 +142,37 @@ class FinancialController extends Controller
      */
     public function invoices(Request $request): Response
     {
-        $query = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel']);
+        $query = Invoice::with(['user', 'workOrder.motorcycle.motorcycleModel', 'workSession.motorcycle.motorcycleModel']);
         
         // Apply filters
-        if ($request->filled('status')) {
-            if ($request->status === 'overdue') {
-                $query->where('status', 'pending')
-                      ->where('due_date', '<', now());
-            } else {
-                $query->where('status', $request->status)
-                      ->where('due_date', '>', now());
+        if ($request->filled('work_type') && $request->work_type !== 'all') {
+            if ($request->work_type === 'maintenance') {
+                // Filter for invoices linked to work orders (maintenance)
+                $query->whereNotNull('CodiceIntervento')->whereNull('CodiceSessione');
+            } elseif ($request->work_type === 'session') {
+                // Filter for invoices linked to work sessions
+                $query->whereNotNull('CodiceSessione')->whereNull('CodiceIntervento');
+            } elseif ($request->work_type === 'combined') {
+                // Filter for invoices linked to both work orders and sessions
+                $query->whereNotNull('CodiceIntervento')->whereNotNull('CodiceSessione');
             }
+        }
+        
+        // Legacy status filter support (for backward compatibility)
+        if ($request->filled('status') && $request->status !== 'all') {
+            // In our simplified schema, all invoices are considered "paid"
+            // We only filter when user specifically selects "pending" or "overdue" to show no results
+            if ($request->status === 'pending' || $request->status === 'overdue') {
+                // Show no results for pending/overdue since all invoices are paid in our schema
+                $query->whereRaw('1 = 0');
+            }
+            // For "paid" status, we don't need to filter since all invoices are paid
         }
         
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('invoice_number', 'like', "%{$search}%")
+                $q->where('CodiceFattura', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($userQuery) use ($search) {
                       $userQuery->where('first_name', 'like', "%{$search}%")
                                ->orWhere('last_name', 'like', "%{$search}%")
@@ -158,11 +182,11 @@ class FinancialController extends Controller
         }
         
         if ($request->filled('date_from')) {
-            $query->where('issue_date', '>=', $request->date_from);
+            $query->where('Data', '>=', $request->date_from);
         }
         
         if ($request->filled('date_to')) {
-            $query->where('issue_date', '<=', $request->date_to);
+            $query->where('Data', '<=', $request->date_to);
         }
         
         $invoices = $query->orderBy('created_at', 'desc')
@@ -170,29 +194,44 @@ class FinancialController extends Controller
             ->withQueryString();
             
         $invoicesData = $invoices->through(function ($invoice) {
+            // Determine motorcycle info based on whether it's linked to work order or session
+            $motorcycle = null;
+            $workType = 'Unknown';
+            
+            if ($invoice->workOrder && $invoice->workOrder->motorcycle) {
+                $motorcycle = $invoice->workOrder->motorcycle->motorcycleModel->Marca . ' ' . 
+                             $invoice->workOrder->motorcycle->motorcycleModel->Nome . ' (' . 
+                             $invoice->workOrder->motorcycle->Targa . ')';
+                $workType = 'Maintenance';
+            } elseif ($invoice->workSession && $invoice->workSession->motorcycle) {
+                $motorcycle = $invoice->workSession->motorcycle->motorcycleModel->Marca . ' ' . 
+                             $invoice->workSession->motorcycle->motorcycleModel->Nome . ' (' . 
+                             $invoice->workSession->motorcycle->Targa . ')';
+                $workType = 'Session';
+            } else {
+                $motorcycle = 'N/A';
+            }
+            
             return [
-                'id' => $invoice->id,
-                'invoice_number' => $invoice->invoice_number,
+                'id' => $invoice->CodiceFattura,
+                'invoice_number' => $invoice->CodiceFattura,
                 'customer' => $invoice->user->first_name . ' ' . $invoice->user->last_name,
                 'customer_email' => $invoice->user->email,
-                'motorcycle' => $invoice->workOrder->motorcycle->motorcycleModel->brand . ' ' . 
-                               $invoice->workOrder->motorcycle->motorcycleModel->name . ' (' . 
-                               $invoice->workOrder->motorcycle->license_plate . ')',
-                'issue_date' => $invoice->issue_date->format('Y-m-d'),
-                'due_date' => $invoice->due_date->format('Y-m-d'),
-                'subtotal' => (float) $invoice->subtotal,
-                'tax_amount' => (float) $invoice->tax_amount,
-                'total_amount' => (float) $invoice->total_amount,
-                'status' => $invoice->status,
-                'paid_at' => $invoice->paid_at?->format('Y-m-d'),
-                'is_overdue' => $invoice->status === 'pending' && $invoice->due_date < now(),
+                'motorcycle' => $motorcycle,
+                'work_type' => $workType,
+                'issue_date' => $invoice->Data->format('Y-m-d'),
+                'due_date' => null, // No due date in simplified schema
+                'total_amount' => (float) $invoice->Importo,
+                'status' => 'paid', // All invoices considered paid in simplified schema
+                'paid_at' => $invoice->Data->format('Y-m-d'),
+                'is_overdue' => false, // No overdue tracking in simplified schema
                 'created_at' => $invoice->created_at->format('Y-m-d H:i'),
             ];
         });
 
         return Inertia::render('admin/financial/invoices', [
             'invoices' => $invoicesData,
-            'filters' => $request->only(['status', 'search', 'date_from', 'date_to']),
+            'filters' => $request->only(['status', 'work_type', 'search', 'date_from', 'date_to']),
         ]);
     }
 
@@ -201,18 +240,16 @@ class FinancialController extends Controller
      */
     public function showInvoice(Invoice $invoice): Response
     {
-        $invoice->load(['user', 'workOrder.motorcycle.motorcycleModel', 'workOrder.parts', 'workOrder.mechanics']);
+        $invoice->load(['user', 'workOrder.motorcycle.motorcycleModel', 'workOrder.parts', 'workOrder.mechanics', 'workSession.motorcycle.motorcycleModel', 'workSession.mechanics']);
         
         $invoiceData = [
-            'id' => $invoice->id,
-            'invoice_number' => $invoice->invoice_number,
-            'issue_date' => $invoice->issue_date->format('Y-m-d'),
-            'due_date' => $invoice->due_date->format('Y-m-d'),
-            'subtotal' => (float) $invoice->subtotal,
-            'tax_amount' => (float) $invoice->tax_amount,
-            'total_amount' => (float) $invoice->total_amount,
-            'status' => $invoice->status,
-            'paid_at' => $invoice->paid_at?->format('Y-m-d H:i'),
+            'id' => $invoice->CodiceFattura,
+            'invoice_number' => $invoice->CodiceFattura,
+            'issue_date' => $invoice->Data->format('Y-m-d'),
+            'due_date' => null, // No due date in simplified schema
+            'total_amount' => (float) $invoice->Importo,
+            'status' => 'paid', // All invoices considered paid in simplified schema
+            'paid_at' => $invoice->Data->format('Y-m-d H:i'),
             'created_at' => $invoice->created_at->format('Y-m-d H:i'),
         ];
         
@@ -221,32 +258,319 @@ class FinancialController extends Controller
             'name' => $invoice->user->first_name . ' ' . $invoice->user->last_name,
             'email' => $invoice->user->email,
             'phone' => $invoice->user->phone,
-            'tax_code' => $invoice->user->tax_code,
+            'tax_code' => $invoice->user->CF,
         ];
         
-        $workOrder = [
-            'id' => $invoice->workOrder->id,
-            'description' => $invoice->workOrder->description,
-            'status' => $invoice->workOrder->status,
-            'started_at' => $invoice->workOrder->started_at?->format('Y-m-d'),
-            'completed_at' => $invoice->workOrder->completed_at?->format('Y-m-d'),
-            'labor_cost' => (float) $invoice->workOrder->labor_cost,
-            'parts_cost' => (float) $invoice->workOrder->parts_cost,
-            'total_cost' => (float) $invoice->workOrder->total_cost,
-            'motorcycle' => [
-                'brand' => $invoice->workOrder->motorcycle->motorcycleModel->brand,
-                'model' => $invoice->workOrder->motorcycle->motorcycleModel->name,
-                'year' => $invoice->workOrder->motorcycle->registration_year,
-                'plate' => $invoice->workOrder->motorcycle->license_plate,
-                'vin' => $invoice->workOrder->motorcycle->vin,
-            ],
-        ];
+        $workData = null;
+        
+        if ($invoice->workOrder && $invoice->workOrder->motorcycle) {
+            // Determine work order status based on dates
+            $workOrderStatus = 'pending';
+            if ($invoice->workOrder->DataInizio && $invoice->workOrder->DataFine) {
+                $workOrderStatus = 'completed';
+            } elseif ($invoice->workOrder->DataInizio) {
+                $workOrderStatus = 'in_progress';
+            }
+            
+            // Calculate parts cost from the relationship
+            $partsTotal = $invoice->workOrder->parts->sum(function ($part) {
+                return $part->pivot->Quantita * $part->pivot->Prezzo;
+            });
+            
+            // Calculate labor cost (total - parts = labor)
+            $totalAmount = (float) $invoice->Importo;
+            $laborCost = $totalAmount - $partsTotal;
+            
+            $workData = [
+                'id' => $invoice->workOrder->CodiceIntervento,
+                'type' => 'maintenance',
+                'description' => $invoice->workOrder->Note,
+                'status' => $workOrderStatus,
+                'started_at' => $invoice->workOrder->DataInizio?->format('Y-m-d'),
+                'completed_at' => $invoice->workOrder->DataFine?->format('Y-m-d'),
+                'labor_cost' => $laborCost,
+                'parts_cost' => $partsTotal,
+                'total_cost' => $totalAmount,
+                'motorcycle' => [
+                    'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca,
+                    'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome,
+                    'year' => $invoice->workOrder->motorcycle->AnnoImmatricolazione,
+                    'plate' => $invoice->workOrder->motorcycle->Targa,
+                    'vin' => $invoice->workOrder->motorcycle->NumTelaio,
+                ],
+            ];
+        } elseif ($invoice->workSession && $invoice->workSession->motorcycle) {
+            $workData = [
+                'id' => $invoice->workSession->CodiceSessione,
+                'type' => 'session',
+                'description' => $invoice->workSession->Note ?? 'Work session',
+                'status' => $invoice->workSession->Stato,
+                'started_at' => $invoice->workSession->Data->format('Y-m-d'),
+                'completed_at' => null, // Sessions don't have end dates
+                'labor_cost' => 0.0, // Not using separate labor cost
+                'parts_cost' => 0.0, // Sessions don't use parts
+                'total_cost' => (float) $invoice->Importo,
+                'motorcycle' => [
+                    'brand' => $invoice->workSession->motorcycle->motorcycleModel->Marca,
+                    'model' => $invoice->workSession->motorcycle->motorcycleModel->Nome,
+                    'year' => $invoice->workSession->motorcycle->AnnoImmatricolazione,
+                    'plate' => $invoice->workSession->motorcycle->Targa,
+                    'vin' => $invoice->workSession->motorcycle->NumTelaio,
+                ],
+            ];
+        } else {
+            $workData = [
+                'id' => 'N/A',
+                'type' => 'unknown',
+                'description' => 'Invoice not linked to work order or session',
+                'status' => 'unknown',
+                'started_at' => null,
+                'completed_at' => null,
+                'labor_cost' => 0.0,
+                'parts_cost' => 0.0,
+                'total_cost' => (float) $invoice->Importo,
+                'motorcycle' => [
+                    'brand' => 'N/A',
+                    'model' => 'N/A',
+                    'year' => null,
+                    'plate' => 'N/A',
+                    'vin' => 'N/A',
+                ],
+            ];
+        }
 
         return Inertia::render('admin/financial/invoice-show', [
             'invoice' => $invoiceData,
             'customer' => $customer,
-            'workOrder' => $workOrder,
+            'workOrder' => $workData, // Keep name for compatibility
         ]);
+    }
+
+    /**
+     * Show the invoice creation form with available work orders.
+     */
+    public function create(): Response
+    {
+        // Get completed work orders that don't have invoices yet
+        $availableWorkOrders = WorkOrder::with(['motorcycle.motorcycleModel', 'motorcycle.user', 'parts'])
+            ->whereNotNull('DataFine') // Only completed work orders
+            ->whereDoesntHave('invoice') // That don't have invoices yet
+            ->orderBy('DataFine', 'desc')
+            ->get()
+            ->map(function ($workOrder) {
+                // Calculate costs for each work order
+                $partsTotal = $workOrder->parts->sum(function ($part) {
+                    return $part->pivot->Quantita * $part->pivot->Prezzo;
+                });
+                
+                $laborHours = $workOrder->OreImpiegate ?? 0;
+                $defaultHourlyRate = 40;
+                $laborCost = $laborHours * $defaultHourlyRate;
+                $totalCost = $partsTotal + $laborCost;
+
+                return [
+                    'id' => $workOrder->CodiceIntervento,
+                    'description' => $workOrder->Note,
+                    'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
+                    'labor_hours' => $laborHours,
+                    'labor_cost' => $laborCost,
+                    'parts_cost' => $partsTotal,
+                    'total_cost' => $totalCost,
+                    'motorcycle' => [
+                        'brand' => $workOrder->motorcycle->motorcycleModel->Marca,
+                        'model' => $workOrder->motorcycle->motorcycleModel->Nome,
+                        'plate' => $workOrder->motorcycle->Targa,
+                        'vin' => $workOrder->motorcycle->NumTelaio,
+                    ],
+                    'customer' => [
+                        'id' => $workOrder->motorcycle->user->id,
+                        'name' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
+                        'email' => $workOrder->motorcycle->user->email,
+                        'cf' => $workOrder->motorcycle->user->CF,
+                    ],
+                ];
+            });
+
+        return Inertia::render('admin/financial/invoice-create-select', [
+            'availableWorkOrders' => $availableWorkOrders->values()->all(),
+            'defaultHourlyRate' => 40,
+        ]);
+    }
+
+    /**
+     * Store a newly created invoice.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'work_order_id' => 'required|exists:INTERVENTI,CodiceIntervento',
+            'hourly_rate' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Get the work order
+        $workOrder = WorkOrder::with(['motorcycle.user', 'parts'])->findOrFail($validated['work_order_id']);
+
+        // Ensure work order is completed and doesn't have an invoice
+        if (!$workOrder->DataFine) {
+            return back()->with('error', 'Can only create invoices for completed work orders.');
+        }
+
+        if ($workOrder->invoice) {
+            return back()->with('error', 'Invoice already exists for this work order.');
+        }
+
+        // Calculate costs with custom hourly rate
+        $partsTotal = $workOrder->parts->sum(function ($part) {
+            return $part->pivot->Quantita * $part->pivot->Prezzo;
+        });
+        
+        $laborHours = $workOrder->OreImpiegate ?? 0;
+        $hourlyRate = $validated['hourly_rate'];
+        $laborCost = $laborHours * $hourlyRate;
+        $totalAmount = $partsTotal + $laborCost;
+
+        // Generate unique invoice code
+        $invoiceCode = 'INV' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        
+        // Ensure the code is unique
+        while (Invoice::where('CodiceFattura', $invoiceCode)->exists()) {
+            $invoiceCode = 'INV' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        }
+
+        // Create invoice
+        $invoice = Invoice::create([
+            'CodiceFattura' => $invoiceCode,
+            'Importo' => $totalAmount,
+            'Data' => now()->toDateString(),
+            'Note' => $validated['notes'] ?? "Invoice for work order {$workOrder->CodiceIntervento}",
+            'CF' => $workOrder->motorcycle->user->CF,
+            'CodiceIntervento' => $workOrder->CodiceIntervento,
+        ]);
+
+        return redirect("/admin/financial/invoices/{$invoice->CodiceFattura}")
+            ->with('success', 'Invoice created successfully!');
+    }
+
+    /**
+     * Show the invoice creation form for a completed work order.
+     */
+    public function createInvoice(WorkOrder $workOrder): Response
+    {
+        // Ensure work order is completed
+        if (!$workOrder->DataFine) {
+            return back()->with('error', 'Can only create invoices for completed work orders.');
+        }
+
+        // Check if invoice already exists
+        if ($workOrder->invoice) {
+            return back()->with('error', 'Invoice already exists for this work order.');
+        }
+
+        // Load relationships
+        $workOrder->load(['motorcycle.motorcycleModel', 'motorcycle.user', 'parts']);
+
+        // Calculate costs
+        $partsTotal = $workOrder->parts->sum(function ($part) {
+            return $part->pivot->Quantita * $part->pivot->Prezzo;
+        });
+        
+        $laborHours = $workOrder->OreImpiegate ?? 0;
+        $defaultHourlyRate = 40; // Default rate
+        $laborCost = $laborHours * $defaultHourlyRate;
+        $totalCost = $partsTotal + $laborCost;
+
+        $workOrderData = [
+            'id' => $workOrder->CodiceIntervento,
+            'description' => $workOrder->Note,
+            'started_at' => $workOrder->DataInizio?->format('Y-m-d'),
+            'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
+            'labor_hours' => $laborHours,
+            'labor_cost' => $laborCost,
+            'parts_cost' => $partsTotal,
+            'total_cost' => $totalCost,
+            'motorcycle' => [
+                'brand' => $workOrder->motorcycle->motorcycleModel->Marca,
+                'model' => $workOrder->motorcycle->motorcycleModel->Nome,
+                'plate' => $workOrder->motorcycle->Targa,
+                'vin' => $workOrder->motorcycle->NumTelaio,
+            ],
+            'customer' => [
+                'id' => $workOrder->motorcycle->user->id,
+                'name' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
+                'email' => $workOrder->motorcycle->user->email,
+                'cf' => $workOrder->motorcycle->user->CF,
+            ],
+        ];
+
+        $partsBreakdown = $workOrder->parts->map(function ($part) {
+            return [
+                'name' => $part->Nome,
+                'quantity' => (int) $part->pivot->Quantita,
+                'unit_price' => (float) $part->pivot->Prezzo,
+                'total_price' => (float) ($part->pivot->Quantita * $part->pivot->Prezzo),
+            ];
+        });
+
+        return Inertia::render('admin/financial/invoice-create', [
+            'workOrder' => $workOrderData,
+            'partsBreakdown' => $partsBreakdown->values()->all(),
+            'defaultHourlyRate' => $defaultHourlyRate,
+        ]);
+    }
+
+    /**
+     * Store a newly created invoice.
+     */
+    public function storeInvoice(Request $request, WorkOrder $workOrder): RedirectResponse
+    {
+        $validated = $request->validate([
+            'hourly_rate' => 'required|numeric|min:0',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Ensure work order is completed and doesn't have an invoice
+        if (!$workOrder->DataFine) {
+            return back()->with('error', 'Can only create invoices for completed work orders.');
+        }
+
+        if ($workOrder->invoice) {
+            return back()->with('error', 'Invoice already exists for this work order.');
+        }
+
+        // Load relationships
+        $workOrder->load(['motorcycle.user', 'parts']);
+
+        // Calculate costs with custom hourly rate
+        $partsTotal = $workOrder->parts->sum(function ($part) {
+            return $part->pivot->Quantita * $part->pivot->Prezzo;
+        });
+        
+        $laborHours = $workOrder->OreImpiegate ?? 0;
+        $hourlyRate = $validated['hourly_rate'];
+        $laborCost = $laborHours * $hourlyRate;
+        $totalAmount = $partsTotal + $laborCost;
+
+        // Generate unique invoice code
+        $invoiceCode = 'INV' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        
+        // Ensure the code is unique
+        while (Invoice::where('CodiceFattura', $invoiceCode)->exists()) {
+            $invoiceCode = 'INV' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        }
+
+        // Create invoice
+        $invoice = Invoice::create([
+            'CodiceFattura' => $invoiceCode,
+            'Importo' => $totalAmount,
+            'Data' => now()->toDateString(),
+            'Note' => $validated['notes'] ?? "Invoice for work order {$workOrder->CodiceIntervento}",
+            'CF' => $workOrder->motorcycle->user->CF,
+            'CodiceIntervento' => $workOrder->CodiceIntervento,
+        ]);
+
+        return redirect()->route('admin.financial.invoices.show', $invoice->CodiceFattura)
+            ->with('success', 'Invoice created successfully!');
     }
 
     /**
@@ -254,22 +578,8 @@ class FinancialController extends Controller
      */
     public function markAsPaid(Invoice $invoice): RedirectResponse
     {
-        if ($invoice->status === 'paid') {
-            return back()->with('error', 'Invoice is already marked as paid.');
-        }
-        
-        // Allow marking as paid for both pending and overdue invoices
-        if (!in_array($invoice->status, ['pending', 'overdue'])) {
-            return back()->with('error', 'Only pending or overdue invoices can be marked as paid.');
-        }
-        
-        $invoice->update([
-            'status' => 'paid',
-            'paid_at' => now(),
-        ]);
-        
-        return back()->with('success', 'Invoice marked as paid successfully.');
+        // In simplified schema, all invoices are considered paid
+        // This method is kept for interface compatibility but doesn't change anything
+        return back()->with('success', 'Invoice is already considered paid in the simplified system.');
     }
-
-
 } 

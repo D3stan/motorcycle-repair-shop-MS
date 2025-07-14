@@ -12,21 +12,38 @@ class Part extends Model
     use HasFactory;
 
     /**
+     * The table associated with the model.
+     */
+    protected $table = 'RICAMBI';
+
+    /**
+     * The primary key for the model.
+     */
+    protected $primaryKey = 'CodiceRicambio';
+
+    /**
+     * The "type" of the primary key ID.
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'part_code',
-        'brand',
-        'name',
-        'description',
-        'supplier_price',
-        'selling_price',
-        'category',
-        'stock_quantity',
-        'minimum_stock',
-        'supplier_id',
+        'CodiceRicambio',
+        'Marca',
+        'Nome',
+        'Descrizione',
+        'PrezzoFornitore',
+        'Categoria',
+        'CodiceFornitore',
     ];
 
     /**
@@ -37,54 +54,44 @@ class Part extends Model
     protected function casts(): array
     {
         return [
-            'supplier_price' => 'decimal:2',
-            'selling_price' => 'decimal:2',
-            'stock_quantity' => 'integer',
-            'minimum_stock' => 'integer',
+            'PrezzoFornitore' => 'decimal:2',
         ];
     }
 
     /**
-     * Get the supplier for this part.
+     * Get the supplier for this part (FORNITURA relationship).
      */
     public function supplier(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(Supplier::class, 'CodiceFornitore', 'CodiceFornitore');
     }
 
     /**
-     * Get the motorcycle models that use this part.
+     * Get the motorcycle models that use this part (APPARTENENZE relationship).
      */
     public function motorcycleModels(): BelongsToMany
     {
-        return $this->belongsToMany(MotorcycleModel::class, 'model_parts');
+        return $this->belongsToMany(MotorcycleModel::class, 'APPARTENENZE', 'CodiceRicambio', 'CodiceModello')
+            ->withTimestamps();
     }
 
     /**
-     * Get the work orders that use this part.
+     * Get the work orders that use this part (UTILIZZI relationship).
      */
     public function workOrders(): BelongsToMany
     {
-        return $this->belongsToMany(WorkOrder::class, 'work_order_parts')
-            ->withPivot('quantity', 'unit_price', 'total_price')
+        return $this->belongsToMany(WorkOrder::class, 'UTILIZZI', 'CodiceRicambio', 'CodiceIntervento')
+            ->withPivot('Quantita', 'Prezzo')
             ->withTimestamps();
     }
 
     /**
-     * Get the warehouses storing this part.
+     * Get the warehouses storing this part (STOCCAGGI relationship).
      */
     public function warehouses(): BelongsToMany
     {
-        return $this->belongsToMany(Warehouse::class, 'warehouse_parts')
-            ->withPivot('quantity', 'location_in_warehouse')
+        return $this->belongsToMany(Warehouse::class, 'STOCCAGGI', 'CodiceRicambio', 'CodiceMagazzino')
             ->withTimestamps();
     }
 
-    /**
-     * Check if the part is low in stock.
-     */
-    public function isLowStock(): bool
-    {
-        return $this->stock_quantity <= $this->minimum_stock;
-    }
 } 

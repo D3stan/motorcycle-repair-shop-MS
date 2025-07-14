@@ -6,100 +6,368 @@
 
 # Analisi dei requisiti
 
-[Inserire qui la descrizione del progetto.]
+Si vuole sviluppare un software che permetta la gestione di un'officina meccanica per motocicli e faciliti 
+le operazioni organizzative per ridurre notevolmente il carico di lavoro e il rischio di perdita e/o dimenticanza 
+di informazioni. I dati manipolati comprendono diversi domini (interventi, ricambi, fatturazione) e sono specifici
+in base all'utilizzatore.  
+Infatti il gestionale potrà essere utilizzato anche dai clienti per agire in autonomia e diminuire ulteriormente
+l'intervento umano da parte dell'officina.
 
 ## Intervista
 
-[Inserire qui il testo dell'intervista con il cliente.]
+Si riporta in seguito la trascrizione dell'intervista effettuata col proprietario dell'officina.  
 
+.html
+    <br>
+    <em>
+    Il titolare di un'officina desidera snellire la gestione quotidiana della propria attività. Racconta che, al momento,
+    tutte le informazioni su clientela, motociclette, appuntamenti e ricambi vengono annotate su fogli di calcolo e agende cartacee,
+    con il rischio costante di errori, sovrapposizioni o semplici dimenticanze.
+    Egli spiega che i clienti, prima di tutto, devono potersi registrare online inserendo i propri dati anagrafici e di contatto.
+    Una volta registrato, il cliente ha la possibilità di aggiungere le sue moto a un garage virtuale, specificando targa, marca,
+    modello e qualche nota personale. In questo modo lo staff può visualizzare lo storico della moto per aiutare con diagnosi di problemi futuri.  
 
-## Rilevamento delle ambiguità e correzioni proposte
+    Il passo successivo riguarda la prenotazione degli appuntamenti. Il titolare sottolinea l’esigenza di un calendario che mostri
+    le fasce orarie libere per interventi di manutenzione ordinaria o per prove al banco.
+    Inoltre il cliente deve poter disdire in autonomia. Al momento della richiesta, il sistema deve salvare l'appuntamento in
+    uno stato di "attesa di conferma" che l’officina potrà poi convertire in "confermato" oppure rifiutare, tenendo conto della
+    disponibilità dei meccanici e della complessità del lavoro.  
+    Durante il lavoro sulla moto, il proprietario vuole registrare uno o più tecnici assegnati, annotare ogni fase dell’intervento
+    e i ricambi utilizzati. Serve aggiornare lo stato in tempo reale per permettere ai clienti di rimanere aggiornati senza disturbare l'officina.
+    Terminato l’intervento, il sistema deve permettere di generare una fattura intestata al cliente, includendo manodopera ed eventuali ricambi utilizzati.
 
-[Inserire qui le ambiguità rilevate nel testo dell'intervista e le correzioni proposte.]
+    Un’altra criticità evidenziata riguarda il magazzino: ricambi di varia natura, ciascuno con disponibilità, codice fornitore e categoria.
+    Occorre un modulo di inventario con soglie di riordino e storico degli acquisti presso fornitori diversi. Il titolare desidera inoltre
+    mettere in relazione ogni ricambio con i modelli di moto compatibili, così da evitare errori di montaggio.  
+    Sul fronte amministrativo, l’officina impiega alcuni operai e un addetto alla reception che deve poter gestire assunzioni, turni
+    e assegnazioni ai lavori. Per questo si richiede una sezione dedicata allo staff, con ruoli differenziati (meccanico, amministratore)
+    e permessi di accesso mirati: ad esempio, solo l’amministratore emette fatture, mentre i meccanici aggiornano lo stato dei lavori a loro assegnati.  
+    Infine, il titolare vorrebbe un cruscotto riepilogativo che mostri a colpo d'occhio appuntamenti imminenti, lavori in corso,
+    ricavi mensili e ricambi sotto scorta minima.
+    </em>
+
+## Rilevamento delle ambiguità ed estrazione dei concetti principali
+
+Un'analisi testuale dell'intervista ha portato alla luce diverse ambiguità elencate di seguito.
 
 .tablesort {1}
     .csv {tables/concepts.csv} caption:{concetti.}
 
 
-## Definizione delle specifiche in linguaggio naturale ed estrazione dei concetti principali
+## Ridefinizione delle specifiche in linguaggio naturale 
 
-[Inserire qui il riassunto dell'intervista con le correzioni]
+I **Clienti** rappresentano i proprietari delle motociclette che si registrano nel sistema fornendo i propri dati anagrafici e di contatto.
+Ogni cliente può possedere una o più **Motociclette**, caratterizzate da targa, marca, modello e note personali.
+Gli **Appuntamenti** costituiscono il collegamento tra clienti e officina, permettendo la prenotazione di interventi di manutenzione
+(ordinaria o straordinaria) o prove al banco. Ogni appuntamento è associato a una specifica motocicletta e può trovarsi in diversi stati
+(in attesa di conferma, in progesso, completato, annullato). Durante la fase operativa, gli appuntamenti si trasformano in **Interventi** veri e propri,
+ai quali vengono assegnati uno o più **Tecnici** responsabili dell'esecuzione del lavoro.  
+Il **Magazzino** gestisce i **Ricambi**, ognuno identificato da un codice fornitore, categoria e livello di disponibilità. Esiste una
+relazione di compatibilità tra ricambi e modelli di motociclette per evitare errori di montaggio. Durante gli interventi, i ricambi
+utilizzati vengono registrati e collegati sia all'intervento che al fornitore di provenienza con i relativi prezzi.  
+Il **Personale** dell'officina comprende tecnici con diversi ruoli e permessi di accesso differenziati. Gli amministratori
+hanno accesso completo al sistema inclusa la generazione di fatture, mentre i tecnici possono aggiornare lo stato dei lavori a
+loro assegnati. Il sistema di **Fatturazione** collega gli interventi completati ai relativi clienti,
+includendo il calcolo della manodopera e dei ricambi utilizzati. Un **Dashboard** amministrativo fornisce una visione
+d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 
-[Elenco con le operazioni definite]
-- op1
-- op2
+##### Operazioni principali da implementare:
 
+1. Registrazione di nuovi clienti
+2. Inserimento di una nuova motocicletta nel garage
+3. Prenotazione e conferma / cancellazione appuntamenti
+4. Assegnazione tecnici agli interventi
+5. Visualizzazione inventario con soglie di riordino
+6. Registrazione acquisti da fornitori
+7. Generazione fatture per interventi completati
+8. Visualizzazione dashboard con indicatori di performance
+9. Gestione ruoli e permessi del personale
+10. Tracciamento storico interventi per ogni motocicletta
+11. Visualizzare lo stato di un intervento sulla propria moto
 
 # Progettazione Concettuale
 
-[Inserire qui descrizione della prima iterazione di schema ER]  
+## Persone
 
-## Schema scheletro
+### Schema scheletro
 
-![ER](imgs/scheletro.png "Inserire qui lo schema scheletro del database")
+Un primo sviluppo legato al dominio del problema produce il seguente schema:
 
-## Raffinamenti proposti
+![ER](imgs/scheletroP.png "Scheletro per la modellazione delle persone")
 
-[Inserire qui i raffinamenti proposti allo schema scheletro.]
+### Raffinamenti proposti
+
+Si nota fin da subito la necessità di dividere l'entità **persona** in in due sotto entità per distinguere i clienti dai dipendenti dell'officina. Inoltre, data la descrizione del dominio, si vogliono distinguere i lavori in base al tipo di intervento, quindi sessione a banco oppure manutenzione, in quanto si può così avere una distinzione maggiore tra uno e l'altro.
+
+![ER](imgs/rifinitoP.png "Schema rifinito")
+
+## Motociclette
+
+### Schema scheletro
+
+La prima iterazione nella modellizzazione delle moto per il garage virtuale e i relativi lavori si traduce nel seguete schema:
+
+![ER](imgs/scheletroM.png "Scheletro per la modellazione delle moto")
+
+### Raffinamenti proposti
+
+Mettere in relazione un **ricambio** direttamente con la **motoclicletta** di proprietà di una **persona** risulta essere una scelta poco conveniente: potrebbe capitare che due (o più) persone abbiano lo stesso modello e verrebbe introdotta una ridondaza inutile.  
+Per questo motivo si è deciso di separare le due entità di **moto** e **modello**, in quanto una rappresenta la motocicletta fisica posseduta da una persona e l'altra rappresenta il modello prodotto dalla casa madre. Così facendo, per motivi analoghi, si evitano problemi con le associazioni riguardo un lavoro effettuato su di una particolare moto.
+
+![ER](imgs/rifinitoM.png "Schema rifinito")
+
+## Ricambi
+
+### Schema scheletro
+
+A seguito di una prima analisi del dominio si sviluppa il seguente schema per modellare il concetto di ricambi e il suo intorno:
+
+![ER](imgs/scheletroR.png "Scheletro per la modellazione dei ricambi")
+
+### Raffinamenti proposti
+
+La divisione di un lavoro in **intervento** e **sessione** permette di mettere in relazione un **ricambio** solo dove risulta davvero necessario. Inoltre specificare qualora un intervento si tratti di manutenzione **ordinaria** o **straordinaria** aiuta ulteriormente a giustificare la quantità e/o il tipo di ricambi che sono stati utilizzati. Infine i ricambi possono essere convervati in diversi magazzini per permettere maggiore flessibilità di caso di ampliamento dell'officina (basti pensare a un magazzino interno per ricambi generici utilizzati quasi giornalmente e un magazzino esterno per ricambi specifici).
+
+![ER](imgs/rifinitoR.png "Schema rifinito")
 
 ## Schema concettuale finale
 
-![ER](imgs/finale.png "Inserire qui lo schema concettuale finale")
-
+!(_x100%)[ER](imgs/finaleV.png)
 
 
 # Progettazione logica
 
 ## Stima del volume dei dati
 
-.tablesort {1}
-    .csv {tables/volumes.csv} caption:{volumi di dati.}
+.var {volumetable}
+    .csv {tables/volumes.csv}
+
+.var {tabledata}
+    .tablecolumn {1}
+        .volumetable
+
+.var {totalrows}
+    .tabledata::size
+
+.row alignment:{center} gap:{1cm}
+    .container
+        .tablefilter {4} {@lambda x: .x::islower {.totalrows::divide {2}} {true}}
+            .volumetable
+      
+    .container
+        .tablefilter {4} {@lambda x: .x::isgreater {.totalrows::divide {2}}}
+            .volumetable
+
+
 
 ## Descrizione delle operazioni principali e stima della loro frequenza
 
-.tablesort {1}
-    .csv {tables/operations.csv} caption:{frequenza operazioni.}
+Vengono di seguito riportate le operazioni descritte in precedenza con una stima realistica della loro frequenza di esecuzione
 
-[Inserire qui la descrizione delle operazioni principali e la stima della loro frequenza.]
+.csv {tables/operations.csv} caption:{frequenza operazioni.}
 
 ## Schemi di navigazione e tabelle degli accessi
 
-#####! OP 1 - Operazione 1
-[Inserire qui descrizione operazione 1]
+Si elencano le operazioni con una breve descrizione e la tabella degli accessi dove, per semplicità, si considera il costo di una scrittura equivalente a due letture. Per operazioni particolarmente complesse viene anche riportato uno schema di navigazione.
+
+#####! OP 1 - Registrazione di nuovi clienti
+Questa operazione permette la registrazione di nuovi utenti nel sistema. La registrazione richiede l'inserimento di dati anagrafici (nome, cognome, codice fiscale, telefono, email). L'autenticazione verifica le credenziali per consentire l'accesso alle funzionalità appropriate al ruolo.
+
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| Concetto1 | E | 1 | L
-| Concetto2 | R | 2 | S
+| PERSONA | E | 1 | L
+| PERSONA | E | 1 | S
 
 .center
-    [Totale costo operazione 1]
+    **Totale costo**: 3 letture -> 30 accessi al mese
 
-#####! OP 2 - Operazione 2
-[Inserire qui descrizione operazione 2]
+#####! OP 2 - Inserimento di una nuova motocicletta nel garage
+Operazione che consente ai clienti di aggiungere le proprie motociclette al garage virtuale specificando targa, anno di immatricolazione, numero di telaio (VIN) e note personali. Richiede anche la selezione del modello di motocicletta dal catalogo esistente per garantire compatibilità con i ricambi.
+
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
-| Concetto1 | E | 1 | L
-| Concetto2 | R | 2 | S
+| MOTO | E | 1 | L
+| MOTO | E | 1 | S
+| MODELLO | E | 1 | L
+| REALIZZAZIONE | R | 1 | S
+| PERSONA | E | 1 | L
+| POSSESSIONE | R | 1 | S
 
 .center
-    [Totale costo operazione 2]
+    **Totale costo**: 9 letture -> 1260 accessi all'anno
 
-![ER](imgs/navigazione2.png "Inserire qui lo schema di navigazione dell'operazione 2")
+#####! OP 3 - Prenotazione e conferma / cancellazione appuntamenti
+Gestisce il ciclo completo degli appuntamenti dall'inserimento della richiesta da parte del cliente fino alla conferma o cancellazione da parte dell'officina. Include la verifica della disponibilità, la selezione del tipo di intervento (manutenzione o prova al banco) e la gestione degli stati.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| PERSONA | E | 1 | L
+| MOTO | E | 1 | L
+| POSSESSIONE | R | 1 | L
+| REALIZZAZIONE | R | 1 | L
+| MODELLO | E | 1 | L
+| APPUNTAMENTO | E | 3 | L
+| APPUNTAMENTO | E | 2 | S
+| CREAZIONE | R | 1 | S
+
+.center
+    **Totale costo**: 14 letture -> 210 accessi al giorno
+
+![ER](imgs/navigazione3.png "Schema di navigazione per la gestione degli appuntamenti")
+
+#####! OP 4 - Assegnazione tecnici agli interventi
+Operazione che permette l'assegnazione di uno o più meccanici agli interventi programmati. Richiede la verifica della disponibilità dei tecnici e della presenza di altri meccanici.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| INTERVENTO | E | 1 | L
+| MECCANICO | E | 1 | L
+| SVOLGIMENTO | R | 1 | L
+| SVOLGIMENTO | R | 1 | S
+
+.center
+    **Totale costo**: 5 letture -> 50 accessi al giorno
+
+#####! OP 5 - Visualizzazione inventario con soglie di riordino
+Operazione che permette la consultazione dell'inventario corrente con evidenziazione dei ricambi sotto soglia minima. Include la visualizzazione delle quantità disponibili per magazzino e i dettagli sui fornitori per facilitar il riordino.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| RICAMBIO | E | 10 | L
+| MAGAZZINO | E | 3 | L
+| STOCCAGGIO | R | 10 | L
+| FORNITORE | E | 5 | L
+| FORNITURA | R | 5 | L
+
+.center
+    **Totale costo**: 33 letture -> 1320 accessi al mese
+
+#####! OP 6 - Registrazione acquisti da fornitori
+Gestisce il processo di registrazione degli acquisti di ricambi dai fornitori. Include la verifica della disponibilità del fornitore, la registrazione dei prezzi di acquisto e l'aggiornamento delle quantità in magazzino.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| FORNITORE | E | 1 | L
+| RICAMBIO | E | 3 | L
+| FORNITURA | R | 3 | L
+| FORNITURA | R | 3 | S
+| MAGAZZINO | E | 1 | L
+| STOCCAGGIO | R | 3 | L
+| STOCCAGGIO | R | 3 | S
+
+.center
+    **Totale costo**: 20 letture -> 40 accessi al giorno
+
+#####! OP 7 - Generazione fatture per interventi completati
+Operazione per generare le fatture per gli interventi completati. Include il calcolo dei costi di manodopera e dei ricambi utilizzati. La fattura viene intestata al cliente proprietario della motocicletta.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| INTERVENTO | E | 1 | L
+| MOTO | E | 1 | L
+| REALIZZAZIONE | R | 1 | L
+| MODELLO | E | 1 | L
+| POSSESSIONE | R | 1 | L
+| PERSONA | E | 1 | L
+| UTILIZZO | R | 5 | L
+| RICAMBIO | E | 5 | L
+| FATTURA | E | 1 | S
+| EMISSIONE | R | 1 | S
+| RIFERIMENTO | R | 1 | S
+
+.center
+    **Totale costo**: 21 letture -> 2100 accessi al mese
+
+![ER](imgs/navigazione7.png "Schema di navigazione per la gestione delle fatture")
+
+
+#####! OP 8 - Visualizzazione dashboard con indicatori di performance
+Operazione che fornisce una vista d'insieme delle attività dell'officina attraverso indicatori chiave di performance. Include appuntamenti imminenti, interventi in corso, ricavi mensili e stato del magazzino con soglie di riordino.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| APPUNTAMENTO | E | 10 | L
+| INTERVENTO | E | 8 | L
+| FATTURA | E | 20 | L
+| RICAMBIO | E | 15 | L
+| STOCCAGGIO | R | 15 | L
+| MAGAZZINO | E | 3 | L
+
+.center
+    **Totale costo**: 71 letture -> 355 accessi al giorno
+
+#####! OP 9 - Gestione ruoli e permessi del personale
+Operazione per la gestione amministrativa del personale dell'officina. Permette la definizione dei ruoli (meccanico, amministratore), l'assegnazione dei permessi di accesso e la modifica delle credenziali. Operazione riservata agli amministratori.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| MECCANICO | E | 3 | L
+| MECCANICO | E | 1 | S
+
+.center
+    **Totale costo**: 5 letture -> 25 accessi all'anno
+
+#####! OP 10 - Tracciamento storico interventi per ogni motocicletta
+Operazione che permette la consultazione completa dello storico degli interventi effettuati su una specifica motocicletta. Include dettagli su sessioni, ricambi utilizzati, meccanici coinvolti e costi sostenuti. Utile per diagnosi e manutenzione predittiva.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| MOTO | E | 1 | L
+| SVOLGIMENTO | R | 3 | L
+| INTERVENTO | E | 3 | L
+| SESSIONE | E | 2 | L
+| EFFETTUAZIONE | R | 2 | L
+| AFFIANCAMENTO | R | 5 | L
+| MECCANICO | E | 3 | L
+| UTILIZZO | R | 8 | L
+| RICAMBIO | E | 8 | L
+
+.center
+    **Totale costo**: 35 letture -> 3500 accessi al mese
+
+#####! OP 11 - Visualizzare lo stato di un intervento sulla propria moto
+Operazione che permette ai clienti di consultare in autonomia lo stato corrente degli interventi sulle proprie motociclette. Include informazioni su fase di lavorazione, meccanici assegnati e tempo stimato di completamento.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| PERSONA | E | 1 | L
+| POSSESSIONE | R | 1 | L
+| MOTO | E | 1 | L
+| SVOLGIMENTO | R | 1 | L
+| INTERVENTO | E | 1 | L
+| AFFIANCAMENTO | R | 2 | L
+| MECCANICO | E | 2 | L
+
+.center
+    **Totale costo**: 9 letture -> 225 accessi al giorno
 
 
 ## Raffinamento dello schema
 
 #### Eliminazione degli attributi composti
-.loremipsum
-
-#### Eliminazione di identificatori esterni
-.loremipsum
+Nello [schema ER](#raffinamenti-proposti-2) è presente un attributo composto _Contatti_ per salvare le informazioni di contatto del fornitore. Tale attributo viene scomposto e lato applicativo si mostreranno solo le informazioni disponibili di quel particolare fornitore.
 
 #### Eliminazione gerarchie
-.loremipsum
+Sono presenti diverse gerarchie nello schema ed ognuna è stata trattata relativamente alle sue specifiche. In particolare per gestire la gerarchia **persona** e **intervento** è stato effettuato un collasso verso l'alto in quanto i sotto-tipi non contenevano informazioni aggiuntive. Per la gerarchia **lavoro**, invece, si è preferito un collasso verso il basso in modo da mantenere una differenziazione forte.
 
 #### Scelta delle chiavi 
-.loremipsum
+Nello schema sono evidenziate le chiavi primarie utilizzate. Per l'entità **moto** si poteva far ricorso anche alla *targa* per l'identificazione ma si potrebbero verificare dei casi in cui la motocicletta viene reimmatricolata.
+
+#### Eliminazione di identificatori esterni
+Partendo dallo schema ER sono state modificate le seguenti relazioni:
+- **Creazione**, eliminata importando il _CodiceFiscale_ in **Appuntamento**
+- **Intestazione**, eliminata importando il _CodiceFiscale_ in **Fattura**
+- **Emissione**, eliminata importando il _CodiceIntervento_ in **Fattura**
+- **Possessione**, eliminata importando il _CodiceFiscale_ in **Moto**
+- **Realizzazione**, eliminata importando il _CodiceModello_ in **Moto**
+- **Fornitura**, eliminata importando il _CodiceFornitore_ in **Ricambio**
+- **Effettuazione**, eliminata importando il _NumTelaio_ in **Intervento**
+- **Sviluppo**, eliminata importando il _NumTelaio_ in **Sessione**
+- **Svolgimento**, reificata importando _CodiceIntervento_ da **Intervento** e _CodiceFiscale_ da **Persona**
+- **Affiancamento**, reificata importando _CodiceSessione_ da **Sessione** e _CodiceFiscale_ da **Persona**
+- **Utilizzo**, reificata importando _CodiceIntervento_ da **Intervento** e _CodiceRicambio_ da **Ricambio**, mantenendo gli attributi _quantità_ e _prezzo_
+- **Stoccaggio**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceMagazzino_ da **Magazzino**
+- **Appartenenza**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceModello_ da **Modello**
 
 ## Analisi delle ridondanze
 
@@ -145,7 +413,111 @@
 
 ## Traduzione di entità e associazioni in relazioni
 
-[Inserire qui la traduzione di entità e associazioni in relazioni.]
+PERSONE (
+  .text {CF} decoration:{underline},
+  Nome,
+  Cognome,
+  Cellulare,
+  Email,
+  Tipo
+)  
+APPUNTAMENTI (
+  .text {CodiceAppuntamento} decoration:{underline},
+  DataAppuntamento,
+  Descrizione,
+  Stato,
+  Tipo,
+  .text {CF} decoration:{underline}: PERSONE
+)  
+AFFIANCAMENTI (
+  .text {CodiceSessione} decoration:{underline},
+  .text {CF} decoration:{underline}: PERSONE
+)  
+SVOLGIMENTI (
+  .text {CodiceIntervento} decoration:{underline},
+  .text {CF} decoration:{underline}: PERSONE
+)  
+FATTURE (
+  .text {CodiceFattura} decoration:{underline},
+  Importo,
+  Data,
+  Note,
+  .text {CF} decoration:{underline}: PERSONE,
+  .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
+  .text {CodiceSessione} decoration:{underline}: SESSIONI
+)  
+SESSIONI (
+  .text {CodiceSessione} decoration:{underline},
+  Data,
+  OreImpiegate,
+  Stato,
+  Note,
+  .text {NumTelaio} decoration:{underline}: MOTO
+)  
+INTERVENTI (
+  .text {CodiceIntervento} decoration:{underline},
+  DataInizio,
+  DataFine[0–1],
+  KmMoto,
+  Tipo,
+  Causa[0–1],
+  OreImpiegate,
+  Stato,
+  Note,
+  Nome,
+  .text {NumTelaio} decoration:{underline}: MOTO
+)  
+MOTO (
+  .text {NumTelaio} decoration:{underline},
+  Targa,
+  AnnoImmatricolazione,
+  Note,
+  .text {CodiceModello} decoration:{underline}: MODELLI,
+  .text {CF} decoration:{underline}: PERSONE
+)  
+MODELLI (
+  .text {CodiceModello} decoration:{underline},
+  Marca,
+  Nome,
+  Cilindrata,
+  Segmento,
+  Potenza
+)  
+FORNITORI (
+  .text {CodiceFornitore} decoration:{underline},
+  Nome,
+  Telefono,
+  Email
+)  
+RICAMBI (
+  .text {CodiceRicambio} decoration:{underline},
+  Marca,
+  Nome,
+  Categoria,
+  Descrizione[0–1],
+  PrezzoFornitore,
+  .text {CodiceFornitore} decoration:{underline}: FORNITORI
+)  
+MAGAZZINI (
+  .text {CodiceMagazzino} decoration:{underline}
+)  
+STOCCAGGI (
+  .text {CodiceMagazzino} decoration:{underline}: MAGAZZINI,
+  .text {CodiceRicambio} decoration:{underline}: RICAMBI
+  Quantità
+  QuantitàMinima
+)  
+APPARTENENZE (
+  .text {CodiceRicambio} decoration:{underline}: RICAMBI,
+  .text {CodiceModello} decoration:{underline}: MODELLI
+)  
+UTILIZZI (
+  .text {CodiceRicambio} decoration:{underline}: RICAMBI,
+  .text {CodiceIntervento} decoration:{underline}: INTERVENTI,
+  Quantità,
+  Prezzo
+)
+
 
 ## Schema relazionale finale
 
@@ -153,32 +525,215 @@
 
 ## Traduzione delle operazioni in query SQL
 
-##### OP 1 - Operazione 1
-[Inserire qui commenti aggiuntivi per l'operazione 1 se necessari.]
+##### OP 1 - Registrazione di nuovi clienti
+Inserimento di un nuovo cliente nel sistema. La CF funge da chiave primaria e permette di verificare l’univocità dell’utente.
 
 .code {sql}
-    SELECT code
-    FROM goes
-    WHERE here  
+    INSERT INTO PERSONE (CF, Nome, Cognome, Cellulare, Email, Tipo)
+    VALUES (?, ?, ?, ?, ?, 'cliente');
 
 
-##### OP 2 - Operazione 2
-[Inserire qui commenti aggiuntivi per l'operazione 2 se necessari.]
+##### OP 2 - Inserimento di una nuova motocicletta nel garage
+Il cliente associa una moto già presente nel catalogo dei modelli al proprio garage.
 
 .code {sql}
-    SELECT code
-    FROM goes
-    WHERE here
+    INSERT INTO MOTO (NumTelaio, Targa, AnnoImmatricolazione, Note, CodiceModello, CF)
+    VALUES (?, ?, ?, ?, ?, ?);
+
+
+##### OP 3 - Prenotazione, conferma e cancellazione appuntamenti
+1) Inserimento richiesta in stato “attesa”.  
+2) Conferma da parte dell’officina.  
+3) Eventuale annullamento da parte del cliente.
+
+.code {sql}
+    INSERT INTO APPUNTAMENTI (CodiceAppuntamento, DataAppuntamento, Descrizione, Tipo, CF)
+    VALUES (?, ?, ?, 'attesa', ?);
+
+    UPDATE APPUNTAMENTI
+    SET Tipo = 'confermato'
+    WHERE CodiceAppuntamento = ?;
+
+    DELETE FROM APPUNTAMENTI
+    WHERE CodiceAppuntamento = ?;
+
+
+##### OP 4 - Assegnazione tecnici agli interventi
+Collega uno o più meccanici ad un intervento specifico.
+
+.code {sql}
+    INSERT INTO SVOLGIMENTI (CodiceIntervento, CF)
+    VALUES (?, ?);
+
+
+##### OP 5 - Visualizzazione inventario con soglie di riordino
+Elenco dei ricambi con quantità sotto la soglia impostata.
+
+.code {sql}
+    SELECT r.CodiceRicambio,
+           r.Nome,
+           SUM(s.`Quantita`) AS disponibilita,
+           r.SogliaMinima
+    FROM RICAMBI r
+    JOIN STOCCAGGI s ON s.CodiceRicambio = r.CodiceRicambio
+    GROUP BY r.CodiceRicambio, r.Nome, r.SogliaMinima
+    HAVING disponibilita < r.SogliaMinima;
+
+
+##### OP 6 - Registrazione acquisti da fornitori
+1) Aggiorna il prezzo del ricambio.  
+2) Aggiunge le unità acquistate nel magazzino indicato.
+
+.code {sql}
+    UPDATE RICAMBI
+    SET PrezzoFornitore = ?
+    WHERE CodiceRicambio = ?;
+
+    INSERT INTO STOCCAGGI (CodiceMagazzino, CodiceRicambio, Quantita)
+    VALUES (?, ?, ?);
+
+
+##### OP 7 - Generazione fatture per interventi completati
+Inserisce la fattura passando il totale già calcolato dall'applicazione.
+
+.code {sql}
+    INSERT INTO FATTURE (CodiceFattura, Importo, Data, Note, CF, CodiceIntervento)
+    VALUES (?, ?, CURRENT_DATE, ?, ?, ?);
+
+
+##### OP 8 - Visualizzazione dashboard con indicatori di performance
+Esempi di query semplici per popolare la dashboard.
+
+.code {sql}
+    -- Appuntamenti nelle prossime 24h
+    SELECT *
+    FROM APPUNTAMENTI
+    WHERE DataAppuntamento BETWEEN NOW() AND NOW() + INTERVAL 1 DAY;
+
+    -- Interventi ancora aperti
+    SELECT *
+    FROM INTERVENTI
+    WHERE DataFine IS NULL;
+
+    -- Ricavo degli ultimi 6 mesi (anno-mese)
+    SELECT YEAR(Data)  AS anno,
+           MONTH(Data) AS mese,
+           SUM(Importo) AS ricavi
+    FROM FATTURE
+    GROUP BY anno, mese
+    ORDER BY anno DESC, mese DESC
+    LIMIT 6;
+
+    -- Ricambi sotto soglia
+    SELECT CodiceRicambio, Nome
+    FROM RICAMBI
+    WHERE CodiceRicambio IN (
+        SELECT CodiceRicambio
+        FROM STOCCAGGI
+        GROUP BY CodiceRicambio
+        HAVING SUM(Quantita) < (
+            SELECT SogliaMinima
+            FROM RICAMBI
+            WHERE CodiceRicambio = STOCCAGGI.CodiceRicambio
+        )
+    );
+
+
+##### OP 9 - Gestione ruoli e permessi del personale
+Modifica del ruolo di un dipendente.
+
+.code {sql}
+    UPDATE PERSONE
+    SET Tipo = ?
+    WHERE CF = ?;
+
+
+##### OP 10 - Storico interventi per una motocicletta
+Restituisce la lista completa degli interventi, meccanici e ricambi utilizzati su una moto.
+
+.code {sql}
+    SELECT i.CodiceIntervento,
+           i.DataInizio,
+           i.DataFine,
+           i.Tipo,
+           i.OreImpiegate,
+           i.Note,
+           GROUP_CONCAT(DISTINCT sv.CF) AS meccanici,
+           SUM(u.Quantità * u.Prezzo) AS costo_ricambi
+    FROM INTERVENTI i
+    LEFT JOIN SVOLGIMENTI sv USING (CodiceIntervento)
+    LEFT JOIN UTILIZZI u USING (CodiceIntervento)
+    WHERE i.NumTelaio = ?
+    GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine, i.Tipo, i.OreImpiegate, i.Note
+    ORDER BY i.DataInizio DESC;
+
+
+##### OP 11 - Stato intervento visibile al cliente
+Mostra al proprietario l’avanzamento degli interventi sulla propria moto.
+
+.code {sql}
+    SELECT i.CodiceIntervento,
+           i.DataInizio,
+           i.DataFine,
+           CASE WHEN i.DataFine IS NULL THEN 'in corso' ELSE 'completato' END AS stato,
+           GROUP_CONCAT(DISTINCT sv.CF) AS meccanici
+    FROM INTERVENTI i
+    JOIN MOTO m USING (NumTelaio)
+    JOIN PERSONE p USING (CF)
+    LEFT JOIN SVOLGIMENTI sv USING (CodiceIntervento)
+    WHERE p.CF = ?
+    AND i.NumTelaio = ?
+    GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine;
 
 
 # Progettazione dell'applicazione
 
 ## Descrizione dell'architettura dell'applicazione realizzata
+L'applicativo si basa su un'architettura **MVC** (Model-View-Controller) implementata con **Laravel**, un full-stack framework basato su **PHP**.
+In particolare si ha la seguente struttura:
+- **Backend**: Laravel 12 con Eloquent ORM
+- **Frontend**: React 18 + TypeScript servito via Inertia.js
+- **Database**: MySQL 8 (InnoDB) gestito tramite migration e seeders 
 
-[Inserire qui la descrizione dell'architettura dell'applicazione realizzata]
+!(350x_)[MVC](imgs/mvc.png "Architettura")
+
+Laravel fornisce degli _starter kit_ per la logica di base e un setup iniziale per funzionare _out of the box_.
+Per questo motivo il database risulta popolato con tabelle non facenti parte dell'analisi di questo documento ma che servono per funzioni già implementate di default, come il salvataggio della sessione di login.
+
+<<<
 
 ## Guida utente
 
-[Inserire qui una breve descrizione o demo dell'utilizzo dell'applicazione.]
+#### Home
 
-![screenshot](imgs/screenshot.png "Inserire qui screenshot dell'applicazione")
+L'applicativo si presenta all'utente come un sito web dedicato alla presentazione dell'officina in questione.
+Una volta effettuato il login o la registrazione si ha accesso alle funzioni complete.
+Infine, in base al tipo di utente, si potranno effettuare operazioni specifiche.
+
+![screenshot](imgs/app/homepage.png "Home Page")
+
+![screenshot](imgs/app/login.png "Login")
+
+<<<
+
+#### Cliente
+
+Di seguito viene mostrata la dashboard personale di un cliente tipo dell'officina, subito dopo aver effettuato l'operazione di login.
+
+![screenshot](imgs/app/user/dashboardW.png "Dashboard cliente")
+
+Premento il relativo pulsante o navigando nell'apposita sezione è possibile prenotare un appuntamento.
+Verrà mostrata una schermata in cui il cliente potrà esprimere in maniera intuitiva le sue preferenze.
+
+!(300x_)[screenshot](imgs/app/user/bookappointment.png "Prenotazione appuntamento")
+
+#### Amministratore
+
+La dashboard per l'amministratore risulta essere completa e allo stesso tempo intuitiva, senza effetti grafici o figure complesse.
+Si è mantenuto uno stile _minimal_ anche nel resto dell'applicazione per facilitarne l'utilizzo.
+
+![screenshot](imgs/app/admin/dashboardW.png "Dashboard amministratore")
+
+L'amministratore, dal suo punto di vista, può confermare o disdire gli appuntamenti creati dai clienti e visualizzarne le informazioni di base a colpo d'occhio, per poi poter accedere ai dettagli di ogni appuntamento singolo.
+
+![screenshot](imgs/app/admin/appointments.png "Lista appuntamenti")

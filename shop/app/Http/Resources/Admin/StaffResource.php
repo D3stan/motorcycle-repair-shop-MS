@@ -18,7 +18,10 @@ class StaffResource extends UserResource
             'assigned_work_orders_count' => $this->whenCounted('assignedWorkOrders'),
             'active_work_orders_count' => $this->when(
                 $this->relationLoaded('assignedWorkOrders'),
-                fn() => $this->assignedWorkOrders->whereIn('status', ['pending', 'in_progress'])->count()
+                fn() => $this->assignedWorkOrders->filter(function ($workOrder) {
+                    // A work order is active if it's not completed (no DataFine)
+                    return !$workOrder->DataFine;
+                })->count()
             ),
         ]);
     }

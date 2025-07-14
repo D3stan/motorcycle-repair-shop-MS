@@ -18,16 +18,16 @@ class AppointmentFactory extends Factory
      */
     public function definition(): array
     {
-        $appointmentDate = fake()->dateTimeBetween('-6 months', '-1 day');
+        $appointmentDate = fake()->dateTimeBetween('now', '+3 months');
+        $appointmentTime = fake()->time('H:i');
         
         return [
-            'user_id' => User::factory()->customer(),
-            'motorcycle_id' => Motorcycle::factory(),
-            'appointment_date' => $appointmentDate->format('Y-m-d'),
-            'appointment_time' => fake()->time('H:i:s'),
-            'type' => fake()->randomElement(['maintenance', 'dyno_testing']),
-            'status' => fake()->randomElement(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']),
-            'notes' => fake()->optional()->sentence(),
+            'CodiceAppuntamento' => fake()->unique()->regexify('APP[0-9]{6}'),
+            'DataAppuntamento' => $appointmentDate,
+            'Descrizione' => fake()->sentence(),
+            'Tipo' => fake()->randomElement(['maintenance', 'dyno_testing']),
+            'Stato' => fake()->randomElement(['pending', 'accepted', 'rejected']),
+            'CF' => User::factory()->customer(),
         ];
     }
 
@@ -37,19 +37,47 @@ class AppointmentFactory extends Factory
     public function upcoming(): static
     {
         return $this->state(fn (array $attributes) => [
-            'appointment_date' => fake()->dateTimeBetween('tomorrow', '+1 month')->format('Y-m-d'),
-            'status' => fake()->randomElement(['pending', 'confirmed']),
+            'DataAppuntamento' => fake()->dateTimeBetween('tomorrow', '+1 month'),
         ]);
     }
 
     /**
-     * Create a completed appointment.
+     * Create a past appointment.
      */
-    public function completed(): static
+    public function past(): static
     {
         return $this->state(fn (array $attributes) => [
-            'appointment_date' => fake()->dateTimeBetween('-2 months', 'yesterday')->format('Y-m-d'),
-            'status' => 'completed',
+            'DataAppuntamento' => fake()->dateTimeBetween('-2 months', 'yesterday'),
+        ]);
+    }
+
+    /**
+     * Create a pending appointment.
+     */
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'Stato' => 'pending',
+        ]);
+    }
+
+    /**
+     * Create an accepted appointment.
+     */
+    public function accepted(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'Stato' => 'accepted',
+        ]);
+    }
+
+    /**
+     * Create a rejected appointment.
+     */
+    public function rejected(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'Stato' => 'rejected',
         ]);
     }
 } 

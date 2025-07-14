@@ -1,14 +1,14 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminPartDetails } from '@/types';
+import { type AdminPart, type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, Package, AlertTriangle, DollarSign, Wrench, Bike } from 'lucide-react';
+import { ArrowLeft, Bike, Edit, Package, Wrench } from 'lucide-react';
 
 interface Props {
-    part: AdminPartDetails;
+    part: AdminPart;
     compatibleModels: Array<{
         id: number;
         brand: string;
@@ -29,7 +29,7 @@ interface Props {
     }>;
 }
 
-export default function InventoryShow({ part, compatibleModels, workOrderUsage }: Props) {
+export default function InventoryShow({ part, compatibleModels = [], workOrderUsage = [] }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Admin Dashboard',
@@ -47,13 +47,13 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
 
     const getCategoryBadge = (category: string) => {
         const colors = {
-            'Engine': 'bg-red-100 text-red-800',
-            'Brake': 'bg-orange-100 text-orange-800',
-            'Suspension': 'bg-blue-100 text-blue-800',
-            'Electrical': 'bg-yellow-100 text-yellow-800',
-            'Body': 'bg-green-100 text-green-800',
-            'Transmission': 'bg-purple-100 text-purple-800',
-            'Exhaust': 'bg-gray-100 text-gray-800',
+            Engine: 'bg-red-100 text-red-800',
+            Brake: 'bg-orange-100 text-orange-800',
+            Suspension: 'bg-blue-100 text-blue-800',
+            Electrical: 'bg-yellow-100 text-yellow-800',
+            Body: 'bg-green-100 text-green-800',
+            Transmission: 'bg-purple-100 text-purple-800',
+            Exhaust: 'bg-gray-100 text-gray-800',
             'Fuel System': 'bg-pink-100 text-pink-800',
         };
         return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
@@ -66,7 +66,9 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">{part.brand} {part.name}</h1>
+                        <h1 className="text-3xl font-bold">
+                            {part.brand} {part.name}
+                        </h1>
                         <p className="text-muted-foreground">Part Code: {part.part_code}</p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -88,7 +90,7 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                 {/* Main Content */}
                 <div className="grid gap-4 lg:grid-cols-3">
                     {/* Part Details */}
-                    <div className="lg:col-span-2 space-y-4">
+                    <div className="space-y-4 lg:col-span-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -99,40 +101,38 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Part Code</p>
-                                        <p className="text-lg font-mono">{part.part_code}</p>
+                                        <p className="text-muted-foreground text-sm font-medium">Part Code</p>
+                                        <p className="font-mono text-lg">{part.part_code}</p>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Brand</p>
+                                        <p className="text-muted-foreground text-sm font-medium">Brand</p>
                                         <p className="text-lg">{part.brand}</p>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Name</p>
+                                        <p className="text-muted-foreground text-sm font-medium">Name</p>
                                         <p className="text-lg">{part.name}</p>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Category</p>
-                                        <Badge className={getCategoryBadge(part.category)}>
-                                            {part.category}
-                                        </Badge>
+                                        <p className="text-muted-foreground text-sm font-medium">Category</p>
+                                        <Badge className={getCategoryBadge(part.category)}>{part.category}</Badge>
                                     </div>
                                 </div>
                                 {part.description && (
                                     <>
                                         <Separator />
                                         <div>
-                                            <p className="text-sm font-medium text-muted-foreground">Description</p>
+                                            <p className="text-muted-foreground text-sm font-medium">Description</p>
                                             <p className="text-sm">{part.description}</p>
                                         </div>
                                     </>
                                 )}
                                 <Separator />
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Supplier</p>
+                                    <p className="text-muted-foreground text-sm font-medium">Supplier</p>
                                     <p className="text-lg">{part.supplier_name}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                                    <p className="text-muted-foreground text-sm font-medium">Created</p>
                                     <p className="text-sm">{part.created_at}</p>
                                 </div>
                             </CardContent>
@@ -145,9 +145,7 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                                     <Bike className="h-5 w-5" />
                                     Compatible Motorcycle Models
                                 </CardTitle>
-                                <CardDescription>
-                                    Motorcycle models that can use this part
-                                </CardDescription>
+                                <CardDescription>Motorcycle models that can use this part</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 {compatibleModels.length > 0 ? (
@@ -155,8 +153,10 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                                         {compatibleModels.map((model) => (
                                             <div key={model.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                                 <div>
-                                                    <p className="font-medium">{model.brand} {model.name}</p>
-                                                    <p className="text-sm text-muted-foreground">
+                                                    <p className="font-medium">
+                                                        {model.brand} {model.name}
+                                                    </p>
+                                                    <p className="text-muted-foreground text-sm">
                                                         {model.model_code} • {model.engine_size}cc • {model.segment}
                                                     </p>
                                                 </div>
@@ -176,9 +176,7 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                                     <Wrench className="h-5 w-5" />
                                     Work Order Usage
                                 </CardTitle>
-                                <CardDescription>
-                                    History of this part being used in work orders
-                                </CardDescription>
+                                <CardDescription>History of this part being used in work orders</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 {workOrderUsage.length > 0 ? (
@@ -187,21 +185,15 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                                             <div key={usage.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                                 <div>
                                                     <p className="font-medium">{usage.description}</p>
-                                                    <p className="text-sm text-muted-foreground">
+                                                    <p className="text-muted-foreground text-sm">
                                                         Customer: {usage.customer} • Status: {usage.status}
                                                     </p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {usage.created_at}
-                                                    </p>
+                                                    <p className="text-muted-foreground text-sm">{usage.created_at}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="font-medium">Qty: {usage.quantity}</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        €{usage.unit_price.toFixed(2)} each
-                                                    </p>
-                                                    <p className="text-sm font-medium">
-                                                        Total: €{usage.total_price.toFixed(2)}
-                                                    </p>
+                                                    <p className="text-muted-foreground text-sm">€{usage.unit_price.toFixed(2)} each</p>
+                                                    <p className="text-sm font-medium">Total: €{usage.total_price.toFixed(2)}</p>
                                                 </div>
                                             </div>
                                         ))}
@@ -212,63 +204,8 @@ export default function InventoryShow({ part, compatibleModels, workOrderUsage }
                             </CardContent>
                         </Card>
                     </div>
-
-                    {/* Sidebar */}
-                    <div className="space-y-4">
-                        {/* Stock Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Stock Information</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Current Stock</span>
-                                    <span className="text-lg font-bold">{part.stock_quantity}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Minimum Stock</span>
-                                    <span className="text-lg">{part.minimum_stock}</span>
-                                </div>
-                                {part.is_low_stock && (
-                                    <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
-                                        <AlertTriangle className="h-4 w-4 text-red-600" />
-                                        <span className="text-sm font-medium text-red-800">Low Stock Alert</span>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
-                        {/* Pricing Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-base">Pricing</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Supplier Price</span>
-                                    <span className="text-lg font-bold">€{part.supplier_price.toFixed(2)}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Selling Price</span>
-                                    <span className="text-lg font-bold">€{part.selling_price.toFixed(2)}</span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Markup</span>
-                                    <span className="text-lg font-bold text-green-600">
-                                        {(((part.selling_price - part.supplier_price) / part.supplier_price) * 100).toFixed(1)}%
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Stock Value</span>
-                                    <span className="text-lg font-bold">
-                                        €{(part.stock_quantity * part.supplier_price).toFixed(2)}
-                                    </span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
                 </div>
             </div>
         </AppLayout>
     );
-} 
+}

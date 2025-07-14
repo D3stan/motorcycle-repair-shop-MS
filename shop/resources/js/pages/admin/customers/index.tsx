@@ -1,10 +1,10 @@
+import AdminActionButtons from '@/components/admin/AdminActionButtons';
+import { CountBadge, StatusBadge } from '@/components/admin/AdminBadge';
 import AdminListLayout from '@/components/admin/AdminListLayout';
 import AdminTable from '@/components/admin/AdminTable';
-import AdminActionButtons from '@/components/admin/AdminActionButtons';
-import { StatusBadge, CountBadge } from '@/components/admin/AdminBadge';
 import { useAdminDelete } from '@/hooks/use-admin-delete';
-import { type BreadcrumbItem, type AdminCustomer } from '@/types';
-import { Users, Bike, Calendar, FileText } from 'lucide-react';
+import { type AdminCustomer, type BreadcrumbItem } from '@/types';
+import { Bike, FileText, Users } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,8 +20,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     customers: {
         data: AdminCustomer[];
-        links?: any[];
-        meta?: any;
+        links: any[];
+        meta: any;
     };
 }
 
@@ -31,27 +31,27 @@ export default function CustomersIndex({ customers }: Props) {
     // Prepare stats cards data
     const statsCards = [
         {
-            title: "Total Customers",
+            title: 'Total Customers',
             value: customers.meta?.total || customers.data.length,
             icon: Users,
         },
         {
-            title: "Active Customers",
-            value: customers.data.filter(c => c.motorcycles_count > 0).length,
-            description: "With motorcycles",
+            title: 'Active Customers',
+            value: customers.data.filter((c) => (c.motorcycles_count || 0) > 0).length,
+            description: 'With motorcycles',
             icon: Users,
         },
         {
-            title: "Total Motorcycles",
-            value: customers.data.reduce((sum, c) => sum + c.motorcycles_count, 0),
+            title: 'Total Motorcycles',
+            value: customers.data.reduce((sum, c) => sum + (c.motorcycles_count || 0), 0),
             icon: Bike,
         },
         {
-            title: "Pending Invoices",
-            value: customers.data.reduce((sum, c) => sum + c.pending_invoices_count, 0),
-            variant: customers.data.reduce((sum, c) => sum + c.pending_invoices_count, 0) > 0 ? 'warning' as const : 'default' as const,
+            title: 'Pending Invoices',
+            value: customers.data.reduce((sum, c) => sum + (c.pending_invoices_count || 0), 0),
+            variant: customers.data.reduce((sum, c) => sum + (c.pending_invoices_count || 0), 0) > 0 ? ('warning' as const) : ('default' as const),
             icon: FileText,
-        }
+        },
     ];
 
     // Prepare table columns
@@ -64,11 +64,9 @@ export default function CustomersIndex({ customers }: Props) {
                     <div className="font-medium">
                         {customer.first_name} {customer.last_name}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                        Joined {customer.created_at}
-                    </div>
+                    <div className="text-muted-foreground text-sm">Joined {customer.created_at}</div>
                 </div>
-            )
+            ),
         },
         {
             key: 'contact',
@@ -76,42 +74,25 @@ export default function CustomersIndex({ customers }: Props) {
             render: (customer: AdminCustomer) => (
                 <div>
                     <div className="text-sm">{customer.email}</div>
-                    {customer.phone && (
-                        <div className="text-sm text-muted-foreground">
-                            {customer.phone}
-                        </div>
-                    )}
+                    {customer.phone && <div className="text-muted-foreground text-sm">{customer.phone}</div>}
                 </div>
-            )
+            ),
         },
         {
             key: 'motorcycles',
             label: 'Motorcycles',
-            render: (customer: AdminCustomer) => (
-                <CountBadge count={customer.motorcycles_count} label="motorcycles" />
-            )
+            render: (customer: AdminCustomer) => <CountBadge count={customer.motorcycles_count || 0} label="motorcycles" />,
         },
         {
             key: 'activity',
             label: 'Activity',
             render: (customer: AdminCustomer) => (
-                <div className="text-sm space-y-1">
-                    <div>{customer.appointments_count} appointments</div>
-                    <div>{customer.work_orders_count} work orders</div>
-                    <div>{customer.invoices_count} invoices</div>
+                <div className="space-y-1 text-sm">
+                    <div>{customer.appointments_count || 0} appointments</div>
+                    <div>{customer.work_orders_count || 0} work orders</div>
+                    <div>{customer.invoices_count || 0} invoices</div>
                 </div>
-            )
-        },
-        {
-            key: 'status',
-            label: 'Status',
-            render: (customer: AdminCustomer) => (
-                customer.pending_invoices_count > 0 ? (
-                    <StatusBadge status={`${customer.pending_invoices_count} pending`} />
-                ) : (
-                    <StatusBadge status="Active" />
-                )
-            )
+            ),
         },
         {
             key: 'actions',
@@ -120,14 +101,10 @@ export default function CustomersIndex({ customers }: Props) {
                 <AdminActionButtons
                     itemId={customer.id}
                     basePath="/admin/customers"
-                    onDelete={(id) => handleDeleteWithName(
-                        id, 
-                        `${customer.first_name} ${customer.last_name}`, 
-                        route('admin.customers.destroy', id)
-                    )}
+                    onDelete={(id) => handleDeleteWithName(id, `${customer.first_name} ${customer.last_name}`, route('admin.customers.destroy', id))}
                 />
-            )
-        }
+            ),
+        },
     ];
 
     return (
@@ -143,11 +120,11 @@ export default function CustomersIndex({ customers }: Props) {
             hasData={customers.data.length > 0}
             emptyStateProps={{
                 icon: Users,
-                title: "No customers found",
-                description: "Get started by adding your first customer to the system."
+                title: 'No customers found',
+                description: 'Get started by adding your first customer to the system.',
             }}
         >
             <AdminTable data={customers.data} columns={columns} />
         </AdminListLayout>
     );
-} 
+}

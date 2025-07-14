@@ -26,7 +26,7 @@ class StaffCreateRequest extends FormRequest
             'last_name' => 'required|string|min:1|max:255|regex:/^[a-zA-ZÀ-ÿ\s\'-]+$/',
             'email' => 'required|string|lowercase|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:20',
-            'tax_code' => 'nullable|string|max:16|unique:users,tax_code',
+            'CF' => 'nullable|string|max:16|unique:users,CF',
             'password' => 'required|string|min:8|confirmed',
         ];
     }
@@ -44,7 +44,7 @@ class StaffCreateRequest extends FormRequest
             'last_name.required' => 'The last name field is required.',
             'last_name.regex' => 'The last name may only contain letters, spaces, hyphens, and apostrophes.',
             'email.unique' => 'This email is already registered in the system.',
-            'tax_code.unique' => 'This tax code is already registered in the system.',
+            'CF.unique' => 'This tax code is already registered in the system.',
             'password.required' => 'The password field is required.',
             'password.min' => 'The password must be at least 8 characters.',
             'password.confirmed' => 'The password confirmation does not match.',

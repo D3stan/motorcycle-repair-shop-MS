@@ -75,6 +75,10 @@ const mechanicNavItems: NavItem[] = [
         href: '/mechanic/work-orders',
     },
     {
+        title: 'My Work Sessions',
+        href: '/mechanic/work-sessions',
+    },
+    {
         title: 'Schedule',
         href: '/mechanic/schedule',
     },
@@ -118,4 +122,4 @@ export function isMechanic(user: User): boolean {
  */
 export function isCustomer(user: User): boolean {
     return user.type === 'customer';
-} 
+}

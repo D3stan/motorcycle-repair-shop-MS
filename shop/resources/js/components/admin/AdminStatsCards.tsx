@@ -18,19 +18,27 @@ interface AdminStatsCardsProps {
 export default function AdminStatsCards({ cards, columns = 4 }: AdminStatsCardsProps) {
     const getColumnClass = () => {
         switch (columns) {
-            case 2: return 'md:grid-cols-2';
-            case 3: return 'md:grid-cols-3';
-            case 4: return 'md:grid-cols-4';
-            default: return 'md:grid-cols-4';
+            case 2:
+                return 'md:grid-cols-2';
+            case 3:
+                return 'md:grid-cols-3';
+            case 4:
+                return 'md:grid-cols-4';
+            default:
+                return 'md:grid-cols-4';
         }
     };
 
     const getValueColor = (variant?: StatsCard['variant']) => {
         switch (variant) {
-            case 'success': return 'text-green-600';
-            case 'warning': return 'text-orange-600';
-            case 'danger': return 'text-red-600';
-            default: return '';
+            case 'success':
+                return 'text-green-600';
+            case 'warning':
+                return 'text-orange-600';
+            case 'danger':
+                return 'text-red-600';
+            default:
+                return '';
         }
     };
 
@@ -42,27 +50,17 @@ export default function AdminStatsCards({ cards, columns = 4 }: AdminStatsCardsP
                         <div className="flex items-center justify-between">
                             <div>
                                 <CardTitle className="text-base">{card.title}</CardTitle>
-                                {card.description && (
-                                    <CardDescription>{card.description}</CardDescription>
-                                )}
+                                {card.description && <CardDescription>{card.description}</CardDescription>}
                             </div>
-                            {card.icon && (
-                                <card.icon className="h-4 w-4 text-muted-foreground" />
-                            )}
+                            {card.icon && <card.icon className="text-muted-foreground h-4 w-4" />}
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className={`text-2xl font-bold mb-2 ${getValueColor(card.variant)}`}>
-                            {card.value}
-                        </div>
-                        {card.subtext && (
-                            <div className="text-sm text-muted-foreground">
-                                {card.subtext}
-                            </div>
-                        )}
+                        <div className={`mb-2 text-2xl font-bold ${getValueColor(card.variant)}`}>{card.value}</div>
+                        {card.subtext && <div className="text-muted-foreground text-sm">{card.subtext}</div>}
                     </CardContent>
                 </Card>
             ))}
         </div>
     );
-} 
+}

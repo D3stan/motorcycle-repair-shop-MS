@@ -1,19 +1,17 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, FileText, User, Bike, CheckCircle, Download, Calendar, Euro } from 'lucide-react';
+import { ArrowLeft, Bike, CheckCircle, Download, Euro, FileText, User } from 'lucide-react';
 
 interface Invoice {
     id: number;
     invoice_number: string;
     issue_date: string;
     due_date: string;
-    subtotal: number;
-    tax_amount: number;
     total_amount: number;
     status: string;
     paid_at: string | null;
@@ -25,11 +23,11 @@ interface Customer {
     name: string;
     email: string;
     phone: string | null;
-    tax_code: string | null;
 }
 
 interface WorkOrder {
     id: number;
+    type: string;
     description: string;
     status: string;
     started_at: string | null;
@@ -90,11 +88,11 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
 
     const getStatusBadge = (status: string) => {
         const isOverdue = status === 'pending' && new Date(invoice.due_date) < new Date();
-        
+
         if (isOverdue || status === 'overdue') {
             return <Badge variant="destructive">Overdue</Badge>;
         }
-        
+
         switch (status) {
             case 'paid':
                 return <Badge className="bg-green-100 text-green-800">Paid</Badge>;
@@ -121,9 +119,7 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">Invoice {invoice.invoice_number}</h1>
-                        <p className="text-muted-foreground">
-                            Created on {formatDate(invoice.created_at)}
-                        </p>
+                        <p className="text-muted-foreground">Created on {formatDate(invoice.created_at)}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" asChild>
@@ -151,62 +147,38 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                 <div className="grid gap-4 md:grid-cols-4">
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <FileText className="h-4 w-4" />
                                 Status
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="flex items-center gap-2">
-                                {getStatusBadge(invoice.status)}
-                            </div>
-                            {invoice.paid_at && (
-                                <p className="text-sm text-muted-foreground mt-2">
-                                    Paid on {formatDateTime(invoice.paid_at)}
-                                </p>
-                            )}
+                            <div className="flex items-center gap-2">{getStatusBadge(invoice.status)}</div>
+                            {invoice.paid_at && <p className="text-muted-foreground mt-2 text-sm">Paid on {formatDateTime(invoice.paid_at)}</p>}
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <Euro className="h-4 w-4" />
                                 Subtotal
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {formatCurrency(invoice.subtotal)}
-                            </div>
+                            <div className="text-2xl font-bold">{formatCurrency(invoice.subtotal)}</div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                <Euro className="h-4 w-4" />
-                                Tax
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {formatCurrency(invoice.tax_amount)}
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-base flex items-center gap-2">
+                            <CardTitle className="flex items-center gap-2 text-base">
                                 <Euro className="h-4 w-4" />
                                 Total Amount
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-primary">
-                                {formatCurrency(invoice.total_amount)}
-                            </div>
+                            <div className="text-primary text-2xl font-bold">{formatCurrency(invoice.total_amount)}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -224,19 +196,19 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                         <CardContent className="space-y-4">
                             <div className="grid gap-2">
                                 <div className="flex justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Invoice Number:</span>
+                                    <span className="text-muted-foreground text-sm font-medium">Invoice Number:</span>
                                     <span className="font-medium">{invoice.invoice_number}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Issue Date:</span>
+                                    <span className="text-muted-foreground text-sm font-medium">Issue Date:</span>
                                     <span>{formatDate(invoice.issue_date)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Due Date:</span>
+                                    <span className="text-muted-foreground text-sm font-medium">Due Date:</span>
                                     <span>{formatDate(invoice.due_date)}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Created:</span>
+                                    <span className="text-muted-foreground text-sm font-medium">Created:</span>
                                     <span>{formatDateTime(invoice.created_at)}</span>
                                 </div>
                             </div>
@@ -254,30 +226,21 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                         <CardContent className="space-y-4">
                             <div className="grid gap-2">
                                 <div className="flex justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Name:</span>
+                                    <span className="text-muted-foreground text-sm font-medium">Name:</span>
                                     <span className="font-medium">
-                                        <Link 
-                                            href={`/admin/customers/${customer.id}`}
-                                            className="hover:underline"
-                                        >
+                                        <Link href={`/admin/customers/${customer.id}`} className="hover:underline">
                                             {customer.name}
                                         </Link>
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-sm font-medium text-muted-foreground">Email:</span>
+                                    <span className="text-muted-foreground text-sm font-medium">Email:</span>
                                     <span>{customer.email}</span>
                                 </div>
                                 {customer.phone && (
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Phone:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Phone:</span>
                                         <span>{customer.phone}</span>
-                                    </div>
-                                )}
-                                {customer.tax_code && (
-                                    <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Tax Code:</span>
-                                        <span>{customer.tax_code}</span>
                                     </div>
                                 )}
                             </div>
@@ -296,71 +259,85 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Work Order ID:</span>
-                                        <span className="font-medium">
-                                            <Link 
-                                                href={`/admin/work-orders/${workOrder.id}`}
-                                                className="hover:underline"
+                                        <span className="text-muted-foreground text-sm font-medium">Work Order ID:</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">
+                                                <Link
+                                                    href={`/admin/work-orders/${workOrder.id}${workOrder.type === 'session' ? '?type=work_session' : ''}`}
+                                                    className="hover:underline"
+                                                >
+                                                    #{workOrder.id}
+                                                </Link>
+                                            </span>
+                                            <Badge
+                                                variant="outline"
+                                                className={
+                                                    workOrder.type === 'maintenance'
+                                                        ? 'border-blue-200 text-blue-700'
+                                                        : 'border-green-200 text-green-700'
+                                                }
                                             >
-                                                #{workOrder.id}
-                                            </Link>
-                                        </span>
+                                                {workOrder.type === 'maintenance' ? 'Maintenance' : 'Session'}
+                                            </Badge>
+                                        </div>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Status:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Status:</span>
                                         <Badge variant="secondary">{workOrder.status}</Badge>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Started:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Started:</span>
                                         <span>{workOrder.started_at ? formatDate(workOrder.started_at) : 'Not started'}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Completed:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Completed:</span>
                                         <span>{workOrder.completed_at ? formatDate(workOrder.completed_at) : 'Not completed'}</span>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Labor Cost:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Labor Cost:</span>
                                         <span>{formatCurrency(workOrder.labor_cost)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Parts Cost:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Parts Cost:</span>
                                         <span>{formatCurrency(workOrder.parts_cost)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Total Cost:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Total Cost:</span>
                                         <span className="font-semibold">{formatCurrency(workOrder.total_cost)}</span>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             <div>
-                                <h4 className="font-medium mb-2">Description</h4>
-                                <p className="text-sm text-muted-foreground">{workOrder.description}</p>
+                                <h4 className="mb-2 font-medium">Description</h4>
+                                <p className="text-muted-foreground text-sm">{workOrder.description}</p>
                             </div>
-                            
+
                             <Separator />
-                            
+
                             <div>
-                                <h4 className="font-medium mb-2">Motorcycle</h4>
+                                <h4 className="mb-2 font-medium">Motorcycle</h4>
                                 <div className="grid gap-2 md:grid-cols-2">
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Brand & Model:</span>
-                                        <span>{workOrder.motorcycle.brand} {workOrder.motorcycle.model}</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Brand & Model:</span>
+                                        <span>
+                                            {workOrder.motorcycle.brand} {workOrder.motorcycle.model}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">Year:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">Year:</span>
                                         <span>{workOrder.motorcycle.year}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">License Plate:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">License Plate:</span>
                                         <span className="font-mono">{workOrder.motorcycle.plate}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-medium text-muted-foreground">VIN:</span>
+                                        <span className="text-muted-foreground text-sm font-medium">VIN:</span>
                                         <span className="font-mono text-xs">{workOrder.motorcycle.vin}</span>
                                     </div>
                                 </div>
@@ -371,4 +348,4 @@ export default function InvoiceShow({ invoice, customer, workOrder }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

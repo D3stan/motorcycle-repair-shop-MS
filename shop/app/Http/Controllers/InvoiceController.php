@@ -22,30 +22,35 @@ class InvoiceController extends Controller
         // Get user's invoices with related data
         $invoices = $user->invoices()
             ->with(['workOrder.motorcycle.motorcycleModel'])
-            ->orderBy('issue_date', 'desc')
+            ->whereNotNull('CodiceIntervento') // Only get invoices with work orders
+            ->orderBy('Data', 'desc')
             ->get()
             ->map(function ($invoice) {
+                // Ensure work order exists
+                if (!$invoice->workOrder || !$invoice->workOrder->motorcycle) {
+                    return null;
+                }
+                
                 return [
-                    'id' => $invoice->id,
-                    'invoice_number' => $invoice->invoice_number,
-                    'issue_date' => $invoice->issue_date->format('Y-m-d'),
-                    'due_date' => $invoice->due_date->format('Y-m-d'),
-                    'status' => $invoice->status,
-                    'subtotal' => (float) $invoice->subtotal,
-                    'tax_amount' => (float) $invoice->tax_amount,
-                    'total_amount' => (float) $invoice->total_amount,
-                    'paid_at' => $invoice->paid_at?->format('Y-m-d'),
+                    'id' => $invoice->CodiceFattura,
+                    'invoice_number' => $invoice->CodiceFattura,
+                    'issue_date' => $invoice->Data->format('Y-m-d'),
+                    'due_date' => $invoice->Data->format('Y-m-d'), // Use issue date as due date for compatibility
+                    'status' => 'paid', // All invoices considered paid in simplified schema
+                    'total_amount' => (float) $invoice->Importo,
+                    'paid_at' => $invoice->Data->format('Y-m-d'),
                     'work_order' => [
-                        'id' => $invoice->workOrder->id,
-                        'description' => $invoice->workOrder->description,
+                        'id' => $invoice->workOrder->CodiceIntervento,
+                        'description' => $invoice->workOrder->Note ?? 'N/A',
                         'motorcycle' => [
-                            'brand' => $invoice->workOrder->motorcycle->motorcycleModel->brand,
-                            'model' => $invoice->workOrder->motorcycle->motorcycleModel->name,
-                            'plate' => $invoice->workOrder->motorcycle->license_plate,
+                            'brand' => $invoice->workOrder->motorcycle->motorcycleModel->Marca ?? 'Unknown',
+                            'model' => $invoice->workOrder->motorcycle->motorcycleModel->Nome ?? 'Unknown',
+                            'plate' => $invoice->workOrder->motorcycle->Targa ?? 'N/A',
                         ],
                     ],
                 ];
-            });
+            })
+            ->filter(); // Remove null entries
 
         // Calculate summary statistics
         $totalOutstanding = $invoices->where('status', '!=', 'paid')->sum('total_amount');
@@ -72,8 +77,8 @@ class InvoiceController extends Controller
         $user = $request->user();
 
         // Find the invoice manually to avoid route model binding issues
-        $invoice = Invoice::where('id', $invoiceId)
-            ->where('user_id', $user->id)
+        $invoice = Invoice::where('CodiceFattura', $invoiceId)
+            ->where('CF', $user->CF)
             ->first();
 
         // Check if invoice exists and belongs to user
@@ -87,6 +92,11 @@ class InvoiceController extends Controller
             'workOrder.motorcycle.motorcycleModel',
             'workOrder.parts'
         ]);
+
+        // Ensure work order exists
+        if (!$invoice->workOrder) {
+            abort(404, 'Invoice work order not found.');
+        }
 
         // Generate PDF
         $pdf = Pdf::loadView('invoices.pdf', [
@@ -107,7 +117,7 @@ class InvoiceController extends Controller
         ]);
 
         // Generate filename
-        $filename = "invoice-{$invoice->invoice_number}.pdf";
+        $filename = "invoice-{$invoice->CodiceFattura}.pdf";
         
         // Force download using the download method with proper headers
         return response()->streamDownload(function() use ($pdf) {

@@ -17,23 +17,8 @@ const variantStyles = {
     danger: 'bg-red-100 text-red-800',
 };
 
-export default function AdminBadge({ 
-    children, 
-    variant = 'status', 
-    size = 'default',
-    className 
-}: AdminBadgeProps) {
-    return (
-        <Badge 
-            className={cn(
-                variantStyles[variant],
-                size === 'sm' && 'text-xs px-2 py-0.5',
-                className
-            )}
-        >
-            {children}
-        </Badge>
-    );
+export default function AdminBadge({ children, variant = 'status', size = 'default', className }: AdminBadgeProps) {
+    return <Badge className={cn(variantStyles[variant], size === 'sm' && 'px-2 py-0.5 text-xs', className)}>{children}</Badge>;
 }
 
 // Predefined badge components for common use cases
@@ -59,4 +44,4 @@ export function CountBadge({ count, label }: { count: number; label: string }) {
             {count} {label}
         </AdminBadge>
     );
-} 
+}

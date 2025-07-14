@@ -1,6 +1,6 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -75,7 +75,7 @@ export default function ServiceHistory({ motorcycle, serviceHistory }: ServiceHi
         return new Date(date).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric'
+            day: 'numeric',
         });
     };
 
@@ -87,11 +87,9 @@ export default function ServiceHistory({ motorcycle, serviceHistory }: ServiceHi
         return status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
     };
 
-    const totalSpent = serviceHistory
-        .filter(record => record.status === 'completed')
-        .reduce((sum, record) => sum + record.total_cost, 0);
+    const totalSpent = serviceHistory.filter((record) => record.status === 'completed').reduce((sum, record) => sum + record.total_cost, 0);
 
-    const completedServices = serviceHistory.filter(record => record.status === 'completed').length;
+    const completedServices = serviceHistory.filter((record) => record.status === 'completed').length;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -118,24 +116,20 @@ export default function ServiceHistory({ motorcycle, serviceHistory }: ServiceHi
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{serviceHistory.length}</div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                {completedServices} completed
-                            </p>
+                            <p className="text-muted-foreground mt-1 text-xs">{completedServices} completed</p>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Total Spent</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">{formatCurrency(totalSpent)}</div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                On completed services
-                            </p>
+                            <p className="text-muted-foreground mt-1 text-xs">On completed services</p>
                         </CardContent>
                     </Card>
-                    
+
                     <Card>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-base">Last Service</CardTitle>
@@ -144,9 +138,7 @@ export default function ServiceHistory({ motorcycle, serviceHistory }: ServiceHi
                             <div className="text-2xl font-bold">
                                 {serviceHistory.length > 0 ? formatDate(serviceHistory[0].completed_at) : 'None'}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Most recent completion
-                            </p>
+                            <p className="text-muted-foreground mt-1 text-xs">Most recent completion</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -155,41 +147,30 @@ export default function ServiceHistory({ motorcycle, serviceHistory }: ServiceHi
                 <Card>
                     <CardHeader>
                         <CardTitle>Service Records</CardTitle>
-                        <CardDescription>
-                            Complete service history for this motorcycle
-                        </CardDescription>
+                        <CardDescription>Complete service history for this motorcycle</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {serviceHistory.length === 0 ? (
-                            <div className="text-center py-12">
-                                <p className="text-lg font-medium text-muted-foreground mb-2">
-                                    No service history found
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    This motorcycle hasn't had any services recorded yet.
-                                </p>
+                            <div className="py-12 text-center">
+                                <p className="text-muted-foreground mb-2 text-lg font-medium">No service history found</p>
+                                <p className="text-muted-foreground text-sm">This motorcycle hasn't had any services recorded yet.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
                                 {serviceHistory.map((record, index) => (
                                     <div
                                         key={record.id}
-                                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                                        className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-4 transition-colors"
                                     >
                                         <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
+                                            <div className="mb-2 flex items-center gap-3">
                                                 <h3 className="font-medium">Work Order #{record.id}</h3>
-                                                <Badge 
-                                                    variant={getStatusVariant(record.status)}
-                                                    className={getStatusColor(record.status)}
-                                                >
+                                                <Badge variant={getStatusVariant(record.status)} className={getStatusColor(record.status)}>
                                                     {formatStatus(record.status)}
                                                 </Badge>
                                             </div>
-                                            <p className="text-sm text-muted-foreground mb-2">
-                                                {record.description}
-                                            </p>
-                                            <div className="flex gap-6 text-xs text-muted-foreground">
+                                            <p className="text-muted-foreground mb-2 text-sm">{record.description}</p>
+                                            <div className="text-muted-foreground flex gap-6 text-xs">
                                                 <span>
                                                     <strong>Started:</strong> {formatDate(record.started_at)}
                                                 </span>
@@ -204,18 +185,9 @@ export default function ServiceHistory({ motorcycle, serviceHistory }: ServiceHi
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-lg font-semibold">
-                                                {formatCurrency(record.total_cost)}
-                                            </div>
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm"
-                                                asChild
-                                                className="mt-2"
-                                            >
-                                                <Link href={`/work-orders/${record.id}`}>
-                                                    View Details
-                                                </Link>
+                                            <div className="text-lg font-semibold">{formatCurrency(record.total_cost)}</div>
+                                            <Button variant="outline" size="sm" asChild className="mt-2">
+                                                <Link href={`/work-orders/${record.id}`}>View Details</Link>
                                             </Button>
                                         </div>
                                     </div>
@@ -237,4 +209,4 @@ export default function ServiceHistory({ motorcycle, serviceHistory }: ServiceHi
             </div>
         </AppLayout>
     );
-} 
+}

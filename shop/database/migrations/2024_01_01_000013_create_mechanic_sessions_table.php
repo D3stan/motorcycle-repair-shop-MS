@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mechanic_sessions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Mechanic (CF)
-            $table->foreignId('work_session_id')->constrained()->onDelete('cascade'); // CodiceSessione
-            $table->string('role')->default('primary'); // primary, assistant, supervisor
+        Schema::create('AFFIANCAMENTI', function (Blueprint $table) {
+            $table->string('CodiceSessione');
+            $table->string('CF');
             $table->timestamps();
 
-            $table->unique(['user_id', 'work_session_id']);
-            $table->index(['work_session_id', 'role']);
+            $table->foreign('CodiceSessione')->references('CodiceSessione')->on('SESSIONI')->onDelete('cascade');
+            $table->foreign('CF')->references('CF')->on('users')->onDelete('cascade');
+            $table->primary(['CodiceSessione', 'CF']);
+            $table->index('CF');
         });
     }
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mechanic_sessions');
+        Schema::dropIfExists('AFFIANCAMENTI');
     }
 }; 

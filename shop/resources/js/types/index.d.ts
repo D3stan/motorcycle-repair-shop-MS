@@ -38,7 +38,7 @@ export interface User {
     email: string;
     type: 'customer' | 'mechanic' | 'admin';
     phone?: string;
-    tax_code?: string;
+    CF?: string;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;
@@ -53,7 +53,7 @@ export interface AdminCustomer {
     last_name: string;
     email: string;
     phone?: string;
-    tax_code?: string;
+    CF?: string;
     motorcycles_count: number;
     appointments_count: number;
     work_orders_count: number;
@@ -130,7 +130,7 @@ export interface AdminStaff {
     last_name: string;
     email: string;
     phone?: string;
-    tax_code?: string;
+    CF?: string;
     assigned_work_orders_count: number;
     active_work_orders_count: number;
     created_at: string;
@@ -142,7 +142,7 @@ export interface AdminStaffDetails {
     last_name: string;
     email: string;
     phone?: string;
-    tax_code?: string;
+    CF?: string;
     created_at: string;
 }
 
@@ -156,19 +156,25 @@ export interface AdminStaffStatistics {
 // Admin Work Order interfaces
 export interface AdminWorkOrder {
     id: number;
+    type: 'work_order' | 'work_session';
+    type_label: string;
     description: string;
     status: string;
     started_at?: string;
     completed_at?: string;
+    hours_worked: number;
     total_cost: number;
-    labor_cost: number;
-    parts_cost: number;
+    labor_cost?: number;
+    parts_cost?: number;
     customer: string;
     customer_email: string;
     motorcycle: string;
     motorcycle_plate: string;
     mechanics: AdminWorkOrderMechanic[];
     appointment_id?: number;
+    work_type?: string;
+    cause?: string;
+    name?: string;
     created_at: string;
     assigned_at?: string;
     pivot_started_at?: string;
@@ -179,6 +185,7 @@ export interface AdminWorkOrder {
 export interface AdminWorkOrderMechanic {
     id: number;
     name: string;
+    email?: string;
     assigned_at?: string;
     started_at?: string;
     completed_at?: string;
@@ -186,13 +193,19 @@ export interface AdminWorkOrderMechanic {
 
 export interface AdminWorkOrderDetails {
     id: number;
+    type: 'work_order' | 'work_session';
+    type_label: string;
     description: string;
     status: string;
     started_at?: string;
     completed_at?: string;
+    hours_worked: number;
     total_cost: number;
-    labor_cost: number;
-    parts_cost: number;
+    labor_cost?: number;
+    parts_cost?: number;
+    work_type?: string;
+    cause?: string;
+    name?: string;
     notes?: string;
     created_at: string;
 }
@@ -241,6 +254,8 @@ export interface AdminWorkOrderStatistics {
     in_progress: number;
     completed: number;
     cancelled: number;
+    work_orders_count?: number;
+    work_sessions_count?: number;
 }
 
 // Form interfaces for creating/editing
@@ -281,30 +296,9 @@ export interface AdminPart {
     name: string;
     description?: string;
     supplier_price: number;
-    selling_price: number;
     category: string;
-    stock_quantity: number;
-    minimum_stock: number;
     supplier_id: number;
     supplier_name: string;
-    is_low_stock: boolean;
-    created_at: string;
-}
-
-export interface AdminPartDetails {
-    id: number;
-    part_code: string;
-    brand: string;
-    name: string;
-    description?: string;
-    supplier_price: number;
-    selling_price: number;
-    category: string;
-    stock_quantity: number;
-    minimum_stock: number;
-    supplier_id: number;
-    supplier_name: string;
-    is_low_stock: boolean;
     created_at: string;
 }
 
@@ -370,6 +364,7 @@ export interface AdminInvoice {
     customer: string;
     customer_email: string;
     motorcycle: string;
+    work_type: string;
     issue_date: string;
     due_date: string;
     subtotal: number;
@@ -425,8 +420,8 @@ export interface AdminTopCustomerRevenue {
 export interface AdminScheduleStatistics {
     today_appointments: number;
     pending_appointments: number;
-    confirmed_appointments: number;
-    completed_appointments: number;
+    accepted_appointments: number;
+    rejected_appointments: number;
 }
 
 export interface AdminWeeklySchedule {
@@ -477,7 +472,7 @@ export interface AdminAppointmentCustomer {
     name: string;
     email: string;
     phone?: string;
-    tax_code?: string;
+    CF?: string;
 }
 
 export interface AdminAppointmentMotorcycle {
@@ -497,6 +492,5 @@ export interface AdminUpcomingAppointment {
     type: string;
     status: string;
     customer: string;
-    motorcycle: string;
-    plate: string;
+    description: string;
 }

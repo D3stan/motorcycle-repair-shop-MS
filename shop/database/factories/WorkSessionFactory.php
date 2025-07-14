@@ -17,29 +17,56 @@ class WorkSessionFactory extends Factory
      */
     public function definition(): array
     {
-        $startTime = fake()->dateTimeBetween('-6 months', '-1 day');
+        // Generate dates before today
+        $workDate = fake()->dateTimeBetween('-6 months', '-1 day');
         $hoursWorked = fake()->randomFloat(2, 0.5, 8);
-        $endTime = (clone $startTime)->modify("+{$hoursWorked} hours");
+        
+        // Random status based on probability
+        $stato = fake()->randomElement(['pending', 'in_progress', 'completed']);
 
         return [
-            'session_code' => fake()->unique()->regexify('SES[0-9]{6}'),
-            'motorcycle_id' => Motorcycle::factory(),
-            'start_time' => $startTime,
-            'end_time' => fake()->boolean(80) ? $endTime : null, // 80% completed sessions
-            'hours_worked' => $hoursWorked,
-            'notes' => fake()->optional()->sentence(),
-            'session_type' => fake()->randomElement(['maintenance', 'dyno', 'diagnosis', 'repair', 'inspection']),
+            'CodiceSessione' => fake()->unique()->regexify('SES[0-9]{6}'),
+            'Data' => $workDate,
+            'Stato' => $stato,
+            'OreImpiegate' => $hoursWorked,
+            'Note' => fake()->optional()->sentence(),
+            'NumTelaio' => Motorcycle::factory(),
         ];
     }
 
     /**
-     * Create an active session (no end time).
+     * Create a pending session.
      */
-    public function active(): static
+    public function pending(): static
     {
         return $this->state(fn (array $attributes) => [
-            'end_time' => null,
-            'start_time' => fake()->dateTimeBetween('-8 hours', '-1 hour'),
+            'Data' => fake()->dateTimeBetween('-2 days', '+1 week'),
+            'Stato' => 'pending',
+            'OreImpiegate' => 0,
+        ]);
+    }
+
+    /**
+     * Create an in-progress session.
+     */
+    public function inProgress(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'Data' => fake()->dateTimeBetween('-1 week', 'today'),
+            'Stato' => 'in_progress',
+            'OreImpiegate' => fake()->randomFloat(2, 0.5, 4),
+        ]);
+    }
+
+    /**
+     * Create a completed session.
+     */
+    public function completed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'Data' => fake()->dateTimeBetween('-6 months', '-2 days'),
+            'Stato' => 'completed',
+            'OreImpiegate' => fake()->randomFloat(2, 1, 8),
         ]);
     }
 } 

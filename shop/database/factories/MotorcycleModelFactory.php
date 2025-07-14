@@ -23,12 +23,12 @@ class MotorcycleModelFactory extends Factory
         $engineSize = fake()->randomElement([125, 250, 300, 500, 600, 650, 750, 900, 1000, 1200, 1300, 1400]);
         
         return [
-            'brand' => $brand,
-            'name' => $this->generateModelName($brand),
-            'model_code' => fake()->unique()->regexify('[A-Z]{2}[0-9]{4}'),
-            'engine_size' => $engineSize,
-            'segment' => fake()->randomElement($segments),
-            'power' => $this->calculatePower($engineSize),
+            'CodiceModello' => fake()->unique()->regexify('[A-Z]{2}[0-9]{4}'),
+            'Marca' => $brand,
+            'Nome' => $this->generateModelName($brand),
+            'Cilindrata' => $engineSize,
+            'Segmento' => fake()->randomElement($segments),
+            'Potenza' => $this->calculatePower($engineSize),
         ];
     }
 

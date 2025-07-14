@@ -18,6 +18,7 @@ class PartFactory extends Factory
     public function definition(): array
     {
         $categories = ['Engine', 'Brake', 'Suspension', 'Electrical', 'Body', 'Transmission', 'Exhaust', 'Fuel System'];
+        $brands = ['OEM', 'Brembo', 'Ohlins', 'NGK', 'Pirelli', 'Akrapovic', 'K&N', 'Puig'];
         $partTypes = [
             'Engine' => ['Piston', 'Cylinder Head', 'Valve', 'Spark Plug', 'Oil Filter', 'Gasket'],
             'Brake' => ['Brake Pad', 'Brake Disc', 'Brake Fluid', 'Brake Line', 'Caliper'],
@@ -30,20 +31,17 @@ class PartFactory extends Factory
         ];
 
         $category = fake()->randomElement($categories);
-        $partType = fake()->randomElement($partTypes[$category]);
-        $supplierPrice = fake()->randomFloat(2, 10, 500);
-
+        $partName = fake()->randomElement($partTypes[$category]);
+        $supplierPrice = fake()->randomFloat(2, 5, 500);
+        
         return [
-            'part_code' => fake()->unique()->regexify('PRT[0-9]{6}'),
-            'brand' => fake()->randomElement(['OEM', 'Bosch', 'Brembo', 'Ohlins', 'NGK', 'Akrapovic', 'K&N']),
-            'name' => $partType,
-            'description' => fake()->optional()->sentence(),
-            'supplier_price' => $supplierPrice,
-            'selling_price' => $supplierPrice * fake()->randomFloat(2, 1.2, 2.5), // 20-150% markup
-            'category' => $category,
-            'stock_quantity' => fake()->numberBetween(0, 100),
-            'minimum_stock' => fake()->numberBetween(1, 10),
-            'supplier_id' => Supplier::factory(),
+            'CodiceRicambio' => fake()->unique()->regexify('[A-Z]{2}[0-9]{8}'),
+            'Marca' => fake()->randomElement($brands),
+            'Nome' => $partName,
+            'Descrizione' => fake()->optional()->sentence(),
+            'PrezzoFornitore' => $supplierPrice,
+            'Categoria' => $category,
+            'CodiceFornitore' => Supplier::factory(),
         ];
     }
 } 

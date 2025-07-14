@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class User extends Authenticatable
 {
@@ -22,7 +23,7 @@ class User extends Authenticatable
     protected $fillable = [
         'first_name',
         'last_name',
-        'tax_code',
+        'CF',  // Codice Fiscale - used for Italian business logic
         'phone',
         'email',
         'type',
@@ -41,6 +42,14 @@ class User extends Authenticatable
     ];
 
     /**
+     * Get the key name for the model when used in relationships with CF.
+     */
+    public function getQualifiedCFColumn(): string
+    {
+        return $this->getTable().'.CF';
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -54,35 +63,51 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the motorcycles for this user.
+     * Get the motorcycles for this user (POSSESSIONE relationship via CF).
      */
     public function motorcycles(): HasMany
     {
-        return $this->hasMany(Motorcycle::class);
+        return $this->hasMany(Motorcycle::class, 'CF', 'CF');
     }
 
     /**
-     * Get the appointments for this user.
+     * Get the appointments for this user (CREAZIONE relationship via CF).
      */
     public function appointments(): HasMany
     {
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Appointment::class, 'CF', 'CF');
     }
 
     /**
-     * Get the work orders for this user.
-     */
-    public function workOrders(): HasMany
-    {
-        return $this->hasMany(WorkOrder::class);
-    }
-
-    /**
-     * Get the invoices for this user.
+     * Get the invoices for this user (INTESTAZIONE relationship via CF).
      */
     public function invoices(): HasMany
     {
-        return $this->hasMany(Invoice::class);
+        return $this->hasMany(Invoice::class, 'CF', 'CF');
+    }
+
+    /**
+     * Get all work orders for this user via their motorcycles.
+     */
+    public function workOrders(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            WorkOrder::class,
+            Motorcycle::class,
+            'CF',             // Foreign key on MOTO table...
+            'NumTelaio',      // Foreign key on INTERVENTI table...
+            'CF',             // Local key on users table...
+            'NumTelaio'       // Local key on MOTO table...
+        );
+    }
+
+    /**
+     * Get work orders assigned to this mechanic (SVOLGIMENTI relationship).
+     */
+    public function assignedWorkOrders(): BelongsToMany
+    {
+        return $this->belongsToMany(WorkOrder::class, 'SVOLGIMENTI', 'CF', 'CodiceIntervento', 'CF', 'CodiceIntervento')
+            ->withTimestamps();
     }
 
     /**
@@ -90,7 +115,7 @@ class User extends Authenticatable
      */
     public function getFullNameAttribute(): string
     {
-        return "{$this->first_name} {$this->last_name}";
+        return $this->first_name . ' ' . $this->last_name;
     }
 
     /**
@@ -118,22 +143,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the work orders assigned to this mechanic.
-     */
-    public function assignedWorkOrders(): BelongsToMany
-    {
-        return $this->belongsToMany(WorkOrder::class, 'mechanic_work_orders')
-            ->withPivot('assigned_at', 'started_at', 'completed_at', 'notes')
-            ->withTimestamps();
-    }
-
-    /**
-     * Get the work sessions this mechanic participated in.
+     * Get the work sessions this mechanic participated in (AFFIANCAMENTI relationship).
      */
     public function workSessions(): BelongsToMany
     {
-        return $this->belongsToMany(WorkSession::class, 'mechanic_sessions')
-            ->withPivot('role')
+        return $this->belongsToMany(WorkSession::class, 'AFFIANCAMENTI', 'CF', 'CodiceSessione')
             ->withTimestamps();
     }
 }

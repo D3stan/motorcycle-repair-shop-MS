@@ -12,17 +12,37 @@ class Motorcycle extends Model
     use HasFactory;
 
     /**
+     * The table associated with the model.
+     */
+    protected $table = 'MOTO';
+
+    /**
+     * The primary key for the model.
+     */
+    protected $primaryKey = 'NumTelaio';
+
+    /**
+     * The "type" of the primary key ID.
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
-        'motorcycle_model_id',
-        'license_plate',
-        'registration_year',
-        'vin',
-        'notes',
+        'NumTelaio',
+        'Targa',
+        'AnnoImmatricolazione',
+        'Note',
+        'CodiceModello',
+        'CF',
     ];
 
     /**
@@ -33,7 +53,7 @@ class Motorcycle extends Model
     protected function casts(): array
     {
         return [
-            'registration_year' => 'integer',
+            'AnnoImmatricolazione' => 'integer',
         ];
     }
 
@@ -42,7 +62,7 @@ class Motorcycle extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'CF', 'CF');
     }
 
     /**
@@ -50,7 +70,7 @@ class Motorcycle extends Model
      */
     public function motorcycleModel(): BelongsTo
     {
-        return $this->belongsTo(MotorcycleModel::class);
+        return $this->belongsTo(MotorcycleModel::class, 'CodiceModello', 'CodiceModello');
     }
 
     /**
@@ -58,7 +78,7 @@ class Motorcycle extends Model
      */
     public function workOrders(): HasMany
     {
-        return $this->hasMany(WorkOrder::class);
+        return $this->hasMany(WorkOrder::class, 'NumTelaio', 'NumTelaio');
     }
 
     /**
@@ -66,6 +86,14 @@ class Motorcycle extends Model
      */
     public function appointments(): HasMany
     {
-        return $this->hasMany(Appointment::class);
+        return $this->hasMany(Appointment::class, 'NumTelaio', 'NumTelaio');
+    }
+
+    /**
+     * Get the work sessions for this motorcycle.
+     */
+    public function workSessions(): HasMany
+    {
+        return $this->hasMany(WorkSession::class, 'NumTelaio', 'NumTelaio');
     }
 } 

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/react';
-import { Plus, LucideIcon } from 'lucide-react';
+import { LucideIcon, Plus } from 'lucide-react';
 
 interface AdminEmptyStateProps {
     icon: LucideIcon;
@@ -10,20 +10,12 @@ interface AdminEmptyStateProps {
     createLabel?: string;
 }
 
-export default function AdminEmptyState({
-    icon: Icon,
-    title,
-    description,
-    createRoute,
-    createLabel = "Get Started"
-}: AdminEmptyStateProps) {
+export default function AdminEmptyState({ icon: Icon, title, description, createRoute, createLabel = 'Get Started' }: AdminEmptyStateProps) {
     return (
-        <div className="text-center py-12">
-            <Icon className="mx-auto h-12 w-12 text-muted-foreground" />
+        <div className="py-12 text-center">
+            <Icon className="text-muted-foreground mx-auto h-12 w-12" />
             <h3 className="mt-4 text-lg font-medium">{title}</h3>
-            <p className="mt-2 text-muted-foreground">
-                {description}
-            </p>
+            <p className="text-muted-foreground mt-2">{description}</p>
             {createRoute && (
                 <div className="mt-6">
                     <Button asChild>
@@ -36,4 +28,4 @@ export default function AdminEmptyState({
             )}
         </div>
     );
-} 
+}

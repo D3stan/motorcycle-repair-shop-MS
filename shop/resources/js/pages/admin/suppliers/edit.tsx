@@ -3,9 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminSupplierDetails } from '@/types';
+import { type AdminSupplierDetails, type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Building2 } from 'lucide-react';
+import { ArrowLeft, Building2, Save } from 'lucide-react';
 
 interface Props {
     supplier: AdminSupplierDetails;
@@ -77,7 +77,7 @@ export default function SupplierEdit({ supplier }: Props) {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 {/* Supplier Code */}
                                 <div className="space-y-2">
                                     <Label htmlFor="supplier_code">Supplier Code *</Label>
@@ -88,82 +88,42 @@ export default function SupplierEdit({ supplier }: Props) {
                                         onChange={(e) => setData('supplier_code', e.target.value)}
                                         required
                                     />
-                                    {errors.supplier_code && (
-                                        <p className="text-sm text-red-600">{errors.supplier_code}</p>
-                                    )}
+                                    {errors.supplier_code && <p className="text-sm text-red-600">{errors.supplier_code}</p>}
                                 </div>
 
                                 {/* Name */}
                                 <div className="space-y-2">
                                     <Label htmlFor="name">Company Name *</Label>
-                                    <Input
-                                        id="name"
-                                        type="text"
-                                        value={data.name}
-                                        onChange={(e) => setData('name', e.target.value)}
-                                        required
-                                    />
-                                    {errors.name && (
-                                        <p className="text-sm text-red-600">{errors.name}</p>
-                                    )}
+                                    <Input id="name" type="text" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
+                                    {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
                                 </div>
 
                                 {/* Phone */}
                                 <div className="space-y-2">
                                     <Label htmlFor="phone">Phone *</Label>
-                                    <Input
-                                        id="phone"
-                                        type="tel"
-                                        value={data.phone}
-                                        onChange={(e) => setData('phone', e.target.value)}
-                                        required
-                                    />
-                                    {errors.phone && (
-                                        <p className="text-sm text-red-600">{errors.phone}</p>
-                                    )}
+                                    <Input id="phone" type="tel" value={data.phone} onChange={(e) => setData('phone', e.target.value)} required />
+                                    {errors.phone && <p className="text-sm text-red-600">{errors.phone}</p>}
                                 </div>
 
                                 {/* Email */}
                                 <div className="space-y-2">
                                     <Label htmlFor="email">Email *</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={data.email}
-                                        onChange={(e) => setData('email', e.target.value)}
-                                        required
-                                    />
-                                    {errors.email && (
-                                        <p className="text-sm text-red-600">{errors.email}</p>
-                                    )}
+                                    <Input id="email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
+                                    {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
                                 </div>
 
                                 {/* Address */}
                                 <div className="space-y-2">
                                     <Label htmlFor="address">Address</Label>
-                                    <Input
-                                        id="address"
-                                        type="text"
-                                        value={data.address}
-                                        onChange={(e) => setData('address', e.target.value)}
-                                    />
-                                    {errors.address && (
-                                        <p className="text-sm text-red-600">{errors.address}</p>
-                                    )}
+                                    <Input id="address" type="text" value={data.address} onChange={(e) => setData('address', e.target.value)} />
+                                    {errors.address && <p className="text-sm text-red-600">{errors.address}</p>}
                                 </div>
 
                                 {/* City */}
                                 <div className="space-y-2">
                                     <Label htmlFor="city">City</Label>
-                                    <Input
-                                        id="city"
-                                        type="text"
-                                        value={data.city}
-                                        onChange={(e) => setData('city', e.target.value)}
-                                    />
-                                    {errors.city && (
-                                        <p className="text-sm text-red-600">{errors.city}</p>
-                                    )}
+                                    <Input id="city" type="text" value={data.city} onChange={(e) => setData('city', e.target.value)} />
+                                    {errors.city && <p className="text-sm text-red-600">{errors.city}</p>}
                                 </div>
 
                                 {/* Postal Code */}
@@ -175,9 +135,7 @@ export default function SupplierEdit({ supplier }: Props) {
                                         value={data.postal_code}
                                         onChange={(e) => setData('postal_code', e.target.value)}
                                     />
-                                    {errors.postal_code && (
-                                        <p className="text-sm text-red-600">{errors.postal_code}</p>
-                                    )}
+                                    {errors.postal_code && <p className="text-sm text-red-600">{errors.postal_code}</p>}
                                 </div>
 
                                 {/* Country */}
@@ -190,9 +148,7 @@ export default function SupplierEdit({ supplier }: Props) {
                                         onChange={(e) => setData('country', e.target.value)}
                                         required
                                     />
-                                    {errors.country && (
-                                        <p className="text-sm text-red-600">{errors.country}</p>
-                                    )}
+                                    {errors.country && <p className="text-sm text-red-600">{errors.country}</p>}
                                 </div>
                             </div>
 
@@ -201,14 +157,12 @@ export default function SupplierEdit({ supplier }: Props) {
                                 <Label htmlFor="notes">Notes</Label>
                                 <textarea
                                     id="notes"
-                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
                                     placeholder="Optional notes about the supplier"
                                 />
-                                {errors.notes && (
-                                    <p className="text-sm text-red-600">{errors.notes}</p>
-                                )}
+                                {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
                             </div>
 
                             {/* Submit Button */}
@@ -227,4 +181,4 @@ export default function SupplierEdit({ supplier }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

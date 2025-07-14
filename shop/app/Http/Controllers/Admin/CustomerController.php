@@ -19,9 +19,7 @@ class CustomerController extends BaseAdminController
         $customers = $this->getUsersWithCounts(
             'customer',
             ['motorcycles', 'appointments', 'workOrders', 'invoices'],
-            ['invoices' => function($query) {
-                $query->where('status', 'pending');
-            }]
+            [] // No filtering needed - simplified schema has no invoice status
         );
 
         return Inertia::render('admin/customers/index', [
@@ -39,7 +37,7 @@ class CustomerController extends BaseAdminController
         // Load customer data with relationships
         $customer->load([
             'motorcycles.motorcycleModel',
-            'appointments.motorcycle.motorcycleModel',
+            'appointments', // Simplified schema - appointments don't link to motorcycles
             'workOrders.motorcycle.motorcycleModel',
             'invoices'
         ]);
@@ -50,52 +48,59 @@ class CustomerController extends BaseAdminController
         // Format motorcycles
         $motorcycles = $customer->motorcycles->map(function ($motorcycle) {
             return [
-                'id' => $motorcycle->id,
-                'brand' => $motorcycle->motorcycleModel->brand,
-                'model' => $motorcycle->motorcycleModel->name,
-                'year' => $motorcycle->registration_year,
-                'plate' => $motorcycle->license_plate,
-                'vin' => $motorcycle->vin,
-                'engine_size' => $motorcycle->motorcycleModel->engine_size,
+                'id' => $motorcycle->NumTelaio,
+                'brand' => $motorcycle->motorcycleModel->Marca,
+                'model' => $motorcycle->motorcycleModel->Nome,
+                'year' => $motorcycle->AnnoImmatricolazione,
+                'plate' => $motorcycle->Targa,
+                'vin' => $motorcycle->NumTelaio,
+                'engine_size' => $motorcycle->motorcycleModel->Cilindrata,
             ];
         });
 
         // Format appointments
         $appointments = $customer->appointments->map(function ($appointment) {
             return [
-                'id' => $appointment->id,
-                'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                'appointment_time' => $appointment->appointment_time,
-                'type' => ucfirst(str_replace('_', ' ', $appointment->type)),
-                'status' => $appointment->status,
-                'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . $appointment->motorcycle->motorcycleModel->name,
-                'notes' => $appointment->notes,
+                'id' => $appointment->CodiceAppuntamento,
+                'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+                'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
+                'description' => $appointment->Descrizione,
+                'motorcycle' => 'Not linked in simplified schema', // Appointments don't link to motorcycles
+                'notes' => null, // No notes field in simplified schema
             ];
         });
 
         // Format work orders
         $workOrders = $customer->workOrders->map(function ($workOrder) {
+            // Determine status based on dates
+            $status = 'pending';
+            if ($workOrder->DataInizio && $workOrder->DataFine) {
+                $status = 'completed';
+            } elseif ($workOrder->DataInizio) {
+                $status = 'in_progress';
+            }
+
             return [
-                'id' => $workOrder->id,
-                'description' => $workOrder->description,
-                'status' => $workOrder->status,
-                'started_at' => $workOrder->started_at?->format('Y-m-d'),
-                'completed_at' => $workOrder->completed_at?->format('Y-m-d'),
-                'total_cost' => $workOrder->total_cost ? (float) $workOrder->total_cost : 0.0,
-                'motorcycle' => $workOrder->motorcycle->motorcycleModel->brand . ' ' . $workOrder->motorcycle->motorcycleModel->name,
+                'id' => $workOrder->CodiceIntervento,
+                'description' => $workOrder->Note,
+                'status' => $status,
+                'started_at' => $workOrder->DataInizio?->format('Y-m-d'),
+                'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
+                'total_cost' => $workOrder->invoice?->Importo ? (float) $workOrder->invoice->Importo : 0.0,
+                'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
             ];
         });
 
         // Format invoices
         $invoices = $customer->invoices->map(function ($invoice) {
             return [
-                'id' => $invoice->id,
-                'invoice_number' => $invoice->invoice_number,
-                'issue_date' => $invoice->issue_date->format('Y-m-d'),
-                'due_date' => $invoice->due_date->format('Y-m-d'),
-                'total_amount' => (float) $invoice->total_amount,
-                'status' => $invoice->status,
-                'paid_at' => $invoice->paid_at?->format('Y-m-d'),
+                'id' => $invoice->CodiceFattura,
+                'invoice_number' => $invoice->CodiceFattura,
+                'issue_date' => $invoice->Data->format('Y-m-d'),
+                'due_date' => null, // No due date in simplified schema
+                'total_amount' => (float) $invoice->Importo,
+                'status' => 'paid', // All invoices considered paid in simplified schema
+                'paid_at' => $invoice->Data->format('Y-m-d'),
             ];
         });
 

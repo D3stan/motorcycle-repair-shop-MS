@@ -1,11 +1,11 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminSupplierDetails } from '@/types';
+import { type AdminSupplierDetails, type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, Building2, Phone, Mail, MapPin, Package, AlertTriangle, DollarSign } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Building2, DollarSign, Edit, Mail, MapPin, Package, Phone } from 'lucide-react';
 
 interface Props {
     supplier: AdminSupplierDetails;
@@ -41,13 +41,13 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
 
     const getCategoryBadge = (category: string) => {
         const colors = {
-            'Engine': 'bg-red-100 text-red-800',
-            'Brake': 'bg-orange-100 text-orange-800',
-            'Suspension': 'bg-blue-100 text-blue-800',
-            'Electrical': 'bg-yellow-100 text-yellow-800',
-            'Body': 'bg-green-100 text-green-800',
-            'Transmission': 'bg-purple-100 text-purple-800',
-            'Exhaust': 'bg-gray-100 text-gray-800',
+            Engine: 'bg-red-100 text-red-800',
+            Brake: 'bg-orange-100 text-orange-800',
+            Suspension: 'bg-blue-100 text-blue-800',
+            Electrical: 'bg-yellow-100 text-yellow-800',
+            Body: 'bg-green-100 text-green-800',
+            Transmission: 'bg-purple-100 text-purple-800',
+            Exhaust: 'bg-gray-100 text-gray-800',
             'Fuel System': 'bg-pink-100 text-pink-800',
         };
         return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
@@ -82,7 +82,7 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
                 {/* Main Content */}
                 <div className="grid gap-4 lg:grid-cols-3">
                     {/* Supplier Details */}
-                    <div className="lg:col-span-2 space-y-4">
+                    <div className="space-y-4 lg:col-span-2">
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -93,26 +93,26 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Supplier Code</p>
-                                        <p className="text-lg font-mono">{supplier.supplier_code}</p>
+                                        <p className="text-muted-foreground text-sm font-medium">Supplier Code</p>
+                                        <p className="font-mono text-lg">{supplier.supplier_code}</p>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Company Name</p>
+                                        <p className="text-muted-foreground text-sm font-medium">Company Name</p>
                                         <p className="text-lg">{supplier.name}</p>
                                     </div>
                                 </div>
                                 <Separator />
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Phone</p>
-                                        <p className="text-lg flex items-center gap-2">
+                                        <p className="text-muted-foreground text-sm font-medium">Phone</p>
+                                        <p className="flex items-center gap-2 text-lg">
                                             <Phone className="h-4 w-4" />
                                             {supplier.phone}
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">Email</p>
-                                        <p className="text-lg flex items-center gap-2">
+                                        <p className="text-muted-foreground text-sm font-medium">Email</p>
+                                        <p className="flex items-center gap-2 text-lg">
                                             <Mail className="h-4 w-4" />
                                             {supplier.email}
                                         </p>
@@ -122,11 +122,11 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
                                     <>
                                         <Separator />
                                         <div>
-                                            <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                            <p className="text-muted-foreground flex items-center gap-2 text-sm font-medium">
                                                 <MapPin className="h-4 w-4" />
                                                 Address
                                             </p>
-                                            <div className="text-sm space-y-1 mt-1">
+                                            <div className="mt-1 space-y-1 text-sm">
                                                 {supplier.address && <p>{supplier.address}</p>}
                                                 <p>
                                                     {supplier.city && `${supplier.city}`}
@@ -141,14 +141,14 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
                                     <>
                                         <Separator />
                                         <div>
-                                            <p className="text-sm font-medium text-muted-foreground">Notes</p>
+                                            <p className="text-muted-foreground text-sm font-medium">Notes</p>
                                             <p className="text-sm">{supplier.notes}</p>
                                         </div>
                                     </>
                                 )}
                                 <Separator />
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Created</p>
+                                    <p className="text-muted-foreground text-sm font-medium">Created</p>
                                     <p className="text-sm">{supplier.created_at}</p>
                                 </div>
                             </CardContent>
@@ -161,9 +161,7 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
                                     <Package className="h-5 w-5" />
                                     Supplied Parts
                                 </CardTitle>
-                                <CardDescription>
-                                    Parts available from this supplier
-                                </CardDescription>
+                                <CardDescription>Parts available from this supplier</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 {suppliedParts.length > 0 ? (
@@ -172,11 +170,11 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
                                             <div key={part.id} className="flex items-center justify-between border-b pb-3 last:border-b-0">
                                                 <div className="space-y-1">
                                                     <div className="flex items-center gap-2">
-                                                        <h4 className="font-medium">{part.brand} {part.name}</h4>
+                                                        <h4 className="font-medium">
+                                                            {part.brand} {part.name}
+                                                        </h4>
                                                         <Badge variant="outline">{part.part_code}</Badge>
-                                                        <Badge className={getCategoryBadge(part.category)}>
-                                                            {part.category}
-                                                        </Badge>
+                                                        <Badge className={getCategoryBadge(part.category)}>{part.category}</Badge>
                                                         {part.is_low_stock && (
                                                             <Badge variant="destructive" className="flex items-center gap-1">
                                                                 <AlertTriangle className="h-3 w-3" />
@@ -184,19 +182,19 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
                                                             </Badge>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                        <span>Stock: {part.stock_quantity}/{part.minimum_stock}</span>
+                                                    <div className="text-muted-foreground flex items-center gap-4 text-sm">
+                                                        <span>
+                                                            Stock: {part.stock_quantity}/{part.minimum_stock}
+                                                        </span>
                                                         <span className="flex items-center gap-1">
-                                                            <DollarSign className="h-3 w-3" />
-                                                            €{part.supplier_price.toFixed(2)} → €{part.selling_price.toFixed(2)}
+                                                            <DollarSign className="h-3 w-3" />€{part.supplier_price.toFixed(2)} → €
+                                                            {part.selling_price.toFixed(2)}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
                                                     <Button variant="outline" size="sm" asChild>
-                                                        <Link href={route('admin.inventory.show', part.id)}>
-                                                            View Part
-                                                        </Link>
+                                                        <Link href={route('admin.inventory.show', part.id)}>View Part</Link>
                                                     </Button>
                                                 </div>
                                             </div>
@@ -224,19 +222,17 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium">Low Stock Items</span>
                                     <span className="text-lg font-bold text-orange-600">
-                                        {suppliedParts.filter(part => part.is_low_stock).length}
+                                        {suppliedParts.filter((part) => part.is_low_stock).length}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium">Categories</span>
-                                    <span className="text-lg font-bold">
-                                        {new Set(suppliedParts.map(part => part.category)).size}
-                                    </span>
+                                    <span className="text-lg font-bold">{new Set(suppliedParts.map((part) => part.category)).size}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium">Total Value</span>
                                     <span className="text-lg font-bold">
-                                        €{suppliedParts.reduce((sum, part) => sum + (part.stock_quantity * part.supplier_price), 0).toFixed(2)}
+                                        €{suppliedParts.reduce((sum, part) => sum + part.stock_quantity * part.supplier_price, 0).toFixed(2)}
                                     </span>
                                 </div>
                             </CardContent>
@@ -246,4 +242,4 @@ export default function SupplierShow({ supplier, suppliedParts }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

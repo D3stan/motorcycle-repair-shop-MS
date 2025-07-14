@@ -13,11 +13,7 @@ interface AdminTableProps<T> {
     className?: string;
 }
 
-export default function AdminTable<T extends Record<string, any>>({ 
-    data, 
-    columns, 
-    className = "" 
-}: AdminTableProps<T>) {
+export default function AdminTable<T extends Record<string, any>>({ data, columns, className = '' }: AdminTableProps<T>) {
     const getValue = (item: T, key: keyof T | string): any => {
         if (typeof key === 'string' && key.includes('.')) {
             // Handle nested properties like 'user.name'
@@ -32,10 +28,7 @@ export default function AdminTable<T extends Record<string, any>>({
                 <thead>
                     <tr className="border-b">
                         {columns.map((column, index) => (
-                            <th 
-                                key={index} 
-                                className={`text-left p-2 ${column.className || ''}`}
-                            >
+                            <th key={index} className={`p-2 text-left ${column.className || ''}`}>
                                 {column.label}
                             </th>
                         ))}
@@ -45,14 +38,8 @@ export default function AdminTable<T extends Record<string, any>>({
                     {data.map((item, rowIndex) => (
                         <tr key={rowIndex} className="border-b">
                             {columns.map((column, colIndex) => (
-                                <td 
-                                    key={colIndex} 
-                                    className={`p-2 ${column.className || ''}`}
-                                >
-                                    {column.render ? 
-                                        column.render(item) : 
-                                        getValue(item, column.key)
-                                    }
+                                <td key={colIndex} className={`p-2 ${column.className || ''}`}>
+                                    {column.render ? column.render(item) : getValue(item, column.key)}
                                 </td>
                             ))}
                         </tr>
@@ -61,4 +48,4 @@ export default function AdminTable<T extends Record<string, any>>({
             </table>
         </div>
     );
-} 
+}

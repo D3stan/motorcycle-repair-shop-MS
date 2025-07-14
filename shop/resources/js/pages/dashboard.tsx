@@ -34,14 +34,14 @@ interface DashboardProps {
     motorcyclesCount?: number;
 }
 
-export default function Dashboard({ 
+export default function Dashboard({
     userType = 'customer',
     upcomingAppointments,
     activeWorkOrdersCount,
     outstandingBalance,
     pendingInvoicesCount,
     recentActivity,
-    motorcyclesCount = 0
+    motorcyclesCount = 0,
 }: DashboardProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -56,9 +56,9 @@ export default function Dashboard({
                             <CardDescription>Your scheduled visits</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{upcomingAppointments.length}</div>
+                            <div className="mb-2 text-2xl font-bold">{upcomingAppointments.length}</div>
                             {upcomingAppointments.length > 0 && (
-                                <div className="text-sm text-muted-foreground">
+                                <div className="text-muted-foreground text-sm">
                                     Next: {upcomingAppointments[0].date} at {upcomingAppointments[0].time}
                                 </div>
                             )}
@@ -72,8 +72,8 @@ export default function Dashboard({
                             <CardDescription>Services in progress</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{activeWorkOrdersCount}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="mb-2 text-2xl font-bold">{activeWorkOrdersCount}</div>
+                            <div className="text-muted-foreground text-sm">
                                 {activeWorkOrdersCount > 0 ? 'Services in progress' : 'No active services'}
                             </div>
                         </CardContent>
@@ -86,10 +86,8 @@ export default function Dashboard({
                             <CardDescription>Current total costs</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">
-                                €{Number(outstandingBalance).toFixed(2)}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="mb-2 text-2xl font-bold">€{Number(outstandingBalance || 0).toFixed(2)}</div>
+                            <div className="text-muted-foreground text-sm">
                                 {pendingInvoicesCount > 0 ? `${pendingInvoicesCount} pending invoices` : 'All invoices paid'}
                             </div>
                         </CardContent>
@@ -102,8 +100,8 @@ export default function Dashboard({
                             <CardDescription>Registered vehicles</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold mb-2">{motorcyclesCount}</div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="mb-2 text-2xl font-bold">{motorcyclesCount}</div>
+                            <div className="text-muted-foreground text-sm">
                                 {motorcyclesCount === 0 ? 'No motorcycles added' : `${motorcyclesCount} registered`}
                             </div>
                         </CardContent>
@@ -126,17 +124,15 @@ export default function Dashboard({
                                             <div key={activity.id} className="flex items-center justify-between border-b pb-2 last:border-b-0">
                                                 <div className="space-y-1">
                                                     <p className="text-sm font-medium">{activity.action}</p>
-                                                    <p className="text-xs text-muted-foreground">{activity.description}</p>
-                                                    <p className="text-xs text-muted-foreground">{activity.date}</p>
+                                                    <p className="text-muted-foreground text-xs">{activity.description}</p>
+                                                    <p className="text-muted-foreground text-xs">{activity.date}</p>
                                                 </div>
-                                                {activity.amount && (
-                                                    <div className="text-sm font-medium">{activity.amount}</div>
-                                                )}
+                                                {activity.amount && <div className="text-sm font-medium">{activity.amount}</div>}
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-6 text-muted-foreground">
+                                    <div className="text-muted-foreground py-6 text-center">
                                         <p>No recent activity</p>
                                         <p className="text-sm">Start by booking an appointment or adding a motorcycle to your garage.</p>
                                     </div>

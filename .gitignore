@@ -28,3 +28,8 @@ proposta.txt
 /shop/shop.ddl
 /docs
 /output
+*DE.md
+*report.md
+*I.md
+.c*
+.~lock*

@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'full_name' => $this->full_name,
             'email' => $this->email,
             'phone' => $this->phone,
-            'tax_code' => $this->tax_code,
+            'tax_code' => $this->CF,
             'type' => $this->type,
             'created_at' => $this->created_at->format('Y-m-d'),
             'created_at_detailed' => $this->created_at->format('Y-m-d H:i'),

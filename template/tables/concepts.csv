@@ -1,2 +1,8 @@
-termine, descrizione, nuovo termine
-termine1, descrizione del termine1, nuovo termine1
+termine, descrizione, sinonimi
+garage virtuale, Sezione digitale del sistema dove il cliente può registrare e gestire le proprie motociclette, garage
+stato di attesa di conferma, Stato dell'appuntamento quando è stato richiesto dal cliente ma non ancora confermato dall'officina, 
+prove al banco, Test diagnostici e di performance effettuati sulla motocicletta utilizzando apparecchiature specializzate, 
+addetto alla reception, Dipendente che gestisce il front-office e le operazioni di accoglienza clienti, amministratore
+operaio, Persona che lavora nell'officina meccanica, tecnico / meccanico
+cruscotto riepilogativo, Interfaccia di controllo che mostra una panoramica delle attività e dati principali del sistema, dashboard
+ricambi sotto scorta minima, Ricambi il cui livello di inventario è sceso al di sotto della soglia minima prestabilita, 

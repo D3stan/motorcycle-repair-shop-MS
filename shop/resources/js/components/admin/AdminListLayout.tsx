@@ -2,10 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
+import { LucideIcon } from 'lucide-react';
+import AdminEmptyState from './AdminEmptyState';
 import AdminPageHeader from './AdminPageHeader';
 import AdminStatsCards from './AdminStatsCards';
-import AdminEmptyState from './AdminEmptyState';
-import { LucideIcon } from 'lucide-react';
 
 interface StatsCard {
     title: string;
@@ -55,27 +55,20 @@ export default function AdminListLayout({
     hasData,
     emptyStateProps,
     children,
-    headerActions
+    headerActions,
 }: AdminListLayoutProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={pageTitle} />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
-                <AdminPageHeader
-                    title={title}
-                    description={description}
-                    createRoute={createRoute}
-                    createLabel={createLabel}
-                >
+                <AdminPageHeader title={title} description={description} createRoute={createRoute} createLabel={createLabel}>
                     {headerActions}
                 </AdminPageHeader>
 
                 {/* Stats Cards */}
-                {statsCards && statsCards.length > 0 && (
-                    <AdminStatsCards cards={statsCards} columns={statsColumns} />
-                )}
+                {statsCards && statsCards.length > 0 && <AdminStatsCards cards={statsCards} columns={statsColumns} />}
 
                 {/* Content */}
                 <Card>
@@ -84,21 +77,11 @@ export default function AdminListLayout({
                             {ContentIcon && <ContentIcon className="h-5 w-5" />}
                             {contentTitle}
                         </CardTitle>
-                        <CardDescription>
-                            {contentDescription}
-                        </CardDescription>
+                        <CardDescription>{contentDescription}</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                        {hasData ? (
-                            children
-                        ) : (
-                            emptyStateProps && (
-                                <AdminEmptyState {...emptyStateProps} />
-                            )
-                        )}
-                    </CardContent>
+                    <CardContent>{hasData ? children : emptyStateProps && <AdminEmptyState {...emptyStateProps} />}</CardContent>
                 </Card>
             </div>
         </AppLayout>
     );
-} 
+}

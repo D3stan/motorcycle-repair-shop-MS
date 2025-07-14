@@ -47,7 +47,7 @@ export default function CustomerEdit({ customer }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Edit ${customer.first_name} ${customer.last_name}`} />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -59,9 +59,7 @@ export default function CustomerEdit({ customer }: Props) {
                             </Link>
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight">
-                                Edit Customer
-                            </h1>
+                            <h1 className="text-2xl font-bold tracking-tight">Edit Customer</h1>
                             <p className="text-muted-foreground">
                                 Update {customer.first_name} {customer.last_name}'s information
                             </p>
@@ -73,9 +71,7 @@ export default function CustomerEdit({ customer }: Props) {
                 <Card className="max-w-2xl">
                     <CardHeader>
                         <CardTitle>Customer Information</CardTitle>
-                        <CardDescription>
-                            Update the customer's personal and contact information
-                        </CardDescription>
+                        <CardDescription>Update the customer's personal and contact information</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -90,9 +86,7 @@ export default function CustomerEdit({ customer }: Props) {
                                         className={errors.first_name ? 'border-red-500' : ''}
                                         required
                                     />
-                                    {errors.first_name && (
-                                        <p className="text-sm text-red-500">{errors.first_name}</p>
-                                    )}
+                                    {errors.first_name && <p className="text-sm text-red-500">{errors.first_name}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -105,9 +99,7 @@ export default function CustomerEdit({ customer }: Props) {
                                         className={errors.last_name ? 'border-red-500' : ''}
                                         required
                                     />
-                                    {errors.last_name && (
-                                        <p className="text-sm text-red-500">{errors.last_name}</p>
-                                    )}
+                                    {errors.last_name && <p className="text-sm text-red-500">{errors.last_name}</p>}
                                 </div>
                             </div>
 
@@ -121,9 +113,7 @@ export default function CustomerEdit({ customer }: Props) {
                                     className={errors.email ? 'border-red-500' : ''}
                                     required
                                 />
-                                {errors.email && (
-                                    <p className="text-sm text-red-500">{errors.email}</p>
-                                )}
+                                {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -136,9 +126,7 @@ export default function CustomerEdit({ customer }: Props) {
                                     className={errors.phone ? 'border-red-500' : ''}
                                     placeholder="Optional"
                                 />
-                                {errors.phone && (
-                                    <p className="text-sm text-red-500">{errors.phone}</p>
-                                )}
+                                {errors.phone && <p className="text-sm text-red-500">{errors.phone}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -152,20 +140,16 @@ export default function CustomerEdit({ customer }: Props) {
                                     placeholder="Optional"
                                     maxLength={16}
                                 />
-                                {errors.tax_code && (
-                                    <p className="text-sm text-red-500">{errors.tax_code}</p>
-                                )}
+                                {errors.tax_code && <p className="text-sm text-red-500">{errors.tax_code}</p>}
                             </div>
 
                             <div className="flex items-center gap-4 pt-4">
                                 <Button type="submit" disabled={processing}>
-                                    <Save className="h-4 w-4 mr-2" />
+                                    <Save className="mr-2 h-4 w-4" />
                                     {processing ? 'Saving...' : 'Save Changes'}
                                 </Button>
                                 <Button variant="outline" asChild>
-                                    <Link href={route('admin.customers.show', customer.id)}>
-                                        Cancel
-                                    </Link>
+                                    <Link href={route('admin.customers.show', customer.id)}>Cancel</Link>
                                 </Button>
                             </div>
                         </form>
@@ -174,4 +158,4 @@ export default function CustomerEdit({ customer }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

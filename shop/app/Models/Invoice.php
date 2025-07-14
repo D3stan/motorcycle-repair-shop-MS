@@ -11,21 +11,38 @@ class Invoice extends Model
     use HasFactory;
 
     /**
+     * The table associated with the model.
+     */
+    protected $table = 'FATTURE';
+
+    /**
+     * The primary key for the model.
+     */
+    protected $primaryKey = 'CodiceFattura';
+
+    /**
+     * The "type" of the primary key ID.
+     */
+    protected $keyType = 'string';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     */
+    public $incrementing = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
-        'work_order_id',
-        'invoice_number',
-        'issue_date',
-        'due_date',
-        'subtotal',
-        'tax_amount',
-        'total_amount',
-        'status',
-        'paid_at',
+        'CodiceFattura',
+        'Importo',
+        'Data',
+        'Note',
+        'CF',
+        'CodiceIntervento',
+        'CodiceSessione',
     ];
 
     /**
@@ -36,28 +53,32 @@ class Invoice extends Model
     protected function casts(): array
     {
         return [
-            'issue_date' => 'date',
-            'due_date' => 'date',
-            'paid_at' => 'datetime',
-            'subtotal' => 'decimal:2',
-            'tax_amount' => 'decimal:2',
-            'total_amount' => 'decimal:2',
+            'Data' => 'date',
+            'Importo' => 'decimal:2',
         ];
     }
 
     /**
-     * Get the user that owns the invoice.
+     * Get the user that owns the invoice (INTESTAZIONE relationship).
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'CF', 'CF');
     }
 
     /**
-     * Get the work order for this invoice.
+     * Get the work order for this invoice (RELATIVO relationship).
      */
     public function workOrder(): BelongsTo
     {
-        return $this->belongsTo(WorkOrder::class);
+        return $this->belongsTo(WorkOrder::class, 'CodiceIntervento', 'CodiceIntervento');
+    }
+
+    /**
+     * Get the work session (if any) for this invoice (RELATIVO relationship).
+     */
+    public function workSession(): BelongsTo
+    {
+        return $this->belongsTo(WorkSession::class, 'CodiceSessione', 'CodiceSessione');
     }
 } 

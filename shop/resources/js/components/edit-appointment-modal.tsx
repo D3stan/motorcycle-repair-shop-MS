@@ -1,30 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useForm } from '@inertiajs/react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Calendar, Clock, Settings, Zap, ChevronDown } from 'lucide-react';
-
-interface Motorcycle {
-    id: number;
-    label: string;
-}
+import { useForm } from '@inertiajs/react';
+import { Calendar, ChevronDown, Clock, Settings, Zap } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Appointment {
-    id: number;
+    id: string;
     appointment_date: string;
     appointment_time: string;
     type: string;
+    type_display: string;
     status: string;
-    motorcycle: {
-        id: number;
-        brand: string;
-        model: string;
-        plate: string;
-    };
+    description: string;
     notes: string;
 }
 
@@ -32,7 +23,6 @@ interface EditAppointmentModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     appointment: Appointment | null;
-    motorcycles: Motorcycle[];
 }
 
 interface AppointmentFormData {
@@ -40,13 +30,13 @@ interface AppointmentFormData {
     appointment_time: string;
     type: 'maintenance' | 'dyno_testing';
     notes: string;
-    [key: string]: any;
+    [key: string]: string | number | 'maintenance' | 'dyno_testing';
 }
 
-export default function EditAppointmentModal({ open, onOpenChange, appointment, motorcycles }: EditAppointmentModalProps) {
+export default function EditAppointmentModal({ open, onOpenChange, appointment }: EditAppointmentModalProps) {
     const [selectedType, setSelectedType] = useState<'maintenance' | 'dyno_testing' | ''>('');
 
-    const { data, setData, put, processing, errors, reset } = useForm<AppointmentFormData>({
+    const { data, setData, put, processing, errors } = useForm<AppointmentFormData>({
         appointment_date: '',
         appointment_time: '',
         type: 'maintenance',
@@ -54,14 +44,10 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
     });
 
     // Generate available time slots (9:00 AM to 5:00 PM)
-    const timeSlots = [
-        '09:00', '10:00', '11:00', '12:00', 
-        '13:00', '14:00', '15:00', '16:00', '17:00'
-    ];
+    const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 
-    // Get minimum date (tomorrow)
+    // Get minimum date (today)
     const minDate = new Date();
-    minDate.setDate(minDate.getDate() + 1);
     const minDateString = minDate.toISOString().split('T')[0];
 
     // Populate form with appointment data when appointment changes
@@ -69,9 +55,9 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
         if (appointment) {
             setData({
                 appointment_date: appointment.appointment_date,
-                appointment_time: appointment.appointment_time.substring(0, 5), // Extract HH:MM
+                appointment_time: appointment.appointment_time || '09:00',
                 type: appointment.type as 'maintenance' | 'dyno_testing',
-                notes: appointment.notes || '',
+                notes: appointment.description || appointment.notes || '',
             });
             setSelectedType(appointment.type as 'maintenance' | 'dyno_testing');
         }
@@ -79,12 +65,15 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!appointment) return;
 
         put(route('appointments.update', appointment.id), {
             onSuccess: () => {
                 onOpenChange(false);
+            },
+            onError: (errors) => {
+                console.error('Update failed:', errors);
             },
         });
     };
@@ -99,35 +88,47 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
             // Reset to original appointment data
             setData({
                 appointment_date: appointment.appointment_date,
-                appointment_time: appointment.appointment_time.substring(0, 5),
+                appointment_time: appointment.appointment_time || '09:00',
                 type: appointment.type as 'maintenance' | 'dyno_testing',
-                notes: appointment.notes || '',
+                notes: appointment.description || appointment.notes || '',
             });
             setSelectedType(appointment.type as 'maintenance' | 'dyno_testing');
         }
         onOpenChange(false);
     };
 
-    if (!appointment) return null;
+    if (!appointment) {
+        return (
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Edit Appointment</DialogTitle>
+                        <DialogDescription>Loading appointment data...</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-4">
+                        <p>No appointment data available.</p>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
 
-    // Check if appointment can be edited (not in progress or completed)
-    const canEdit = !['in_progress', 'completed'].includes(appointment.status);
+    // Check if appointment can be edited (not accepted)
+    const canEdit = appointment.status !== 'accepted';
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Edit Appointment</DialogTitle>
-                    <DialogDescription>
-                        Modify your appointment details. Note: Appointments in progress or completed cannot be edited.
-                    </DialogDescription>
+                    <DialogDescription>Modify your appointment details. Note: Accepted appointments cannot be edited.</DialogDescription>
                 </DialogHeader>
 
                 {!canEdit ? (
                     <div className="space-y-4">
-                        <div className="p-4 bg-muted rounded-lg">
-                            <p className="text-sm text-muted-foreground">
-                                This appointment cannot be edited because it is {appointment.status.replace('_', ' ')}.
+                        <div className="bg-muted rounded-lg p-4">
+                            <p className="text-muted-foreground text-sm">
+                                This appointment cannot be edited because it has been {appointment.status}.
                             </p>
                         </div>
                         <div className="flex justify-end">
@@ -138,28 +139,20 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Current Motorcycle Display */}
-                        <div className="space-y-2">
-                            <Label className="text-base font-medium">Motorcycle</Label>
-                            <div className="p-3 bg-muted rounded-lg">
-                                <p className="font-medium">
-                                    {appointment.motorcycle.brand} {appointment.motorcycle.model}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    License Plate: {appointment.motorcycle.plate}
-                                </p>
+                        {/* General Error Display */}
+                        {errors.appointment && (
+                            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                                <p className="text-sm text-red-600">{errors.appointment}</p>
                             </div>
-                        </div>
+                        )}
 
                         {/* Service Type Selection */}
                         <div className="space-y-3">
                             <Label className="text-base font-medium">Service Type</Label>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Card 
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <Card
                                     className={`cursor-pointer transition-all ${
-                                        selectedType === 'maintenance' 
-                                            ? 'border-primary bg-primary/5' 
-                                            : 'hover:border-primary/50'
+                                        selectedType === 'maintenance' ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
                                     }`}
                                     onClick={() => handleTypeSelect('maintenance')}
                                 >
@@ -171,11 +164,9 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
                                     </CardContent>
                                 </Card>
 
-                                <Card 
+                                <Card
                                     className={`cursor-pointer transition-all ${
-                                        selectedType === 'dyno_testing' 
-                                            ? 'border-primary bg-primary/5' 
-                                            : 'hover:border-primary/50'
+                                        selectedType === 'dyno_testing' ? 'border-primary bg-primary/5' : 'hover:border-primary/50'
                                     }`}
                                     onClick={() => handleTypeSelect('dyno_testing')}
                                 >
@@ -187,13 +178,11 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
                                     </CardContent>
                                 </Card>
                             </div>
-                            {errors.type && (
-                                <p className="text-sm text-red-600">{errors.type}</p>
-                            )}
+                            {errors.type && <p className="text-sm text-red-600">{errors.type}</p>}
                         </div>
 
                         {/* Date and Time Selection */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="appointment_date" className="flex items-center gap-2">
                                     <Calendar className="h-4 w-4" />
@@ -207,9 +196,7 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('appointment_date', e.target.value)}
                                     className="w-full"
                                 />
-                                {errors.appointment_date && (
-                                    <p className="text-sm text-red-600">{errors.appointment_date}</p>
-                                )}
+                                {errors.appointment_date && <p className="text-sm text-red-600">{errors.appointment_date}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -219,30 +206,20 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
                                 </Label>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button 
-                                            variant="outline" 
-                                            className="w-full justify-between"
-                                            type="button"
-                                        >
+                                        <Button variant="outline" className="w-full justify-between" type="button">
                                             {data.appointment_time || 'Select time'}
                                             <ChevronDown className="h-4 w-4 opacity-50" />
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
                                         {timeSlots.map((time) => (
-                                            <DropdownMenuItem 
-                                                key={time}
-                                                onClick={() => setData('appointment_time', time)}
-                                                className="cursor-pointer"
-                                            >
+                                            <DropdownMenuItem key={time} onClick={() => setData('appointment_time', time)} className="cursor-pointer">
                                                 {time}
                                             </DropdownMenuItem>
                                         ))}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                                {errors.appointment_time && (
-                                    <p className="text-sm text-red-600">{errors.appointment_time}</p>
-                                )}
+                                {errors.appointment_time && <p className="text-sm text-red-600">{errors.appointment_time}</p>}
                             </div>
                         </div>
 
@@ -255,11 +232,9 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
                                 value={data.notes}
                                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('notes', e.target.value)}
                                 rows={3}
-                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             />
-                            {errors.notes && (
-                                <p className="text-sm text-red-600">{errors.notes}</p>
-                            )}
+                            {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
                         </div>
 
                         {/* Form Actions */}
@@ -267,10 +242,7 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
                             <Button type="button" variant="outline" onClick={handleClose}>
                                 Cancel
                             </Button>
-                            <Button 
-                                type="submit" 
-                                disabled={processing || !selectedType || !data.appointment_date || !data.appointment_time}
-                            >
+                            <Button type="submit" disabled={processing || !selectedType || !data.appointment_date || !data.appointment_time}>
                                 {processing ? 'Updating...' : 'Update Appointment'}
                             </Button>
                         </div>
@@ -279,4 +251,4 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment, 
             </DialogContent>
         </Dialog>
     );
-} 
+}

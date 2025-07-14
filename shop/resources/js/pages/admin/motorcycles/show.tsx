@@ -1,11 +1,11 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminMotorcycleModel, type MotorcycleOwner } from '@/types';
+import { type AdminMotorcycleModel, type BreadcrumbItem, type MotorcycleOwner } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, Settings, Zap, Mail, User } from 'lucide-react';
+import { ArrowLeft, Edit, Mail, Settings, User, Zap } from 'lucide-react';
 
 interface Props {
     motorcycleModel: AdminMotorcycleModel & {
@@ -46,7 +46,7 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${motorcycleModel.brand} ${motorcycleModel.name} - Model Details`} />
-            
+
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
@@ -66,7 +66,7 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                     </div>
                     <Button asChild>
                         <Link href={route('admin.motorcycles.edit', motorcycleModel.id)}>
-                            <Edit className="h-4 w-4 mr-2" />
+                            <Edit className="mr-2 h-4 w-4" />
                             Edit Model
                         </Link>
                     </Button>
@@ -90,14 +90,10 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                             </div>
                             <div className="space-y-2">
                                 <div className="text-sm font-medium">Model Code</div>
-                                <code className="bg-gray-100 px-2 py-1 rounded text-sm text-black">
-                                    {motorcycleModel.model_code}
-                                </code>
+                                <code className="rounded bg-gray-100 px-2 py-1 text-sm text-black">{motorcycleModel.model_code}</code>
                             </div>
                             <Separator />
-                            <div className="text-sm text-muted-foreground">
-                                Added {motorcycleModel.created_at}
-                            </div>
+                            <div className="text-muted-foreground text-sm">Added {motorcycleModel.created_at}</div>
                         </CardContent>
                     </Card>
 
@@ -109,21 +105,23 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Settings className="h-4 w-4 text-muted-foreground" />
+                                    <Settings className="text-muted-foreground h-4 w-4" />
                                     <span className="text-sm">Engine Size</span>
                                 </div>
                                 <span className="font-medium">{motorcycleModel.engine_size}cc</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Zap className="h-4 w-4 text-muted-foreground" />
+                                    <Zap className="text-muted-foreground h-4 w-4" />
                                     <span className="text-sm">Power</span>
                                 </div>
                                 <span className="font-medium">{motorcycleModel.power}hp</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm">Segment</span>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSegmentBadge(motorcycleModel.segment)}`}>
+                                <span
+                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getSegmentBadge(motorcycleModel.segment)}`}
+                                >
                                     {motorcycleModel.segment}
                                 </span>
                             </div>
@@ -142,14 +140,12 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm">Active Owners</span>
-                                <span className="font-medium">
-                                    {new Set(motorcycles.map(m => m.owner_email)).size}
-                                </span>
+                                <span className="font-medium">{new Set(motorcycles.map((m) => m.owner_email)).size}</span>
                             </div>
                             <div className="flex items-center justify-between">
                                 <span className="text-sm">Avg. Year</span>
                                 <span className="font-medium">
-                                    {motorcycles.length > 0 
+                                    {motorcycles.length > 0
                                         ? Math.round(motorcycles.reduce((sum, m) => sum + m.registration_year, 0) / motorcycles.length)
                                         : '-'}
                                 </span>
@@ -170,11 +166,11 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                                 <table className="w-full">
                                     <thead>
                                         <tr className="border-b">
-                                            <th className="text-left p-2">License Plate</th>
-                                            <th className="text-left p-2">Year</th>
-                                            <th className="text-left p-2">VIN</th>
-                                            <th className="text-left p-2">Owner</th>
-                                            <th className="text-left p-2">Contact</th>
+                                            <th className="p-2 text-left">License Plate</th>
+                                            <th className="p-2 text-left">Year</th>
+                                            <th className="p-2 text-left">VIN</th>
+                                            <th className="p-2 text-left">Owner</th>
+                                            <th className="p-2 text-left">Contact</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -185,19 +181,17 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                                                 </td>
                                                 <td className="p-2">{motorcycle.registration_year}</td>
                                                 <td className="p-2">
-                                                    <code className="bg-gray-100 px-2 py-1 rounded text-xs text-black">
-                                                        {motorcycle.vin}
-                                                    </code>
+                                                    <code className="rounded bg-gray-100 px-2 py-1 text-xs text-black">{motorcycle.vin}</code>
                                                 </td>
                                                 <td className="p-2">
                                                     <div className="flex items-center gap-2">
-                                                        <User className="h-4 w-4 text-muted-foreground" />
+                                                        <User className="text-muted-foreground h-4 w-4" />
                                                         <span className="text-sm">{motorcycle.owner}</span>
                                                     </div>
                                                 </td>
                                                 <td className="p-2">
                                                     <div className="flex items-center gap-2">
-                                                        <Mail className="h-4 w-4 text-muted-foreground" />
+                                                        <Mail className="text-muted-foreground h-4 w-4" />
                                                         <span className="text-sm">{motorcycle.owner_email}</span>
                                                     </div>
                                                 </td>
@@ -218,11 +212,9 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
                             <CardDescription>No motorcycles registered with this model yet</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-8 text-muted-foreground">
+                            <div className="text-muted-foreground py-8 text-center">
                                 <p>No motorcycles have been registered using this model yet.</p>
-                                <p className="text-sm mt-2">
-                                    Customers can add motorcycles of this model to their garage from the customer portal.
-                                </p>
+                                <p className="mt-2 text-sm">Customers can add motorcycles of this model to their garage from the customer portal.</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -230,4 +222,4 @@ export default function MotorcycleShow({ motorcycleModel, motorcycles }: Props) 
             </div>
         </AppLayout>
     );
-} 
+}

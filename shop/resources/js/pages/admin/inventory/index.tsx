@@ -1,10 +1,10 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type AdminPart } from '@/types';
+import { type AdminPart, type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Edit, Trash2, Plus, Package, AlertTriangle, DollarSign } from 'lucide-react';
+import { Edit, Eye, Package, Plus, Trash2 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,8 +20,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     parts: {
         data: AdminPart[];
-        links?: any[];
-        meta?: any;
+        links: any[];
+        meta: any;
     };
 }
 
@@ -30,27 +30,6 @@ export default function InventoryIndex({ parts }: Props) {
         if (confirm(`Are you sure you want to delete ${part.name}?`)) {
             router.delete(route('admin.inventory.destroy', part.id));
         }
-    };
-
-    const getCategoryBadge = (category: string) => {
-        const colors = {
-            'Engine': 'bg-red-100 text-red-800',
-            'Brake': 'bg-orange-100 text-orange-800',
-            'Suspension': 'bg-blue-100 text-blue-800',
-            'Electrical': 'bg-yellow-100 text-yellow-800',
-            'Body': 'bg-green-100 text-green-800',
-            'Transmission': 'bg-purple-100 text-purple-800',
-            'Exhaust': 'bg-gray-100 text-gray-800',
-            'Fuel System': 'bg-pink-100 text-pink-800',
-        };
-        return colors[category as keyof typeof colors] || 'bg-gray-100 text-gray-800';
-    };
-
-    const getStockBadge = (part: AdminPart) => {
-        if (part.is_low_stock) {
-            return 'bg-red-100 text-red-800';
-        }
-        return 'bg-green-100 text-green-800';
     };
 
     return (
@@ -88,9 +67,7 @@ export default function InventoryIndex({ parts }: Props) {
                             <CardDescription>Need restocking</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-orange-600">
-                                {parts.data.filter(part => part.is_low_stock).length}
-                            </div>
+                            <div className="text-2xl font-bold text-orange-600">0</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -99,9 +76,7 @@ export default function InventoryIndex({ parts }: Props) {
                             <CardDescription>Different part types</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                {new Set(parts.data.map(part => part.category)).size}
-                            </div>
+                            <div className="text-2xl font-bold">{new Set(parts.data.map((p) => p.category)).size}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -110,9 +85,7 @@ export default function InventoryIndex({ parts }: Props) {
                             <CardDescription>Inventory worth</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">
-                                €{parts.data.reduce((sum, part) => sum + (part.stock_quantity * part.supplier_price), 0).toFixed(2)}
-                            </div>
+                            <div className="text-2xl font-bold">€{parts.data.reduce((sum, part) => sum + part.supplier_price, 0).toFixed(2)}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -132,34 +105,22 @@ export default function InventoryIndex({ parts }: Props) {
                                 {parts.data.map((part) => (
                                     <div key={part.id} className="flex items-center justify-between border-b pb-4 last:border-b-0 last:pb-0">
                                         <div className="flex items-center gap-4">
-                                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+                                            <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-lg">
                                                 <Package className="h-6 w-6" />
                                             </div>
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="font-medium">{part.brand} {part.name}</h3>
+                                                    <h3 className="font-medium">
+                                                        {part.brand} {part.name}
+                                                    </h3>
                                                     <Badge variant="outline">{part.part_code}</Badge>
-                                                    <Badge className={getCategoryBadge(part.category)}>
-                                                        {part.category}
-                                                    </Badge>
-                                                    {part.is_low_stock && (
-                                                        <Badge variant="destructive" className="flex items-center gap-1">
-                                                            <AlertTriangle className="h-3 w-3" />
-                                                            Low Stock
-                                                        </Badge>
-                                                    )}
+                                                    <Badge variant="secondary">{part.category}</Badge>
                                                 </div>
-                                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                    <span>Stock: {part.stock_quantity}/{part.minimum_stock}</span>
+                                                <div className="text-muted-foreground flex items-center gap-4 text-sm">
                                                     <span>Supplier: {part.supplier_name}</span>
-                                                    <span className="flex items-center gap-1">
-                                                        <DollarSign className="h-3 w-3" />
-                                                        €{part.supplier_price.toFixed(2)} → €{part.selling_price.toFixed(2)}
-                                                    </span>
+                                                    <span className="flex items-center gap-1">€{part.supplier_price.toFixed(2)}</span>
                                                 </div>
-                                                {part.description && (
-                                                    <p className="text-sm text-muted-foreground">{part.description}</p>
-                                                )}
+                                                {part.description && <p className="text-muted-foreground text-sm">{part.description}</p>}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
@@ -181,12 +142,10 @@ export default function InventoryIndex({ parts }: Props) {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12">
-                                <Package className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <div className="py-12 text-center">
+                                <Package className="text-muted-foreground mx-auto h-12 w-12" />
                                 <h3 className="mt-4 text-lg font-medium">No parts found</h3>
-                                <p className="mt-2 text-muted-foreground">
-                                    Get started by adding your first part to the inventory.
-                                </p>
+                                <p className="text-muted-foreground mt-2">Get started by adding your first part to the inventory.</p>
                                 <Button asChild className="mt-4">
                                     <Link href={route('admin.inventory.create')}>
                                         <Plus className="mr-2 h-4 w-4" />
@@ -200,4 +159,4 @@ export default function InventoryIndex({ parts }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

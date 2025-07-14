@@ -22,9 +22,7 @@ class StaffController extends BaseAdminController
         $staff = $this->getUsersWithCounts(
             'mechanic',
             ['assignedWorkOrders'],
-            ['assignedWorkOrders' => function($query) {
-                $query->whereIn('status', ['pending', 'in_progress']);
-            }]
+            ['assignedWorkOrders']
         );
 
         return Inertia::render('admin/staff/index', [
@@ -63,8 +61,8 @@ class StaffController extends BaseAdminController
         // Load staff data with relationships
         $staff->load([
             'assignedWorkOrders.motorcycle.motorcycleModel',
-            'assignedWorkOrders.user',
-            'workSessions'
+            'assignedWorkOrders.motorcycle.user',
+            'assignedWorkOrders.invoice'
         ]);
 
         // Format staff data using base controller method
@@ -72,26 +70,35 @@ class StaffController extends BaseAdminController
 
         // Format assigned work orders
         $assignedWorkOrders = $staff->assignedWorkOrders->map(function ($workOrder) {
+            // Determine status based on dates
+            $status = 'pending';
+            if ($workOrder->DataInizio && $workOrder->DataFine) {
+                $status = 'completed';
+            } elseif ($workOrder->DataInizio) {
+                $status = 'in_progress';
+            }
+
             return [
-                'id' => $workOrder->id,
-                'description' => $workOrder->description,
-                'status' => $workOrder->status,
-                'started_at' => $workOrder->started_at?->format('Y-m-d'),
-                'completed_at' => $workOrder->completed_at?->format('Y-m-d'),
-                'total_cost' => $workOrder->total_cost ? (float) $workOrder->total_cost : 0.0,
-                'motorcycle' => $workOrder->motorcycle->motorcycleModel->brand . ' ' . $workOrder->motorcycle->motorcycleModel->name,
-                'customer' => $workOrder->user->first_name . ' ' . $workOrder->user->last_name,
-                'assigned_at' => $workOrder->pivot->assigned_at ? Carbon::parse($workOrder->pivot->assigned_at)->format('Y-m-d H:i') : null,
-                'pivot_started_at' => $workOrder->pivot->started_at ? Carbon::parse($workOrder->pivot->started_at)->format('Y-m-d H:i') : null,
-                'pivot_completed_at' => $workOrder->pivot->completed_at ? Carbon::parse($workOrder->pivot->completed_at)->format('Y-m-d H:i') : null,
-                'pivot_notes' => $workOrder->pivot->notes,
+                'id' => $workOrder->CodiceIntervento,
+                'description' => $workOrder->Note,
+                'status' => $status,
+                'started_at' => $workOrder->DataInizio?->format('Y-m-d'),
+                'completed_at' => $workOrder->DataFine?->format('Y-m-d'),
+                'total_cost' => $workOrder->invoice?->Importo ? (float) $workOrder->invoice->Importo : 0.0,
+                'motorcycle' => $workOrder->motorcycle->motorcycleModel->Marca . ' ' . $workOrder->motorcycle->motorcycleModel->Nome,
+                'customer' => $workOrder->motorcycle->user->first_name . ' ' . $workOrder->motorcycle->user->last_name,
+                'assigned_at' => $workOrder->pivot->created_at ? Carbon::parse($workOrder->pivot->created_at)->format('Y-m-d H:i') : null,
             ];
         });
 
         // Calculate statistics
         $totalWorkOrders = $staff->assignedWorkOrders->count();
-        $completedWorkOrders = $staff->assignedWorkOrders->where('status', 'completed')->count();
-        $activeWorkOrders = $staff->assignedWorkOrders->whereIn('status', ['pending', 'in_progress'])->count();
+        $completedWorkOrders = $staff->assignedWorkOrders->filter(function ($workOrder) {
+            return $workOrder->DataInizio && $workOrder->DataFine;
+        })->count();
+        $activeWorkOrders = $staff->assignedWorkOrders->filter(function ($workOrder) {
+            return !$workOrder->DataInizio || ($workOrder->DataInizio && !$workOrder->DataFine);
+        })->count();
         $completionRate = $totalWorkOrders > 0 ? round(($completedWorkOrders / $totalWorkOrders) * 100, 1) : 0;
 
         return Inertia::render('admin/staff/show', [

@@ -11,18 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('motorcycle_models', function (Blueprint $table) {
-            $table->id();
-            $table->string('brand'); // Marca
-            $table->string('name'); // Nome
-            $table->string('model_code')->unique(); // CodiceModello
-            $table->integer('engine_size'); // Cilindrata
-            $table->string('segment'); // Segmento (e.g., sport, touring, naked, etc.)
-            $table->integer('power'); // Potenza (in HP)
+        Schema::create('MODELLI', function (Blueprint $table) {
+            $table->string('CodiceModello')->primary();
+            $table->string('Marca');
+            $table->string('Nome');
+            $table->integer('Cilindrata');
+            $table->string('Segmento');
+            $table->decimal('Potenza', 6, 2);
             $table->timestamps();
 
-            $table->index(['brand', 'name']);
-            $table->index('segment');
+            $table->index(['Marca', 'Nome']);
+            $table->index('Segmento');
         });
     }
 
@@ -31,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('motorcycle_models');
+        Schema::dropIfExists('MODELLI');
     }
 }; 

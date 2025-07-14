@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,15 +5,8 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { 
-    Calendar, 
-    Clock, 
-    User, 
-    Settings, 
-    FileText,
-    ArrowLeft,
-    Save
-} from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, Save, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Customer {
     id: number;
@@ -34,7 +26,6 @@ interface Props {
 
 interface AppointmentFormData {
     user_id: string;
-    motorcycle_id: string;
     appointment_date: string;
     appointment_time: string;
     type: string;
@@ -67,7 +58,6 @@ export default function AppointmentCreate({ customers }: Props) {
 
     const { data, setData, post, processing, errors, reset } = useForm<AppointmentFormData>({
         user_id: '',
-        motorcycle_id: '',
         appointment_date: '',
         appointment_time: '',
         type: '',
@@ -76,10 +66,9 @@ export default function AppointmentCreate({ customers }: Props) {
 
     useEffect(() => {
         if (data.user_id) {
-            const customer = customers.find(c => c.id.toString() === data.user_id);
+            const customer = customers.find((c) => c.id.toString() === data.user_id);
             setSelectedCustomer(customer || null);
             setAvailableMotorcycles(customer?.motorcycles || []);
-            setData('motorcycle_id', '');
         }
     }, [data.user_id]);
 
@@ -106,7 +95,7 @@ export default function AppointmentCreate({ customers }: Props) {
                     <div className="flex items-center gap-4">
                         <Button asChild variant="outline" size="sm">
                             <Link href="/admin/schedule/appointments">
-                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                <ArrowLeft className="mr-2 h-4 w-4" />
                                 Back to Appointments
                             </Link>
                         </Button>
@@ -126,7 +115,7 @@ export default function AppointmentCreate({ customers }: Props) {
                                     <User className="h-5 w-5" />
                                     Customer Information
                                 </CardTitle>
-                                <CardDescription>Select customer and motorcycle</CardDescription>
+                                <CardDescription>Select customer for appointment</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
@@ -135,7 +124,7 @@ export default function AppointmentCreate({ customers }: Props) {
                                         id="user_id"
                                         value={data.user_id}
                                         onChange={(e) => setData('user_id', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                         required
                                     >
                                         <option value="">Select a customer</option>
@@ -145,42 +134,32 @@ export default function AppointmentCreate({ customers }: Props) {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.user_id && (
-                                        <p className="text-sm text-red-600">{errors.user_id}</p>
-                                    )}
+                                    {errors.user_id && <p className="text-sm text-red-600">{errors.user_id}</p>}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="motorcycle_id">Motorcycle</Label>
-                                    <select
-                                        id="motorcycle_id"
-                                        value={data.motorcycle_id}
-                                        onChange={(e) => setData('motorcycle_id', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                                        required
-                                        disabled={!selectedCustomer}
-                                    >
-                                        <option value="">Select a motorcycle</option>
-                                        {availableMotorcycles.map((motorcycle) => (
-                                            <option key={motorcycle.id} value={motorcycle.id}>
-                                                {motorcycle.name} - {motorcycle.plate} ({motorcycle.year})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.motorcycle_id && (
-                                        <p className="text-sm text-red-600">{errors.motorcycle_id}</p>
-                                    )}
-                                </div>
+                                {selectedCustomer && availableMotorcycles.length > 0 && (
+                                    <div className="space-y-2">
+                                        <Label>Customer's Motorcycles</Label>
+                                        <div className="rounded-md bg-gray-50 p-3">
+                                            <p className="mb-2 text-sm font-medium text-gray-900">Available motorcycles:</p>
+                                            {availableMotorcycles
+                                                .filter((motorcycle) => motorcycle && motorcycle.id)
+                                                .map((motorcycle, index) => (
+                                                    <div key={motorcycle.id || `motorcycle-${index}`} className="text-sm text-gray-700">
+                                                        • {motorcycle.name} - {motorcycle.plate} ({motorcycle.year})
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {selectedCustomer && (
-                                    <div className="bg-gray-50 p-3 rounded-md">
+                                    <div className="rounded-md bg-gray-50 p-3">
                                         <p className="text-sm font-medium text-gray-900">Customer Details:</p>
                                         <p className="text-sm text-gray-700">
                                             {selectedCustomer.name} - {selectedCustomer.email}
                                         </p>
-                                        <p className="text-sm text-gray-600">
-                                            {selectedCustomer.motorcycles.length} motorcycle(s) available
-                                        </p>
+                                        <p className="text-sm text-gray-600">Customer motorcycles displayed for reference only</p>
                                     </div>
                                 )}
                             </CardContent>
@@ -206,9 +185,7 @@ export default function AppointmentCreate({ customers }: Props) {
                                         min={today}
                                         required
                                     />
-                                    {errors.appointment_date && (
-                                        <p className="text-sm text-red-600">{errors.appointment_date}</p>
-                                    )}
+                                    {errors.appointment_date && <p className="text-sm text-red-600">{errors.appointment_date}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -217,7 +194,7 @@ export default function AppointmentCreate({ customers }: Props) {
                                         id="appointment_time"
                                         value={data.appointment_time}
                                         onChange={(e) => setData('appointment_time', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                         required
                                     >
                                         <option value="">Select time</option>
@@ -227,9 +204,7 @@ export default function AppointmentCreate({ customers }: Props) {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.appointment_time && (
-                                        <p className="text-sm text-red-600">{errors.appointment_time}</p>
-                                    )}
+                                    {errors.appointment_time && <p className="text-sm text-red-600">{errors.appointment_time}</p>}
                                 </div>
 
                                 <div className="space-y-2">
@@ -238,19 +213,15 @@ export default function AppointmentCreate({ customers }: Props) {
                                         id="type"
                                         value={data.type}
                                         onChange={(e) => setData('type', e.target.value)}
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                         required
                                     >
                                         <option value="">Select appointment type</option>
                                         <option value="maintenance">Maintenance</option>
                                         <option value="dyno_testing">Dyno Testing</option>
-                                        <option value="inspection">Inspection</option>
                                     </select>
-                                    {errors.type && (
-                                        <p className="text-sm text-red-600">{errors.type}</p>
-                                    )}
+                                    {errors.type && <p className="text-sm text-red-600">{errors.type}</p>}
                                 </div>
-
                             </CardContent>
                         </Card>
                     </div>
@@ -272,23 +243,21 @@ export default function AppointmentCreate({ customers }: Props) {
                                     value={data.notes}
                                     onChange={(e) => setData('notes', e.target.value)}
                                     placeholder="Enter any special instructions, customer requests, or relevant information..."
-                                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
                                     rows={4}
                                 />
-                                {errors.notes && (
-                                    <p className="text-sm text-red-600">{errors.notes}</p>
-                                )}
+                                {errors.notes && <p className="text-sm text-red-600">{errors.notes}</p>}
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Submit Buttons */}
-                    <div className="flex justify-end gap-4 mt-6">
+                    <div className="mt-6 flex justify-end gap-4">
                         <Button asChild variant="outline">
                             <Link href="/admin/schedule/appointments">Cancel</Link>
                         </Button>
                         <Button type="submit" disabled={processing}>
-                            <Save className="h-4 w-4 mr-2" />
+                            <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Creating...' : 'Create Appointment'}
                         </Button>
                     </div>
@@ -296,4 +265,4 @@ export default function AppointmentCreate({ customers }: Props) {
             </div>
         </AppLayout>
     );
-} 
+}

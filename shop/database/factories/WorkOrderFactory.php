@@ -2,9 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
 use App\Models\Motorcycle;
-use App\Models\Appointment;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -34,23 +32,33 @@ class WorkOrderFactory extends Factory
             'Cooling system flush and refill'
         ];
 
+        // Generate dates before today
         $startDate = fake()->dateTimeBetween('-6 months', '-1 week');
-        $status = fake()->randomElement(['pending', 'in_progress', 'completed', 'cancelled']);
-        $laborCost = fake()->randomFloat(2, 50, 300);
-        $partsCost = fake()->randomFloat(2, 0, 500);
+        $endDate = fake()->boolean(70) ? fake()->dateTimeBetween($startDate, '-1 day') : null;
+        $hoursWorked = $endDate ? fake()->randomFloat(2, 0.5, 8) : 0;
+        
+        // Determine status based on dates
+        $stato = 'pending';
+        if ($startDate && $endDate) {
+            $stato = 'completed';
+        } elseif ($startDate) {
+            $stato = 'in_progress';
+        }
+
+        $workTypes = ['manutenzione_ordinaria', 'manutenzione_straordinaria'];
 
         return [
-            'user_id' => User::factory()->customer(),
-            'motorcycle_id' => Motorcycle::factory(),
-            'appointment_id' => fake()->boolean(70) ? Appointment::factory() : null,
-            'description' => fake()->randomElement($descriptions),
-            'status' => $status,
-            'started_at' => in_array($status, ['in_progress', 'completed']) ? $startDate : null,
-            'completed_at' => $status === 'completed' ? fake()->dateTimeBetween($startDate, '-1 day') : null,
-            'labor_cost' => $laborCost,
-            'parts_cost' => $partsCost,
-            'total_cost' => $laborCost + $partsCost,
-            'notes' => fake()->optional()->sentence(),
+            'CodiceIntervento' => fake()->unique()->regexify('WO[0-9]{6}'),
+            'DataInizio' => $startDate,
+            'DataFine' => $endDate,
+            'KmMoto' => fake()->numberBetween(0, 120000),
+            'Tipo' => fake()->randomElement($workTypes),
+            'Stato' => $stato,
+            'Causa' => fake()->optional()->words(3, true),
+            'OreImpiegate' => $hoursWorked,
+            'Note' => fake()->randomElement($descriptions),
+            'Nome' => fake()->sentence(3),
+            'NumTelaio' => Motorcycle::factory(),
         ];
     }
 
@@ -60,9 +68,10 @@ class WorkOrderFactory extends Factory
     public function pending(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'pending',
-            'started_at' => null,
-            'completed_at' => null,
+            'DataInizio' => null,
+            'DataFine' => null,
+            'Stato' => 'pending',
+            'OreImpiegate' => 0,
         ]);
     }
 
@@ -72,9 +81,10 @@ class WorkOrderFactory extends Factory
     public function inProgress(): static
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'in_progress',
-            'started_at' => fake()->dateTimeBetween('-2 weeks', '-1 day'),
-            'completed_at' => null,
+            'DataInizio' => fake()->dateTimeBetween('-2 weeks', '-1 day'),
+            'DataFine' => null,
+            'Stato' => 'in_progress',
+            'OreImpiegate' => fake()->randomFloat(2, 0.5, 4),
         ]);
     }
 
@@ -83,10 +93,12 @@ class WorkOrderFactory extends Factory
      */
     public function completed(): static
     {
+        $startDate = fake()->dateTimeBetween('-6 months', '-2 days');
         return $this->state(fn (array $attributes) => [
-            'status' => 'completed',
-            'started_at' => fake()->dateTimeBetween('-6 months', '-2 days'),
-            'completed_at' => fake()->dateTimeBetween($attributes['started_at'] ?? '-6 months', '-1 day'),
+            'DataInizio' => $startDate,
+            'DataFine' => fake()->dateTimeBetween($startDate, '-1 day'),
+            'Stato' => 'completed',
+            'OreImpiegate' => fake()->randomFloat(2, 1, 8),
         ]);
     }
 } 

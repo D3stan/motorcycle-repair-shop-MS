@@ -25,53 +25,47 @@ class ScheduleController extends Controller
         $startOfWeek = $currentDate->copy()->startOfWeek();
         $endOfWeek = $currentDate->copy()->endOfWeek();
         
-        // Get appointments for the current week
-        $appointments = Appointment::with(['user', 'motorcycle.motorcycleModel'])
-            ->whereBetween('appointment_date', [$startOfWeek, $endOfWeek])
-            ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
+        // Get appointments for the current week (simplified schema)
+        $appointments = Appointment::with(['user'])
+            ->whereBetween('DataAppuntamento', [$startOfWeek, $endOfWeek])
+            ->orderBy('DataAppuntamento')
             ->get()
             ->map(function ($appointment) {
                 return [
-                    'id' => $appointment->id,
-                    'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                    'appointment_time' => $appointment->appointment_time,
-                    'type' => $appointment->type,
-                    'status' => $appointment->status,
+                    'id' => $appointment->CodiceAppuntamento,
+                    'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+                    'appointment_time' => null, // No time field in simplified schema
+                    'type' => $appointment->Tipo,
+                    'status' => 'scheduled', // Simplified schema - all appointments are scheduled
                     'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
                     'customer_email' => $appointment->user->email,
                     'customer_phone' => $appointment->user->phone,
-                    'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . 
-                                   $appointment->motorcycle->motorcycleModel->name . ' (' . 
-                                   $appointment->motorcycle->license_plate . ')',
-                    'notes' => $appointment->notes,
+                    'motorcycle' => 'Not linked in simplified schema', // No motorcycle link
+                    'description' => $appointment->Descrizione,
                     'created_at' => $appointment->created_at->format('Y-m-d H:i'),
                 ];
             });
             
         // Schedule statistics
-        $todayAppointments = Appointment::whereDate('appointment_date', now())->count();
-        $pendingAppointments = Appointment::where('status', 'pending')->count();
-        $confirmedAppointments = Appointment::where('status', 'confirmed')->count();
-        $completedAppointments = Appointment::where('status', 'completed')->count();
+        $todayAppointments = Appointment::whereDate('DataAppuntamento', now())->count();
+        $pendingAppointments = Appointment::where('Stato', 'pending')->count();
+        $acceptedAppointments = Appointment::where('Stato', 'accepted')->count();
+        $rejectedAppointments = Appointment::where('Stato', 'rejected')->count();
         
         // Daily schedule for the week
         $weeklySchedule = collect(range(0, 6))->map(function ($dayOffset) use ($startOfWeek) {
             $date = $startOfWeek->copy()->addDays($dayOffset);
-            $dayAppointments = Appointment::with(['user', 'motorcycle.motorcycleModel'])
-                ->whereDate('appointment_date', $date)
-                ->orderBy('appointment_time')
+            $dayAppointments = Appointment::with(['user'])
+                ->whereDate('DataAppuntamento', $date)
                 ->get()
                 ->map(function ($appointment) {
                     return [
-                        'id' => $appointment->id,
-                        'time' => $appointment->appointment_time,
-                        'type' => $appointment->type,
-                        'status' => $appointment->status,
+                        'id' => $appointment->CodiceAppuntamento,
+                        'time' => null, // No time field in simplified schema
+                        'type' => $appointment->Tipo,
+                        'status' => $appointment->Stato,
                         'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                        'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . 
-                                       $appointment->motorcycle->motorcycleModel->name,
-                        'plate' => $appointment->motorcycle->license_plate,
+                        'description' => $appointment->Descrizione,
                     ];
                 });
                 
@@ -89,25 +83,22 @@ class ScheduleController extends Controller
             return sprintf('%02d:00', $hour);
         });
         
-        // Upcoming appointments (next 7 days)
-        $upcomingAppointments = Appointment::with(['user', 'motorcycle.motorcycleModel'])
-            ->where('appointment_date', '>', now())
-            ->where('appointment_date', '<=', now()->addDays(7))
-            ->orderBy('appointment_date')
-            ->orderBy('appointment_time')
+        // Upcoming appointments (next 7 days) - simplified schema
+        $upcomingAppointments = Appointment::with(['user'])
+            ->where('DataAppuntamento', '>', now())
+            ->where('DataAppuntamento', '<=', now()->addDays(7))
+            ->orderBy('DataAppuntamento')
             ->limit(10)
             ->get()
             ->map(function ($appointment) {
                 return [
-                    'id' => $appointment->id,
-                    'appointment_date' => $appointment->appointment_date->format('M j, Y'),
-                    'appointment_time' => $appointment->appointment_time,
-                    'type' => ucfirst(str_replace('_', ' ', $appointment->type)),
-                    'status' => $appointment->status,
+                    'id' => $appointment->CodiceAppuntamento,
+                    'appointment_date' => $appointment->DataAppuntamento->format('M j, Y'),
+                    'appointment_time' => null, // No time field in simplified schema
+                    'type' => ucfirst(str_replace('_', ' ', $appointment->Tipo)),
+                    'status' => $appointment->Stato,
                     'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
-                    'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . 
-                                   $appointment->motorcycle->motorcycleModel->name,
-                    'plate' => $appointment->motorcycle->license_plate,
+                    'description' => $appointment->Descrizione,
                 ];
             });
 
@@ -118,8 +109,8 @@ class ScheduleController extends Controller
             'statistics' => [
                 'today_appointments' => $todayAppointments,
                 'pending_appointments' => $pendingAppointments,
-                'confirmed_appointments' => $confirmedAppointments,
-                'completed_appointments' => $completedAppointments,
+                'accepted_appointments' => $acceptedAppointments,
+                'rejected_appointments' => $rejectedAppointments,
             ],
             'availableTimeSlots' => $availableTimeSlots,
             'upcomingAppointments' => $upcomingAppointments,
@@ -131,11 +122,11 @@ class ScheduleController extends Controller
      */
     public function appointments(Request $request): Response
     {
-        $query = Appointment::with(['user', 'motorcycle.motorcycleModel']);
-        
+        $query = Appointment::with(['user']);
+
         // Apply filters
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('stato', $request->status);
         }
         
         if ($request->filled('type')) {
@@ -149,42 +140,36 @@ class ScheduleController extends Controller
                     $userQuery->where('first_name', 'like', "%{$search}%")
                              ->orWhere('last_name', 'like', "%{$search}%")
                              ->orWhere('email', 'like', "%{$search}%");
-                })
-                ->orWhereHas('motorcycle', function ($motorcycleQuery) use ($search) {
-                    $motorcycleQuery->where('license_plate', 'like', "%{$search}%");
                 });
+                // Note: Motorcycle search not available in simplified schema
             });
         }
         
         if ($request->filled('date_from')) {
-            $query->where('appointment_date', '>=', $request->date_from);
+            $query->where('DataAppuntamento', '>=', $request->date_from);
         }
         
         if ($request->filled('date_to')) {
-            $query->where('appointment_date', '<=', $request->date_to);
+            $query->where('DataAppuntamento', '<=', $request->date_to);
         }
         
-        $appointments = $query->orderBy('appointment_date', 'desc')
-            ->orderBy('appointment_time', 'desc')
+        $appointments = $query->orderBy('DataAppuntamento', 'desc')
             ->paginate(20)
             ->withQueryString();
             
         $appointmentsData = $appointments->through(function ($appointment) {
             return [
-                'id' => $appointment->id,
-                'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                'appointment_time' => $appointment->appointment_time,
-                'type' => $appointment->type,
-                'status' => $appointment->status,
+                'id' => $appointment->CodiceAppuntamento,
+                'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+                'appointment_time' => null, // No time field in simplified schema
+                'type' => $appointment->Tipo,
+                'status' => $appointment->Stato,
                 'customer' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
                 'customer_email' => $appointment->user->email,
                 'customer_phone' => $appointment->user->phone,
-                'motorcycle' => $appointment->motorcycle->motorcycleModel->brand . ' ' . 
-                               $appointment->motorcycle->motorcycleModel->name . ' (' . 
-                               $appointment->motorcycle->license_plate . ')',
-                'notes' => $appointment->notes,
+                'description' => $appointment->Descrizione,
                 'created_at' => $appointment->created_at->format('Y-m-d H:i'),
-                'has_work_order' => $appointment->workOrders()->exists(),
+                'has_work_order' => false, // No direct link in simplified schema
             ];
         });
 
@@ -199,15 +184,15 @@ class ScheduleController extends Controller
      */
     public function show(Appointment $appointment): Response
     {
-        $appointment->load(['user', 'motorcycle.motorcycleModel', 'workOrders']);
+        $appointment->load(['user']); // Load user only
         
         $appointmentData = [
-            'id' => $appointment->id,
-            'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-            'appointment_time' => $appointment->appointment_time,
-            'type' => $appointment->type,
-            'status' => $appointment->status,
-            'notes' => $appointment->notes,
+            'id' => $appointment->CodiceAppuntamento,
+            'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+            'appointment_time' => null, // No time field in simplified schema
+            'type' => $appointment->Tipo,
+            'status' => $appointment->Stato,
+            'description' => $appointment->Descrizione,
             'created_at' => $appointment->created_at->format('Y-m-d H:i'),
         ];
         
@@ -216,35 +201,12 @@ class ScheduleController extends Controller
             'name' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
             'email' => $appointment->user->email,
             'phone' => $appointment->user->phone,
-            'tax_code' => $appointment->user->tax_code,
+            'tax_code' => $appointment->user->CF,
         ];
         
-        $motorcycle = [
-            'id' => $appointment->motorcycle->id,
-            'brand' => $appointment->motorcycle->motorcycleModel->brand,
-            'model' => $appointment->motorcycle->motorcycleModel->name,
-            'year' => $appointment->motorcycle->registration_year,
-            'plate' => $appointment->motorcycle->license_plate,
-            'vin' => $appointment->motorcycle->vin,
-            'engine_size' => $appointment->motorcycle->motorcycleModel->engine_size,
-        ];
-        
-        $workOrders = $appointment->workOrders->map(function ($workOrder) {
-            return [
-                'id' => $workOrder->id,
-                'description' => $workOrder->description,
-                'status' => $workOrder->status,
-                'started_at' => $workOrder->started_at?->format('Y-m-d'),
-                'completed_at' => $workOrder->completed_at?->format('Y-m-d'),
-                'total_cost' => (float) $workOrder->total_cost,
-            ];
-        });
-
         return Inertia::render('admin/schedule/appointment-show', [
             'appointment' => $appointmentData,
             'customer' => $customer,
-            'motorcycle' => $motorcycle,
-            'workOrders' => $workOrders,
         ]);
     }
 
@@ -265,12 +227,12 @@ class ScheduleController extends Controller
                     'email' => $customer->email,
                     'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
                         return [
-                            'id' => $motorcycle->id,
-                            'name' => $motorcycle->motorcycleModel->brand . ' ' . 
-                                    $motorcycle->motorcycleModel->name . ' (' . 
-                                    $motorcycle->license_plate . ')',
-                            'plate' => $motorcycle->license_plate,
-                            'year' => $motorcycle->registration_year,
+                            'id' => $motorcycle->NumTelaio,
+                            'name' => $motorcycle->motorcycleModel->Marca . ' ' . 
+                                    $motorcycle->motorcycleModel->Nome . ' (' . 
+                                    $motorcycle->Targa . ')',
+                            'plate' => $motorcycle->Targa,
+                            'year' => $motorcycle->AnnoImmatricolazione,
                         ];
                     }),
                 ];
@@ -288,25 +250,33 @@ class ScheduleController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'motorcycle_id' => 'required|exists:motorcycles,id',
             'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required|date_format:H:i',
-            'type' => 'required|in:maintenance,dyno_testing,inspection',
+            'type' => 'required|in:maintenance,dyno_testing',
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Check if the time slot is available
-        $existingAppointment = Appointment::where('appointment_date', $validated['appointment_date'])
-            ->where('appointment_time', $validated['appointment_time'])
-            ->first();
+        // Find the user by ID to get their CF
+        $user = User::findOrFail($validated['user_id']);
+        
+        // Generate a unique appointment code
+        $appointmentCode = 'APP' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        while (Appointment::where('CodiceAppuntamento', $appointmentCode)->exists()) {
+            $appointmentCode = 'APP' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        }
 
-        if ($existingAppointment) {
-            return back()->withErrors(['appointment_time' => 'This time slot is already booked.']);
+        // Create description including time and notes
+        $description = $validated['notes'] ?? 'Appointment for ' . $validated['type'];
+        if (!empty($validated['appointment_time'])) {
+            $description .= ' at ' . $validated['appointment_time'];
         }
 
         $appointment = Appointment::create([
-            ...$validated,
-            'status' => 'confirmed',
+            'CodiceAppuntamento' => $appointmentCode,
+            'DataAppuntamento' => $validated['appointment_date'],
+            'Descrizione' => $description,
+            'Tipo' => $validated['type'],
+            'CF' => $user->CF,
         ]);
 
         return redirect()->route('admin.schedule.show', $appointment)
@@ -318,7 +288,7 @@ class ScheduleController extends Controller
      */
     public function edit(Appointment $appointment): Response
     {
-        $appointment->load(['user', 'motorcycle.motorcycleModel']);
+        $appointment->load(['user']);
         
         // Get all customers with their motorcycles
         $customers = User::where('type', 'customer')
@@ -332,12 +302,12 @@ class ScheduleController extends Controller
                     'email' => $customer->email,
                     'motorcycles' => $customer->motorcycles->map(function ($motorcycle) {
                         return [
-                            'id' => $motorcycle->id,
-                            'name' => $motorcycle->motorcycleModel->brand . ' ' . 
-                                    $motorcycle->motorcycleModel->name . ' (' . 
-                                    $motorcycle->license_plate . ')',
-                            'plate' => $motorcycle->license_plate,
-                            'year' => $motorcycle->registration_year,
+                            'id' => $motorcycle->NumTelaio,
+                            'name' => $motorcycle->motorcycleModel->Marca . ' ' . 
+                                    $motorcycle->motorcycleModel->Nome . ' (' . 
+                                    $motorcycle->Targa . ')',
+                            'plate' => $motorcycle->Targa,
+                            'year' => $motorcycle->AnnoImmatricolazione,
                         ];
                     }),
                 ];
@@ -345,14 +315,17 @@ class ScheduleController extends Controller
 
         return Inertia::render('admin/schedule/appointment-edit', [
             'appointment' => [
-                'id' => $appointment->id,
-                'user_id' => $appointment->user_id,
-                'motorcycle_id' => $appointment->motorcycle_id,
-                'appointment_date' => $appointment->appointment_date->format('Y-m-d'),
-                'appointment_time' => $appointment->appointment_time,
-                'type' => $appointment->type,
-                'status' => $appointment->status,
-                'notes' => $appointment->notes,
+                'id' => $appointment->CodiceAppuntamento,
+                'user_id' => $appointment->user->id,
+                'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
+                'appointment_time' => '09:00', // Default time since not stored separately
+                'type' => $appointment->Tipo,
+                'status' => $appointment->Stato,
+                'notes' => $appointment->Descrizione,
+                'customer' => $appointment->user ? [
+                    'id' => $appointment->user->id,
+                    'name' => $appointment->user->first_name . ' ' . $appointment->user->last_name,
+                ] : null,
             ],
             'customers' => $customers,
         ]);
@@ -365,25 +338,30 @@ class ScheduleController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'motorcycle_id' => 'required|exists:motorcycles,id',
             'appointment_date' => 'required|date',
             'appointment_time' => 'required|date_format:H:i',
-            'type' => 'required|in:maintenance,dyno_testing,inspection',
-            'status' => 'required|in:pending,confirmed,in_progress,completed,cancelled',
+            'type' => 'required|in:maintenance,dyno_testing',
+            'status' => 'required|in:pending,accepted,rejected',
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Check if the time slot is available (excluding current appointment)
-        $existingAppointment = Appointment::where('appointment_date', $validated['appointment_date'])
-            ->where('appointment_time', $validated['appointment_time'])
-            ->where('id', '!=', $appointment->id)
-            ->first();
-
-        if ($existingAppointment) {
-            return back()->withErrors(['appointment_time' => 'This time slot is already booked.']);
+        // Find the user by ID to get their CF
+        $user = User::findOrFail($validated['user_id']);
+        
+        // Create description including time and notes
+        $description = $validated['notes'] ?? 'Appointment for ' . $validated['type'];
+        if (!empty($validated['appointment_time'])) {
+            $description .= ' at ' . $validated['appointment_time'];
         }
 
-        $appointment->update($validated);
+        // Update appointment with correct field mapping
+        $appointment->update([
+            'DataAppuntamento' => $validated['appointment_date'],
+            'Descrizione' => $description,
+            'Tipo' => $validated['type'],
+            'Stato' => $validated['status'],
+            'CF' => $user->CF,
+        ]);
 
         return redirect()->route('admin.schedule.show', $appointment)
             ->with('success', 'Appointment updated successfully!');
@@ -411,25 +389,56 @@ class ScheduleController extends Controller
     public function createWorkOrder(Appointment $appointment): RedirectResponse
     {
         // Check if work order already exists for this appointment
-        if ($appointment->workOrders()->exists()) {
-            return back()->with('error', 'Work order already exists for this appointment.');
+        // Note: In simplified schema, appointments don't directly link to work orders
+        // We need to get the user's motorcycle to create a work order
+        $appointment->load(['user.motorcycles']);
+        
+        if (!$appointment->user->motorcycles->isNotEmpty()) {
+            return back()->with('error', 'No motorcycles found for this customer.');
+        }
+
+        // Use the first motorcycle of the customer
+        $motorcycle = $appointment->user->motorcycles->first();
+        
+        // Generate a unique work order code
+        $workOrderCode = 'WO' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
+        while (WorkOrder::where('CodiceIntervento', $workOrderCode)->exists()) {
+            $workOrderCode = 'WO' . date('Ymd') . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT);
         }
 
         $workOrder = WorkOrder::create([
-            'user_id' => $appointment->user_id,
-            'motorcycle_id' => $appointment->motorcycle_id,
-            'appointment_id' => $appointment->id,
-            'description' => 'Work order created from appointment: ' . ucfirst(str_replace('_', ' ', $appointment->type)),
-            'status' => 'pending',
-            'labor_cost' => 0,
-            'parts_cost' => 0,
-            'total_cost' => 0,
+            'CodiceIntervento' => $workOrderCode,
+            'NumTelaio' => $motorcycle->NumTelaio,
+            'KmMoto' => 0, // Default value
+            'Tipo' => $appointment->Tipo,
+            'Stato' => 'pending',
+            'Note' => 'Work order created from appointment: ' . ucfirst(str_replace('_', ' ', $appointment->Tipo)),
+            'Nome' => 'Appointment Work Order',
         ]);
 
-        // Update appointment status
-        $appointment->update(['status' => 'in_progress']);
+        // Note: Appointment status not tracked in simplified schema
 
         return redirect()->route('admin.work-orders.show', $workOrder)
             ->with('success', 'Work order created successfully from appointment!');
+    }
+
+    /**
+     * Accept an appointment.
+     */
+    public function accept(Appointment $appointment): RedirectResponse
+    {
+        $appointment->update(['Stato' => 'accepted']);
+
+        return back()->with('success', 'Appointment accepted successfully!');
+    }
+
+    /**
+     * Reject an appointment.
+     */
+    public function reject(Appointment $appointment): RedirectResponse
+    {
+        $appointment->update(['Stato' => 'rejected']);
+
+        return back()->with('success', 'Appointment rejected successfully!');
     }
 } 

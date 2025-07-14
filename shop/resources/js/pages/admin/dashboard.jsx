@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function Dashboard(props) {
     return (
         <div>
@@ -14,15 +12,17 @@ export default function Dashboard(props) {
 
             <h2>Recent Work Orders</h2>
             <ul>
-                {props.recentWorkOrders.map(order => (
+                {props.recentWorkOrders.map((order) => (
                     <li key={order.id}>{order.description}</li>
                 ))}
             </ul>
 
             <h2>Recent Appointments</h2>
             <ul>
-                {props.recentAppointments.map(appointment => (
-                    <li key={appointment.id}>{appointment.type} for {appointment.motorcycle}</li>
+                {props.recentAppointments.map((appointment) => (
+                    <li key={appointment.id}>
+                        {appointment.type} for {appointment.motorcycle}
+                    </li>
                 ))}
             </ul>
         </div>
