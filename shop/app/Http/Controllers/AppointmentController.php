@@ -28,7 +28,7 @@ class AppointmentController extends Controller
                     'type' => $appointment->Tipo, // Send raw type value for form population
                     'type_display' => ucfirst(str_replace('_', ' ', $appointment->Tipo)), // Formatted for display
                     'description' => $appointment->Descrizione,
-                    'status' => 'scheduled', // Simplified schema - all appointments are scheduled
+                    'status' => $appointment->Stato,
                     'motorcycle' => null, // Appointments don't link to motorcycles in simplified schema
                     'notes' => $appointment->Descrizione ?? '', // Use description as notes
                 ];
