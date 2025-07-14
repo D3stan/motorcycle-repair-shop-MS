@@ -98,9 +98,20 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
     };
 
     if (!appointment) {
-        console.error('No appointment data available');
-        return null;
-    };
+        return (
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Edit Appointment</DialogTitle>
+                        <DialogDescription>Loading appointment data...</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-4">
+                        <p>No appointment data available.</p>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
 
     // Check if appointment can be edited (not accepted)
     const canEdit = appointment.status !== 'accepted';
@@ -110,9 +121,7 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Edit Appointment</DialogTitle>
-                    <DialogDescription>
-                        Modify your appointment details. Note: Accepted appointments cannot be edited.
-                    </DialogDescription>
+                    <DialogDescription>Modify your appointment details. Note: Accepted appointments cannot be edited.</DialogDescription>
                 </DialogHeader>
 
                 {!canEdit ? (
@@ -132,7 +141,7 @@ export default function EditAppointmentModal({ open, onOpenChange, appointment }
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* General Error Display */}
                         {errors.appointment && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
                                 <p className="text-sm text-red-600">{errors.appointment}</p>
                             </div>
                         )}

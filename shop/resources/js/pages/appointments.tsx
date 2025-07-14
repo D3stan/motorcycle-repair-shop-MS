@@ -54,19 +54,33 @@ export default function Appointments({ upcomingAppointments, pastAppointments }:
         setIsBookModalOpen(true);
     };
 
-    const handleEditAppointment = (appointmentId: number) => {
-        const appointment = upcomingAppointments.find((apt) => Number.parseInt(apt.id) === (appointmentId));
+    const handleEditAppointment = (appointmentId: String) => {
+        const appointment = upcomingAppointments.find((apt) => (apt.id) === appointmentId);
         if (appointment) {
             setSelectedAppointment(appointment);
             setIsEditModalOpen(true);
         }
     };
 
-    const handleCancelAppointment = (appointmentId: number) => {
-        const appointment = upcomingAppointments.find((apt) => Number.parseInt(apt.id) === appointmentId);
+    const handleCancelAppointment = (appointmentId: String) => {
+        const appointment = upcomingAppointments.find((apt) => (apt.id) === appointmentId);
         if (appointment) {
             setSelectedAppointment(appointment);
             setIsCancelModalOpen(true);
+        }
+    };
+
+    const handleModalOpenChange = (isOpen: boolean) => {
+        setIsEditModalOpen(isOpen);
+        if (!isOpen) {
+            setSelectedAppointment(null);
+        }
+    };
+
+    const handleCancelModalOpenChange = (isOpen: boolean) => {
+        setIsCancelModalOpen(isOpen);
+        if (!isOpen) {
+            setSelectedAppointment(null);
         }
     };
 
@@ -99,8 +113,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments }:
                                             </span>
                                         </CardTitle>
                                         <CardDescription>
-                                            {appointment.appointment_date} at {appointment.appointment_time} •{' '}
-                                            {appointment.type_display}
+                                            {appointment.appointment_date} at {appointment.appointment_time} • {appointment.type_display}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
@@ -116,7 +129,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments }:
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                onClick={() => handleEditAppointment(Number.parseInt(appointment.id))}
+                                                onClick={() => handleEditAppointment((appointment.id))}
                                                 className="flex-1"
                                                 disabled={appointment.status === 'accepted'}
                                             >
@@ -125,7 +138,7 @@ export default function Appointments({ upcomingAppointments, pastAppointments }:
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
-                                                onClick={() => handleCancelAppointment(Number.parseInt(appointment.id))}
+                                                onClick={() => handleCancelAppointment((appointment.id))}
                                                 className="flex-1"
                                                 disabled={appointment.status === 'accepted'}
                                             >
@@ -164,7 +177,9 @@ export default function Appointments({ upcomingAppointments, pastAppointments }:
                                                 <p className="text-muted-foreground text-sm">
                                                     {appointment.appointment_date} at {appointment.appointment_time}
                                                 </p>
-                                                {appointment.description && <p className="text-muted-foreground text-sm">{appointment.description}</p>}
+                                                {appointment.description && (
+                                                    <p className="text-muted-foreground text-sm">{appointment.description}</p>
+                                                )}
                                             </div>
                                             <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusColor(appointment.status)}`}>
                                                 {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
@@ -219,13 +234,17 @@ export default function Appointments({ upcomingAppointments, pastAppointments }:
                 {/* Modal Components */}
                 <BookAppointmentModal open={isBookModalOpen} onOpenChange={setIsBookModalOpen} />
 
-                <EditAppointmentModal
-                    open={isEditModalOpen}
-                    onOpenChange={setIsEditModalOpen}
-                    appointment={selectedAppointment}
+                <EditAppointmentModal 
+                    open={isEditModalOpen} 
+                    onOpenChange={handleModalOpenChange} 
+                    appointment={selectedAppointment} 
                 />
 
-                <CancelAppointmentModal open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen} appointment={selectedAppointment} />
+                <CancelAppointmentModal 
+                    open={isCancelModalOpen} 
+                    onOpenChange={handleCancelModalOpenChange} 
+                    appointment={selectedAppointment} 
+                />
             </div>
         </AppLayout>
     );

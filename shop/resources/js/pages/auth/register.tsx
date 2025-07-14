@@ -73,37 +73,37 @@ function validateName(fullName: string): string | null {
 
 function validateTaxCode(taxCode: string): string | null {
     const trimmedCode = taxCode.trim();
-    
+
     if (!trimmedCode) {
         return 'Tax code is required';
     }
-    
+
     // Basic Italian tax code validation (16 characters)
     if (trimmedCode.length !== 16) {
         return 'Tax code must be exactly 16 characters';
     }
-    
+
     const taxCodeRegex = /^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$/;
     if (!taxCodeRegex.test(trimmedCode.toUpperCase())) {
         return 'Invalid tax code format';
     }
-    
+
     return null;
 }
 
 function validatePhone(phone: string): string | null {
     const trimmedPhone = phone.trim();
-    
+
     if (!trimmedPhone) {
         return 'Phone number is required';
     }
-    
+
     // Basic phone validation (Italian format)
     const phoneRegex = /^(\+39\s?)?[0-9]{9,10}$/;
     if (!phoneRegex.test(trimmedPhone.replace(/\s/g, ''))) {
         return 'Invalid phone number format';
     }
-    
+
     return null;
 }
 
@@ -146,21 +146,21 @@ export default function Register() {
 
     const handleNextStep = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         // Validate step 1 fields
         const nameValidationError = validateName(fullNameInput);
         const taxCodeValidationError = validateTaxCode(data.tax_code);
         const phoneValidationError = validatePhone(data.phone);
-        
+
         if (nameValidationError) {
             setNameError(nameValidationError);
             return;
         }
-        
+
         if (taxCodeValidationError || phoneValidationError) {
             return;
         }
-        
+
         setCurrentStep(2);
     };
 
@@ -186,32 +186,33 @@ export default function Register() {
     return (
         <AuthLayout title="Create an account" description="Enter your details below to create your account">
             <Head title="Register" />
-            
+
             {/* Step Indicator */}
             <div className="mb-8">
                 <div className="flex items-center justify-center space-x-4">
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                        currentStep === 1 ? 'bg-primary border-primary text-white' : 
-                        currentStep === 2 ? 'bg-green-500 border-green-500 text-white' : 
-                        'border-gray-300 text-gray-300'
-                    }`}>
+                    <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
+                            currentStep === 1
+                                ? 'bg-primary border-primary text-white'
+                                : currentStep === 2
+                                  ? 'border-green-500 bg-green-500 text-white'
+                                  : 'border-gray-300 text-gray-300'
+                        }`}
+                    >
                         1
                     </div>
                     <div className={`h-1 w-16 ${currentStep === 2 ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                        currentStep === 2 ? 'bg-primary border-primary text-white' : 
-                        'border-gray-300 text-gray-300'
-                    }`}>
+                    <div
+                        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 ${
+                            currentStep === 2 ? 'bg-primary border-primary text-white' : 'border-gray-300 text-gray-300'
+                        }`}
+                    >
                         2
                     </div>
                 </div>
-                <div className="flex justify-between mt-2">
-                    <span className={`text-sm ${currentStep === 1 ? 'text-primary font-medium' : 'text-gray-500'}`}>
-                        Personal Info
-                    </span>
-                    <span className={`text-sm ${currentStep === 2 ? 'text-primary font-medium' : 'text-gray-500'}`}>
-                        Account Details
-                    </span>
+                <div className="mt-2 flex justify-between">
+                    <span className={`text-sm ${currentStep === 1 ? 'text-primary font-medium' : 'text-gray-500'}`}>Personal Info</span>
+                    <span className={`text-sm ${currentStep === 2 ? 'text-primary font-medium' : 'text-gray-500'}`}>Account Details</span>
                 </div>
             </div>
 
@@ -333,14 +334,7 @@ export default function Register() {
                         </div>
 
                         <div className="flex gap-3">
-                            <Button 
-                                type="button" 
-                                variant="outline" 
-                                className="w-full" 
-                                tabIndex={4}
-                                onClick={handlePrevStep}
-                                disabled={processing}
-                            >
+                            <Button type="button" variant="outline" className="w-full" tabIndex={4} onClick={handlePrevStep} disabled={processing}>
                                 Back
                             </Button>
                             <Button type="submit" className="w-full" tabIndex={5} disabled={processing}>
@@ -352,7 +346,7 @@ export default function Register() {
                 </form>
             )}
 
-            <div className="text-muted-foreground text-center text-sm mt-6">
+            <div className="text-muted-foreground mt-6 text-center text-sm">
                 Already have an account?{' '}
                 <TextLink href={route('login')} tabIndex={6}>
                     Log in

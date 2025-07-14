@@ -143,16 +143,9 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     <HeadingSmall title="Profile information" description="Update your name and email address" />
 
                     <form onSubmit={submit} className="space-y-6">
-
                         <div className="grid gap-2">
                             <Label htmlFor="tax_code">Tax Code (CF)</Label>
-                            <Input
-                                id="tax_code"
-                                className="mt-1 block w-full bg-gray-50"
-                                value={auth.user.CF || 'Not set'}
-                                readOnly
-                                disabled
-                            />
+                            <Input id="tax_code" className="mt-1 block w-full bg-gray-50" value={auth.user.CF || 'Not set'} readOnly disabled />
                             <p className="text-muted-foreground text-sm">
                                 Your tax code cannot be changed. Contact support if you need to update it.
                             </p>

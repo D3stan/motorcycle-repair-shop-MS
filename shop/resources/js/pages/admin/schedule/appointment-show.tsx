@@ -1,24 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import {
-    ArrowLeft,
-    Calendar,
-    Check,
-    Clock,
-    DollarSign,
-    Edit,
-    ExternalLink,
-    Hash,
-    Mail,
-    Phone,
-    Trash2,
-    User,
-    X,
-} from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Edit, ExternalLink, Hash, Mail, Phone, Trash2, User, X } from 'lucide-react';
 
 interface Appointment {
     id: number;

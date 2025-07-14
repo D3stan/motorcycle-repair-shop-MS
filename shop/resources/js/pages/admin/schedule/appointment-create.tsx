@@ -140,13 +140,15 @@ export default function AppointmentCreate({ customers }: Props) {
                                 {selectedCustomer && availableMotorcycles.length > 0 && (
                                     <div className="space-y-2">
                                         <Label>Customer's Motorcycles</Label>
-                                        <div className="bg-gray-50 rounded-md p-3">
-                                            <p className="text-sm font-medium text-gray-900 mb-2">Available motorcycles:</p>
-                                            {availableMotorcycles.filter(motorcycle => motorcycle && motorcycle.id).map((motorcycle, index) => (
-                                                <div key={motorcycle.id || `motorcycle-${index}`} className="text-sm text-gray-700">
-                                                    • {motorcycle.name} - {motorcycle.plate} ({motorcycle.year})
-                                                </div>
-                                            ))}
+                                        <div className="rounded-md bg-gray-50 p-3">
+                                            <p className="mb-2 text-sm font-medium text-gray-900">Available motorcycles:</p>
+                                            {availableMotorcycles
+                                                .filter((motorcycle) => motorcycle && motorcycle.id)
+                                                .map((motorcycle, index) => (
+                                                    <div key={motorcycle.id || `motorcycle-${index}`} className="text-sm text-gray-700">
+                                                        • {motorcycle.name} - {motorcycle.plate} ({motorcycle.year})
+                                                    </div>
+                                                ))}
                                         </div>
                                     </div>
                                 )}
@@ -157,7 +159,7 @@ export default function AppointmentCreate({ customers }: Props) {
                                         <p className="text-sm text-gray-700">
                                             {selectedCustomer.name} - {selectedCustomer.email}
                                         </p>
-                                        <p className=\"text-sm text-gray-600\">Customer motorcycles displayed for reference only</p>
+                                        <p className="text-sm text-gray-600">Customer motorcycles displayed for reference only</p>
                                     </div>
                                 )}
                             </CardContent>

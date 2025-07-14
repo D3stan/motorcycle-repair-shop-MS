@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useForm } from '@inertiajs/react';
-import { Bike, Calendar, ChevronDown, Clock, Settings, Zap } from 'lucide-react';
+import { Calendar, ChevronDown, Clock, Settings, Zap } from 'lucide-react';
 import { useState } from 'react';
 
 interface BookAppointmentModalProps {
@@ -162,18 +162,12 @@ export default function BookAppointmentModal({ open, onOpenChange }: BookAppoint
                         </div>
                     </div>
 
-
                     {/* Form Actions */}
                     <div className="flex justify-end gap-3 pt-4">
                         <Button type="button" variant="outline" onClick={handleClose}>
                             Cancel
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={
-                                processing || !selectedType || !data.appointment_date || !data.appointment_time
-                            }
-                        >
+                        <Button type="submit" disabled={processing || !selectedType || !data.appointment_date || !data.appointment_time}>
                             {processing ? 'Booking...' : 'Book Appointment'}
                         </Button>
                     </div>

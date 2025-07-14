@@ -244,9 +244,7 @@ export default function ScheduleIndex({ currentDate, weeklySchedule, statistics,
                                                         {appointment.customer}
                                                     </Link>
                                                 </p>
-                                                <p className="text-muted-foreground text-xs">
-                                                    {appointment.description}
-                                                </p>
+                                                <p className="text-muted-foreground text-xs">{appointment.description}</p>
                                                 <div className="flex gap-2">
                                                     {getTypeBadge(appointment.type)}
                                                     {getStatusBadge(appointment.status)}

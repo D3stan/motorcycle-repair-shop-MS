@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Edit, Eye, Filter, Mail, MoreHorizontal, Plus, Search, Settings, Trash2 } from 'lucide-react';
+import { Calendar, Edit, Eye, Filter, Mail, MoreHorizontal, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
 interface Appointment {

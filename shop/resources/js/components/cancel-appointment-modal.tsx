@@ -35,7 +35,21 @@ export default function CancelAppointmentModal({ open, onOpenChange, appointment
         onOpenChange(false);
     };
 
-    if (!appointment) return null;
+    if (!appointment) {
+        return (
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Cancel Appointment</DialogTitle>
+                        <DialogDescription>Loading appointment data...</DialogDescription>
+                    </DialogHeader>
+                    <div className="p-4">
+                        <p>No appointment data available.</p>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
 
     // Check if appointment can be cancelled (not completed)
     const canCancel = appointment.status !== 'completed';

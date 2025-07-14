@@ -22,7 +22,7 @@ function VideoHero() {
                 <p className="mb-8 max-w-2xl text-center text-xl text-white drop-shadow-lg md:text-2xl">
                     Your one-stop solution for motorcycle workshop management
                 </p>
-                <Button asChild size="lg" className="bg-white font-semibold text-black hover:bg-gray-100 shadow-lg">
+                <Button asChild size="lg" className="bg-white font-semibold text-black shadow-lg hover:bg-gray-100">
                     <Link href={route('register')}>Get Started</Link>
                 </Button>
             </div>
@@ -68,7 +68,7 @@ function LandingNavbar() {
                             <Button
                                 asChild
                                 size="sm"
-                                className={`ml-2 ${scrolled ? '' : 'border-white bg-white/10 text-white hover:bg-white hover:text-black backdrop-blur-sm'}`}
+                                className={`ml-2 ${scrolled ? '' : 'border-white bg-white/10 text-white backdrop-blur-sm hover:bg-white hover:text-black'}`}
                             >
                                 <Link href={route('register')}>Register</Link>
                             </Button>
@@ -83,7 +83,7 @@ function LandingNavbar() {
                                 <MenuIcon size={32} className={textColor} />
                             </button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="bg-white text-gray-900 flex flex-col p-0">
+                        <SheetContent side="right" className="flex flex-col bg-white p-0 text-gray-900">
                             <div className="flex items-center justify-between border-b px-6 py-4">
                                 <span className="text-xl font-bold">[Shop Name]</span>
                                 <button onClick={() => setOpen(false)} aria-label="Close menu" className="text-gray-900">
@@ -91,13 +91,13 @@ function LandingNavbar() {
                                 </button>
                             </div>
                             <nav className="flex flex-col gap-2 px-6 py-8 text-lg">
-                                <a href="#services" onClick={() => setOpen(false)} className="hover:bg-gray-100 rounded px-2 py-3 transition-colors">
+                                <a href="#services" onClick={() => setOpen(false)} className="rounded px-2 py-3 transition-colors hover:bg-gray-100">
                                     Services
                                 </a>
                                 <a
                                     href={route('login')}
                                     onClick={() => setOpen(false)}
-                                    className="hover:bg-gray-100 rounded px-2 py-3 transition-colors"
+                                    className="rounded px-2 py-3 transition-colors hover:bg-gray-100"
                                 >
                                     Login
                                 </a>
@@ -150,10 +150,10 @@ function ServicesSection() {
     ];
 
     return (
-        <section id="services" className="bg-gray-50 flex min-h-screen flex-col items-center py-40">
+        <section id="services" className="flex min-h-screen flex-col items-center bg-gray-50 py-40">
             <div className="mt-8 mb-16 flex flex-col items-center">
                 <h2 className="mb-6 text-center text-6xl font-extrabold tracking-tight text-gray-900">Our Services</h2>
-                <p className="text-gray-600 mb-8 max-w-2xl text-center text-2xl">
+                <p className="mb-8 max-w-2xl text-center text-2xl text-gray-600">
                     Discover how our platform streamlines your motorcycle workshop experience. From easy appointment booking to real-time job tracking
                     and inventory management, we provide everything you need for a modern, efficient garage.
                 </p>
@@ -162,7 +162,7 @@ function ServicesSection() {
                 {services.map((service, idx) => (
                     <Card
                         key={service.title}
-                        className="group hover:shadow-3xl bg-white hover:bg-gray-50 hover:ring-primary/30 relative flex min-h-[600px] transform-gpu flex-col overflow-hidden border shadow-2xl ring-0 transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:ring-8"
+                        className="group hover:shadow-3xl hover:ring-primary/30 relative flex min-h-[600px] transform-gpu flex-col overflow-hidden border bg-white shadow-2xl ring-0 transition-all duration-300 hover:-translate-y-2 hover:scale-105 hover:bg-gray-50 hover:ring-8"
                         style={{ minHeight: 600 }}
                     >
                         <div className="relative h-80 w-full overflow-hidden">
