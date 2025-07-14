@@ -58,8 +58,8 @@ Un'analisi testuale dell'intervista ha portato alla luce diverse ambiguità elen
 
 I **Clienti** rappresentano i proprietari delle motociclette che si registrano nel sistema fornendo i propri dati anagrafici e di contatto.
 Ogni cliente può possedere una o più **Motociclette**, caratterizzate da targa, marca, modello e note personali.
-Gli **Appuntamenti** costituiscono il collegamento tra clienti e officina, permettendo la prenotazione di interventi di manutenzione
-(ordinaria o straordinaria) o prove al banco. Ogni appuntamento è associato a una specifica motocicletta e può trovarsi in diversi stati
+Gli **Appuntamenti** costituiscono il collegamento tra clienti e officina, permettendo la prenotazione di interventi di manutenzione o prove al banco.
+Ogni appuntamento è associato a una specifica motocicletta e può trovarsi in diversi stati
 (in attesa di conferma, in progesso, completato, annullato). Durante la fase operativa, gli appuntamenti si trasformano in **Interventi** veri e propri,
 ai quali vengono assegnati uno o più **Tecnici** responsabili dell'esecuzione del lavoro.  
 Il **Magazzino** gestisce i **Ricambi**, ognuno identificato da un codice fornitore, categoria e livello di disponibilità. Esiste una
@@ -459,7 +459,6 @@ INTERVENTI (
   DataInizio,
   DataFine[0–1],
   KmMoto,
-  Tipo,
   Causa[0–1],
   OreImpiegate,
   Stato,
@@ -547,11 +546,11 @@ Il cliente associa una moto già presente nel catalogo dei modelli al proprio ga
 3) Eventuale annullamento da parte del cliente.
 
 .code {sql}
-    INSERT INTO APPUNTAMENTI (CodiceAppuntamento, DataAppuntamento, Descrizione, Tipo, CF)
-    VALUES (?, ?, ?, 'attesa', ?);
+    INSERT INTO APPUNTAMENTI (CodiceAppuntamento, DataAppuntamento, Descrizione, Stato, Tipo, CF)
+    VALUES (?, ?, ?, 'attesa', ?, ?);
 
     UPDATE APPUNTAMENTI
-    SET Tipo = 'confermato'
+    SET Stato = 'confermato'
     WHERE CodiceAppuntamento = ?;
 
     DELETE FROM APPUNTAMENTI
@@ -655,7 +654,6 @@ Restituisce la lista completa degli interventi, meccanici e ricambi utilizzati s
     SELECT i.CodiceIntervento,
            i.DataInizio,
            i.DataFine,
-           i.Tipo,
            i.OreImpiegate,
            i.Note,
            GROUP_CONCAT(DISTINCT sv.CF) AS meccanici,
@@ -664,7 +662,7 @@ Restituisce la lista completa degli interventi, meccanici e ricambi utilizzati s
     LEFT JOIN SVOLGIMENTI sv USING (CodiceIntervento)
     LEFT JOIN UTILIZZI u USING (CodiceIntervento)
     WHERE i.NumTelaio = ?
-    GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine, i.Tipo, i.OreImpiegate, i.Note
+    GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine, i.OreImpiegate, i.Note
     ORDER BY i.DataInizio DESC;
 
 
