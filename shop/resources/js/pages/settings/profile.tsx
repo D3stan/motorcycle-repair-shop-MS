@@ -23,6 +23,7 @@ type ProfileForm = {
     first_name: string;
     last_name: string;
     email: string;
+    phone: string;
 };
 
 function parseName(fullName: string): { first_name: string; last_name: string } {
@@ -86,6 +87,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
         first_name: auth.user.first_name || '',
         last_name: auth.user.last_name || '',
         email: auth.user.email,
+        phone: auth.user.phone || '',
     });
 
     // Initialize the full name input with the current user's name
@@ -141,6 +143,21 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                     <HeadingSmall title="Profile information" description="Update your name and email address" />
 
                     <form onSubmit={submit} className="space-y-6">
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="tax_code">Tax Code (CF)</Label>
+                            <Input
+                                id="tax_code"
+                                className="mt-1 block w-full bg-gray-50"
+                                value={auth.user.CF || 'Not set'}
+                                readOnly
+                                disabled
+                            />
+                            <p className="text-muted-foreground text-sm">
+                                Your tax code cannot be changed. Contact support if you need to update it.
+                            </p>
+                        </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="name">Full Name</Label>
 
@@ -177,6 +194,20 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                             />
 
                             <InputError className="mt-2" message={errors.email} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <Input
+                                id="phone"
+                                type="tel"
+                                className="mt-1 block w-full"
+                                value={data.phone}
+                                onChange={(e) => setData('phone', e.target.value)}
+                                autoComplete="tel"
+                                placeholder="e.g. +39 123 456 7890"
+                            />
+                            <InputError className="mt-2" message={errors.phone} />
                         </div>
 
                         {mustVerifyEmail && auth.user.email_verified_at === null && (
