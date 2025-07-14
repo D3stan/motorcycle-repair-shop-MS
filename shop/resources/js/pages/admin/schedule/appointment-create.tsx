@@ -115,7 +115,7 @@ export default function AppointmentCreate({ customers }: Props) {
                                     <User className="h-5 w-5" />
                                     Customer Information
                                 </CardTitle>
-                                <CardDescription>Select customer and motorcycle</CardDescription>
+                                <CardDescription>Select customer for appointment</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
@@ -157,7 +157,7 @@ export default function AppointmentCreate({ customers }: Props) {
                                         <p className="text-sm text-gray-700">
                                             {selectedCustomer.name} - {selectedCustomer.email}
                                         </p>
-                                        <p className="text-sm text-gray-600">{selectedCustomer.motorcycles.length} motorcycle(s) available</p>
+                                        <p className=\"text-sm text-gray-600\">Customer motorcycles displayed for reference only</p>
                                     </div>
                                 )}
                             </CardContent>

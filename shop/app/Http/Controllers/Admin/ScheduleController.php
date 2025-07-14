@@ -187,14 +187,14 @@ class ScheduleController extends Controller
      */
     public function show(Appointment $appointment): Response
     {
-        $appointment->load(['user.motorcycles.motorcycleModel']); // Load user with their motorcycles
+        $appointment->load(['user']); // Load user only
         
         $appointmentData = [
             'id' => $appointment->CodiceAppuntamento,
             'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
             'appointment_time' => null, // No time field in simplified schema
             'type' => $appointment->Tipo,
-            'status' => 'scheduled', // No status field in simplified schema
+            'status' => $appointment->Stato,
             'description' => $appointment->Descrizione,
             'created_at' => $appointment->created_at->format('Y-m-d H:i'),
         ];
@@ -207,46 +207,9 @@ class ScheduleController extends Controller
             'tax_code' => $appointment->user->CF,
         ];
         
-        // Get customer's motorcycles - use the first one if available
-        $motorcycle = null;
-        if ($appointment->user->motorcycles->isNotEmpty()) {
-            $customerMotorcycle = $appointment->user->motorcycles->first();
-            $motorcycle = [
-                'id' => $customerMotorcycle->NumTelaio,
-                'brand' => $customerMotorcycle->motorcycleModel->Marca,
-                'model' => $customerMotorcycle->motorcycleModel->Nome,
-                'year' => $customerMotorcycle->AnnoImmatricolazione,
-                'plate' => $customerMotorcycle->Targa,
-                'vin' => $customerMotorcycle->NumTelaio,
-                'engine_size' => $customerMotorcycle->motorcycleModel->Cilindrata . 'cc',
-            ];
-        }
-        
-        // Get work orders related to the customer's motorcycles (if any)
-        $workOrders = [];
-        if ($appointment->user->motorcycles->isNotEmpty()) {
-            $motorcycleIds = $appointment->user->motorcycles->pluck('NumTelaio');
-            $workOrders = WorkOrder::whereIn('NumTelaio', $motorcycleIds)
-                ->orderBy('DataInizio', 'desc')
-                ->get()
-                ->map(function ($workOrder) {
-                    return [
-                        'id' => $workOrder->CodiceIntervento,
-                        'description' => $workOrder->Nome ?: 'Work Order',
-                        'status' => $workOrder->Stato,
-                        'started_at' => $workOrder->DataInizio ? $workOrder->DataInizio->format('M j, Y') : null,
-                        'completed_at' => $workOrder->DataFine ? $workOrder->DataFine->format('M j, Y') : null,
-                        'total_cost' => 0, // Simplified schema - no cost tracking
-                    ];
-                })
-                ->toArray();
-        }
-        
         return Inertia::render('admin/schedule/appointment-show', [
             'appointment' => $appointmentData,
             'customer' => $customer,
-            'motorcycle' => $motorcycle,
-            'workOrders' => $workOrders,
         ]);
     }
 
@@ -356,10 +319,11 @@ class ScheduleController extends Controller
         return Inertia::render('admin/schedule/appointment-edit', [
             'appointment' => [
                 'id' => $appointment->CodiceAppuntamento,
+                'user_id' => $appointment->user->id,
                 'appointment_date' => $appointment->DataAppuntamento->format('Y-m-d'),
                 'appointment_time' => '09:00', // Default time since not stored separately
                 'type' => $appointment->Tipo,
-                'status' => 'scheduled', // Simplified schema - all appointments are scheduled
+                'status' => $appointment->Stato,
                 'notes' => $appointment->Descrizione,
                 'customer' => $appointment->user ? [
                     'id' => $appointment->user->id,
@@ -380,6 +344,7 @@ class ScheduleController extends Controller
             'appointment_date' => 'required|date',
             'appointment_time' => 'required|date_format:H:i',
             'type' => 'required|in:maintenance,dyno_testing',
+            'status' => 'required|in:pending,accepted,rejected',
             'notes' => 'nullable|string|max:1000',
         ]);
 
@@ -397,6 +362,7 @@ class ScheduleController extends Controller
             'DataAppuntamento' => $validated['appointment_date'],
             'Descrizione' => $description,
             'Tipo' => $validated['type'],
+            'Stato' => $validated['status'],
             'CF' => $user->CF,
         ]);
 
@@ -457,5 +423,25 @@ class ScheduleController extends Controller
 
         return redirect()->route('admin.work-orders.show', $workOrder)
             ->with('success', 'Work order created successfully from appointment!');
+    }
+
+    /**
+     * Accept an appointment.
+     */
+    public function accept(Appointment $appointment): RedirectResponse
+    {
+        $appointment->update(['Stato' => 'accepted']);
+
+        return back()->with('success', 'Appointment accepted successfully!');
+    }
+
+    /**
+     * Reject an appointment.
+     */
+    public function reject(Appointment $appointment): RedirectResponse
+    {
+        $appointment->update(['Stato' => 'rejected']);
+
+        return back()->with('success', 'Appointment rejected successfully!');
     }
 } 

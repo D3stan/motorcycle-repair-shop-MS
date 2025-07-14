@@ -93,6 +93,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/appointments/{appointment}/edit', [ScheduleController::class, 'edit'])->name('appointments.edit');
         Route::put('/appointments/{appointment}', [ScheduleController::class, 'update'])->name('appointments.update');
         Route::delete('/appointments/{appointment}', [ScheduleController::class, 'destroy'])->name('appointments.destroy');
+        Route::patch('/appointments/{appointment}/accept', [ScheduleController::class, 'accept'])->name('appointments.accept');
+        Route::patch('/appointments/{appointment}/reject', [ScheduleController::class, 'reject'])->name('appointments.reject');
 
     });
 });

@@ -26,6 +26,7 @@ class AppointmentFactory extends Factory
             'DataAppuntamento' => $appointmentDate,
             'Descrizione' => fake()->sentence(),
             'Tipo' => fake()->randomElement(['maintenance', 'dyno_testing']),
+            'Stato' => fake()->randomElement(['pending', 'accepted', 'rejected']),
             'CF' => User::factory()->customer(),
         ];
     }
@@ -47,6 +48,36 @@ class AppointmentFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'DataAppuntamento' => fake()->dateTimeBetween('-2 months', 'yesterday'),
+        ]);
+    }
+
+    /**
+     * Create a pending appointment.
+     */
+    public function pending(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'Stato' => 'pending',
+        ]);
+    }
+
+    /**
+     * Create an accepted appointment.
+     */
+    public function accepted(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'Stato' => 'accepted',
+        ]);
+    }
+
+    /**
+     * Create a rejected appointment.
+     */
+    public function rejected(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'Stato' => 'rejected',
         ]);
     }
 } 

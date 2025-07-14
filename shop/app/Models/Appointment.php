@@ -41,6 +41,7 @@ class Appointment extends Model
         'DataAppuntamento',
         'Descrizione',
         'Tipo',
+        'Stato',
         'CF',
     ];
 

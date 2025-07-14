@@ -13,18 +13,11 @@ interface Customer {
     id: number;
     name: string;
     email: string;
-    motorcycles: {
-        id: number;
-        name: string;
-        plate: string;
-        year: number;
-    }[];
 }
 
 interface Appointment {
     id: number;
     user_id: number;
-    motorcycle_id: number;
     appointment_date: string;
     appointment_time: string;
     type: string;
@@ -39,7 +32,6 @@ interface Props {
 
 interface AppointmentFormData {
     user_id: string;
-    motorcycle_id: string;
     appointment_date: string;
     appointment_time: string;
     type: string;
@@ -69,13 +61,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function AppointmentEdit({ appointment, customers }: Props) {
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-    const [availableMotorcycles, setAvailableMotorcycles] = useState<any[]>([]);
 
     const { data, setData, put, processing, errors } = useForm<AppointmentFormData>({
-        user_id: appointment.user_id.toString(),
-        motorcycle_id: appointment.motorcycle_id.toString(),
+        user_id: appointment.user_id?.toString() || '',
         appointment_date: appointment.appointment_date,
-        appointment_time: appointment.appointment_time.substring(0, 5), // Extract HH:MM from time string
+        appointment_time: appointment.appointment_time || '09:00',
         type: appointment.type,
         status: appointment.status,
         notes: appointment.notes || '',
@@ -85,20 +75,13 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
         if (data.user_id) {
             const customer = customers.find((c) => c.id.toString() === data.user_id);
             setSelectedCustomer(customer || null);
-            setAvailableMotorcycles(customer?.motorcycles || []);
-
-            // If the selected customer doesn't have the current motorcycle, reset motorcycle selection
-            if (customer && !customer.motorcycles.find((m) => m.id.toString() === data.motorcycle_id)) {
-                setData('motorcycle_id', '');
-            }
         }
     }, [data.user_id]);
 
-    // Initialize customer and motorcycles on component mount
+    // Initialize customer on component mount
     useEffect(() => {
         const customer = customers.find((c) => c.id === appointment.user_id);
         setSelectedCustomer(customer || null);
-        setAvailableMotorcycles(customer?.motorcycles || []);
     }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -114,16 +97,12 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'confirmed':
-                return <Badge className="bg-green-100 text-green-800">Confirmed</Badge>;
+            case 'accepted':
+                return <Badge className="bg-green-100 text-green-800">Accepted</Badge>;
             case 'pending':
                 return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>;
-            case 'in_progress':
-                return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-            case 'completed':
-                return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>;
-            case 'cancelled':
-                return <Badge variant="destructive">Cancelled</Badge>;
+            case 'rejected':
+                return <Badge variant="destructive">Rejected</Badge>;
             default:
                 return <Badge variant="secondary">{status}</Badge>;
         }
@@ -158,7 +137,7 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                     <User className="h-5 w-5" />
                                     Customer Information
                                 </CardTitle>
-                                <CardDescription>Update customer and motorcycle selection</CardDescription>
+                                <CardDescription>Update customer selection</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
@@ -180,25 +159,14 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                     {errors.user_id && <p className="text-sm text-red-600">{errors.user_id}</p>}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="motorcycle_id">Motorcycle</Label>
-                                    <select
-                                        id="motorcycle_id"
-                                        value={data.motorcycle_id}
-                                        onChange={(e) => setData('motorcycle_id', e.target.value)}
-                                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
-                                        required
-                                        disabled={!selectedCustomer}
-                                    >
-                                        <option value="">Select a motorcycle</option>
-                                        {availableMotorcycles.map((motorcycle) => (
-                                            <option key={motorcycle.id} value={motorcycle.id}>
-                                                {motorcycle.name} - {motorcycle.plate} ({motorcycle.year})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.motorcycle_id && <p className="text-sm text-red-600">{errors.motorcycle_id}</p>}
-                                </div>
+                                {selectedCustomer && (
+                                    <div className="rounded-md bg-gray-50 p-3">
+                                        <p className="text-sm font-medium text-gray-900">Selected Customer:</p>
+                                        <p className="text-sm text-gray-700">
+                                            {selectedCustomer.name} - {selectedCustomer.email}
+                                        </p>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
 
@@ -255,7 +223,6 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         <option value="">Select appointment type</option>
                                         <option value="maintenance">Maintenance</option>
                                         <option value="dyno_testing">Dyno Testing</option>
-                                        <option value="inspection">Inspection</option>
                                     </select>
                                     {errors.type && <p className="text-sm text-red-600">{errors.type}</p>}
                                 </div>
@@ -270,10 +237,8 @@ export default function AppointmentEdit({ appointment, customers }: Props) {
                                         required
                                     >
                                         <option value="pending">Pending</option>
-                                        <option value="confirmed">Confirmed</option>
-                                        <option value="in_progress">In Progress</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="cancelled">Cancelled</option>
+                                        <option value="accepted">Accepted</option>
+                                        <option value="rejected">Rejected</option>
                                     </select>
                                     {errors.status && <p className="text-sm text-red-600">{errors.status}</p>}
                                     <div className="mt-1 flex items-center gap-2">
