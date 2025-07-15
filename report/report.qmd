@@ -85,6 +85,7 @@ d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 9. Gestione ruoli e permessi del personale
 10. Tracciamento storico interventi per una motocicletta
 11. Visualizzare lo stato di un intervento sulla propria moto
+12. Visualizzazione fattura
 
 # Progettazione Concettuale
 
@@ -342,6 +343,16 @@ Operazione che permette ai clienti di consultare in autonomia lo stato corrente 
 
 .center
     **Totale costo**: 5 letture -> 125 accessi al giorno
+
+#####! OP 12 - Visualizzazione fattura
+Operazione che permette la consultazione di una fattura esistente. Utilizzata per l'analisi delle ridondanze, confronta l'accesso diretto all'importo memorizzato con il ricalcolo dinamico dai ricambi utilizzati.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| FATTURA | E | 1 | L
+
+.center
+    **Totale costo**: 1 lettura -> 100 accessi al mese
 
 
 ## Raffinamento dello schema
@@ -765,7 +776,7 @@ Restituisce la lista completa degli interventi, meccanici e ricambi utilizzati s
 
 
 ##### OP 11 - Stato intervento visibile al cliente
-Mostra al proprietario l’avanzamento degli interventi sulla propria moto.
+Mostra al proprietario l'avanzamento degli interventi sulla propria moto.
 
 .code {sql}
     SELECT i.CodiceIntervento,
@@ -783,6 +794,21 @@ Mostra al proprietario l’avanzamento degli interventi sulla propria moto.
     AND m.CF = ?
     AND i.NumTelaio = ?
     ORDER BY i.DataInizio DESC;
+
+##### OP 12 - Visualizzazione fattura
+Operazione per consultare una fattura esistente con tutte le informazioni associate.
+
+.code {sql}
+    SELECT f.CodiceFattura,
+           f.Importo,
+           f.Data,
+           f.Note,
+           p.Nome,
+           p.Cognome,
+           p.CF
+    FROM FATTURE f, PERSONE p
+    WHERE f.CF = p.CF
+    AND f.CodiceFattura = ?;
 
 
 
