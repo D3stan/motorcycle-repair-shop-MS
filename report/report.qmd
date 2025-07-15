@@ -213,7 +213,7 @@ Gestisce la prenotazione di appuntamenti da parte dei clienti tramite relazione 
 | APPUNTAMENTO | E | 1 | S 
 
 .center
-    **Totale costo**: 6 letture -> 90 accessi al giorno
+    **Totale costo**: 7 letture -> 105 accessi al giorno
 
 
 #####! OP 4 - Assegnazione tecnici ad un intervento
@@ -254,7 +254,7 @@ Gestisce il processo di rifornimento dell'inventario con ricambi dai fornitori. 
 | STOCCAGGIO | R | 1 | S 
 
 .center
-    **Totale costo**: 8 letture -> 16 accessi al giorno
+    **Totale costo**: 7 letture -> 14 accessi al giorno
 
 ![ER](imgs/navigazione6.png "Schema di navigazione per il restoccaggio")
 
@@ -278,7 +278,7 @@ Operazione per generare fatture per interventi completati. Naviga attraverso le 
 | INTESTAZIONE | R | 1 | S 
 
 .center
-    **Totale costo**: 16 letture -> 1600 accessi al mese
+    **Totale costo**: 18 letture -> 1800 accessi al mese
 
 ![ER](imgs/navigazione7.png "Schema di navigazione per la gestione delle fatture")
 
@@ -359,7 +359,7 @@ Nello schema sono evidenziate le chiavi primarie utilizzate. Per l'entità **mot
 Partendo dallo schema ER sono state modificate le seguenti relazioni:
 - **Creazione**, eliminata importando il _CodiceFiscale_ in **Appuntamento**
 - **Intestazione**, eliminata importando il _CodiceFiscale_ in **Fattura**
-- **Emissione**, eliminata importando il _CodiceIntervento_ in **Fattura**
+- **Emissione**, eliminata importando il _CodiceIntervento_ e il _CodiceSessione_ in **Fattura**
 - **Possessione**, eliminata importando il _CodiceFiscale_ in **Moto**
 - **Realizzazione**, eliminata importando il _CodiceModello_ in **Moto**
 - **Fornitura**, eliminata importando il _CodiceFornitore_ in **Ricambio**
@@ -522,7 +522,7 @@ UNIQUE(Targa)
 
 ## Schema relazionale finale
 
-![RL](imgs/relazionale.png "Inserire qui lo schema relazionale")
+![RL](imgs/relazionale.png "Schema relazionale finale")
 
 ## Traduzione delle operazioni in query SQL
 
@@ -663,16 +663,6 @@ Esempi di query semplici per popolare la dashboard.
     HAVING SUM(s.Quantita) < s.QuantitaMinima
     ORDER BY r.CodiceRicambio;
 
-    SELECT 
-        (SELECT COUNT(*) FROM APPUNTAMENTI 
-				WHERE DataAppuntamento >= CURDATE()) as AppuntamentiOggi,
-        (SELECT COUNT(*) FROM INTERVENTI 
-				WHERE DataFine IS NULL) as InterventiAperti,
-        (SELECT COUNT(*) FROM SESSIONI 
-				WHERE Stato = 'in_corso') as SessioniInCorso,
-        (SELECT SUM(Importo) FROM FATTURE 
-				WHERE Data >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as RicaviMensili;
-
 
 ##### OP 9 - Gestione ruoli e permessi del personale
 Modifica del ruolo di un dipendente.
@@ -771,7 +761,7 @@ Mostra al proprietario l’avanzamento degli interventi sulla propria moto.
 L'applicativo si basa su un'architettura **MVC** (Model-View-Controller) implementata con **Laravel**, un full-stack framework basato su **PHP**.
 In particolare si ha la seguente struttura:
 - **Backend**: Laravel 12 con Eloquent ORM
-- **Frontend**: React 18 + TypeScript servito via Inertia.js
+- **Frontend**: React 19 + TypeScript servito via Inertia.js
 - **Database**: MySQL 8 (InnoDB) gestito tramite migration e seeders 
 
 !(350x_)[MVC](imgs/mvc.png "Architettura")
