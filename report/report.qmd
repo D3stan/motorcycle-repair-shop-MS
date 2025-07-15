@@ -199,6 +199,9 @@ Operazione che consente ai clienti di aggiungere le proprie motociclette al gara
 .center
     **Totale costo**: 10 letture -> 1400 accessi all'anno
 
+![ER](imgs/navigazione2.png "Schema di navigazione per l'inserimento di una moto")
+
+
 #####! OP 3 - Prenotazione appuntamenti
 Gestisce la prenotazione di appuntamenti da parte dei clienti tramite relazione CREAZIONE diretta. L'operazione include la creazione dell'appuntamento e la successiva gestione degli stati (conferma/cancellazione) da parte dell'officina.
 
@@ -212,7 +215,6 @@ Gestisce la prenotazione di appuntamenti da parte dei clienti tramite relazione 
 .center
     **Totale costo**: 6 letture -> 90 accessi al giorno
 
-![ER](imgs/navigazione3.png "Schema di navigazione per la gestione degli appuntamenti")
 
 #####! OP 4 - Assegnazione tecnici ad un intervento
 Operazione che permette l'assegnazione di uno o più meccanici agli interventi programmati. Verifica l'esistenza e lo stato dell'intervento e la disponibilità del meccanico prima di creare l'assegnazione tramite relazione SVOLGIMENTO.
@@ -253,6 +255,9 @@ Gestisce il processo di rifornimento dell'inventario con ricambi dai fornitori. 
 
 .center
     **Totale costo**: 8 letture -> 16 accessi al giorno
+
+![ER](imgs/navigazione6.png "Schema di navigazione per il restoccaggio")
+
 
 #####! OP 7 - Generazione fattura per intervento completato
 Operazione per generare fatture per interventi completati. Naviga attraverso le relazioni EFFETTUAZIONE, REALIZZAZIONE, POSSESSIONE e INTESTAZIONE per collegare intervento, moto, modello e cliente. Include il calcolo dei costi di manodopera e ricambi utilizzati.
