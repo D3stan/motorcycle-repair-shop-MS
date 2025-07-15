@@ -373,7 +373,83 @@ Partendo dallo schema ER sono state modificate le seguenti relazioni:
 
 ## Analisi delle ridondanze
 
-[Inserire qui l'elenco delle ridondanze presenti.]
+Si vogliono prendere in esame le seguenti ridondanze, identificate come le principali:
+
+1. **Costo totale dei ricambi utilizzati in un intervento**: aggiungere l'attributo `CostoTotaleRicambi` alla tabella INTERVENTI per evitare di calcolare ogni volta la somma dei costi dei ricambi utilizzati.
+
+2. **Quantità totale di ricambi disponibili**: aggiungere l'attributo `QuantitaTotale` alla tabella RICAMBI per evitare di sommare le quantità presenti in tutti i magazzini.
+
+### RIDONDANZA 1 - Costo totale ricambi per intervento
+
+#####! OP 7 - Generazione fattura per intervento completato (CON ridondanza)
+Con l'aggiunta dell'attributo `CostoTotaleRicambi` nella tabella INTERVENTI, il calcolo del costo totale dei ricambi diventa immediato.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| INTERVENTO | E | 1 | L
+| EFFETTUAZIONE | R | 1 | L
+| MOTO | E | 1 | L
+| REALIZZAZIONE | R | 1 | L
+| MODELLO | E | 1 | L
+| POSSESSIONE | R | 1 | L 
+| CLIENTE | E | 1 | L
+| FATTURA | E | 1 | S
+| EMISSIONE | R | 1 | S 
+| INTESTAZIONE | R | 1 | S 
+
+**Totale costo con ridondanza**: 12 letture -> 1200 accessi al mese
+
+#####! OP 7 - Generazione fattura per intervento completato (SENZA ridondanza)
+Senza la ridondanza, è necessario accedere alla tabella UTILIZZI per calcolare il costo totale dei ricambi.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| INTERVENTO | E | 1 | L
+| EFFETTUAZIONE | R | 1 | L
+| MOTO | E | 1 | L
+| REALIZZAZIONE | R | 1 | L
+| MODELLO | E | 1 | L
+| POSSESSIONE | R | 1 | L 
+| CLIENTE | E | 1 | L
+| UTILIZZO | R | 2.5 | L
+| RICAMBIO | E | 2.5 | L
+| FATTURA | E | 1 | S
+| EMISSIONE | R | 1 | S 
+| INTESTAZIONE | R | 1 | S 
+
+**Totale costo senza ridondanza**: 18 letture -> 1800 accessi al mese
+
+**Risparmio**: 600 accessi al mese
+
+### RIDONDANZA 2 - Quantità totale ricambi disponibili
+
+#####! OP 5 - Visualizzazione inventario con soglie di riordino (CON ridondanza)
+Con l'aggiunta dell'attributo `QuantitaTotale` nella tabella RICAMBI, non è necessario sommare le quantità dei diversi magazzini.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| RICAMBIO | E | 1200 | L
+| FORNITORE | E | 25 | L
+
+**Totale costo con ridondanza**: 1225 letture -> 49000 accessi al mese
+
+#####! OP 5 - Visualizzazione inventario con soglie di riordino (SENZA ridondanza)
+Senza la ridondanza, è necessario accedere alle tabelle STOCCAGGIO e MAGAZZINO per calcolare le quantità totali.
+
+| Concetto | Tipo | Accessi | Operazione 
+|----------|------|---------|------------
+| RICAMBIO | E | 1200 | L
+| STOCCAGGIO | R | 30 | L 
+| MAGAZZINO | E | 3 | L
+| FORNITORE | E | 25 | L
+
+**Totale costo senza ridondanza**: 1258 letture -> 50320 accessi al mese
+
+**Risparmio**: 1320 accessi al mese
+
+### Conclusioni
+
+Le ridondanze offrono vantaggi significativi in termini di prestazioni, tuttavia introducono una leggera complessità di mantenimento dei dati. In aggiunta si perde parte della flessibilità desiderata.
 
 #####! OP 1 - Operazione 1
 [Inserire qui descrizione della ridondanza nell'operazione 1 (contando le ridondanze)]
