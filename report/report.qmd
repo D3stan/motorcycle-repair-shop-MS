@@ -353,7 +353,7 @@ Nello [schema ER](#raffinamenti-proposti-2) è presente un attributo composto _C
 Sono presenti diverse gerarchie nello schema ed ognuna è stata trattata relativamente alle sue specifiche. In particolare per gestire la gerarchia **persona** e **intervento** è stato effettuato un collasso verso l'alto in quanto i sotto-tipi non contenevano informazioni aggiuntive. Per la gerarchia **lavoro**, invece, si è preferito un collasso verso il basso in modo da mantenere una differenziazione forte.
 
 #### Scelta delle chiavi 
-Nello schema sono evidenziate le chiavi primarie utilizzate. Per l'entità **moto** si poteva far ricorso anche alla *targa* per l'identificazione ma si potrebbero verificare dei casi in cui la motocicletta viene reimmatricolata.
+Nello schema sono evidenziate le chiavi primarie utilizzate. Per l'entità **moto** si poteva far ricorso alla *targa* (piuttosto che il _numero di telaio_) per l'identificazione ma si potrebbero verificare dei casi in cui la motocicletta viene reimmatricolata.
 
 #### Eliminazione di identificatori esterni
 Partendo dallo schema ER sono state modificate le seguenti relazioni:
@@ -797,7 +797,7 @@ Di seguito viene mostrata la dashboard personale di un cliente tipo dell'officin
 Premento il relativo pulsante o navigando nell'apposita sezione è possibile prenotare un appuntamento.
 Verrà mostrata una schermata in cui il cliente potrà esprimere in maniera intuitiva le sue preferenze.
 
-!(300x_)[screenshot](imgs/app/user/bookappointment.png "Prenotazione appuntamento")
+!(300x_)[screenshot](imgs/app/user/appointment.png "Prenotazione appuntamento")
 
 #### Amministratore
 
