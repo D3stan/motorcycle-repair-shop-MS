@@ -15,10 +15,9 @@ l'intervento umano da parte dell'officina.
 
 ## Intervista
 
-Si riporta in seguito la trascrizione dell'intervista effettuata col proprietario dell'officina.  
+Si riporta in seguito la trascrizione dell'intervista effettuata col proprietario dell'officina:  
 
 .html
-    <br>
     <em>
     Il titolare di un'officina desidera snellire la gestione quotidiana della propria attività. Racconta che, al momento,
     tutte le informazioni su clientela, motociclette, appuntamenti e ricambi vengono annotate su fogli di calcolo e agende cartacee,
@@ -27,8 +26,8 @@ Si riporta in seguito la trascrizione dell'intervista effettuata col proprietari
     Una volta registrato, il cliente ha la possibilità di aggiungere le sue moto a un garage virtuale, specificando targa, marca,
     modello e qualche nota personale. In questo modo lo staff può visualizzare lo storico della moto per aiutare con diagnosi di problemi futuri.  
 
-    Il passo successivo riguarda la prenotazione degli appuntamenti. Il titolare sottolinea l’esigenza di un calendario che mostri
-    le fasce orarie libere per interventi di manutenzione ordinaria o per prove al banco.
+    Il passo successivo riguarda la prenotazione degli appuntamenti. Il titolare sottolinea l’esigenza di un calendario digitale che permetta
+    al cliente di prenotare interventi di manutenzione ordinaria o prove al banco.
     Inoltre il cliente deve poter disdire in autonomia. Al momento della richiesta, il sistema deve salvare l'appuntamento in
     uno stato di "attesa di conferma" che l’officina potrà poi convertire in "confermato" oppure rifiutare, tenendo conto della
     disponibilità dei meccanici e della complessità del lavoro.  
@@ -69,7 +68,7 @@ utilizzati vengono registrati e collegati all'intervento con i relativi prezzi, 
 Il **Personale** dell'officina comprende tecnici con diversi ruoli e permessi di accesso differenziati. Gli amministratori
 hanno accesso completo al sistema inclusa la generazione di fatture, mentre i tecnici possono aggiornare lo stato dei lavori a
 loro assegnati. Il sistema di **Fatturazione** collega gli interventi completati ai relativi clienti,
-includendo il calcolo della manodopera e dei ricambi utilizzati. Un **Dashboard** amministrativo fornisce una visione
+includendo il calcolo della manodopera e dei ricambi utilizzati. Una **Dashboard** amministrativa fornisce una visione
 d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 
 ##### Operazioni principali da implementare:
@@ -95,13 +94,13 @@ d'insieme delle attività correnti, appuntamenti, ricavi e stato del magazzino.
 
 Un primo sviluppo legato al dominio del problema produce il seguente schema:
 
-![ER](imgs/scheletroP.png "Scheletro per la modellazione delle persone")
+!(350x_)[ER](imgs/scheletroP.png "Scheletro per la modellazione delle persone")
 
 ### Raffinamenti proposti
 
 Si nota fin da subito la necessità di dividere l'entità **persona** in in due sotto entità per distinguere i clienti dai dipendenti dell'officina. Inoltre, data la descrizione del dominio, si vogliono distinguere i lavori in base al tipo di intervento, quindi sessione a banco oppure manutenzione, in quanto si può così avere una distinzione maggiore tra uno e l'altro.
 
-![ER](imgs/rifinitoP.png "Schema rifinito")
+!(350x_)[ER](imgs/rifinitoP.png "Schema rifinito")
 
 ## Motociclette
 
@@ -113,10 +112,10 @@ La prima iterazione nella modellizzazione delle moto per il garage virtuale e i 
 
 ### Raffinamenti proposti
 
-Mettere in relazione un **ricambio** direttamente con la **motoclicletta** di proprietà di una **persona** risulta essere una scelta poco conveniente: potrebbe capitare che due (o più) persone abbiano lo stesso modello e verrebbe introdotta una ridondaza inutile.  
+Mettere in relazione un **ricambio** direttamente con la **motocicletta** di proprietà di una **persona** risulta essere una scelta poco conveniente: potrebbe capitare che due (o più) persone abbiano lo stesso modello e verrebbe introdotta una ridondaza inutile.  
 Per questo motivo si è deciso di separare le due entità di **moto** e **modello**, in quanto una rappresenta la motocicletta fisica posseduta da una persona e l'altra rappresenta il modello prodotto dalla casa madre. Così facendo, per motivi analoghi, si evitano problemi con le associazioni riguardo un lavoro effettuato su di una particolare moto.
 
-![ER](imgs/rifinitoM.png "Schema rifinito")
+!(350x_)[ER](imgs/rifinitoM.png "Schema rifinito")
 
 ## Ricambi
 
@@ -124,17 +123,20 @@ Per questo motivo si è deciso di separare le due entità di **moto** e **modell
 
 A seguito di una prima analisi del dominio si sviluppa il seguente schema per modellare il concetto di ricambi e il suo intorno:
 
-![ER](imgs/scheletroR.png "Scheletro per la modellazione dei ricambi")
+!(350x_)[ER](imgs/scheletroR.png "Scheletro per la modellazione dei ricambi")
 
 ### Raffinamenti proposti
 
+.float {start}
+	!(300x_)[ER](imgs/rifinitoR.png "Schema rifinito")
+
 La divisione di un lavoro in **intervento** e **sessione** permette di mettere in relazione un **ricambio** solo dove risulta davvero necessario. Inoltre specificare qualora un intervento si tratti di manutenzione **ordinaria** o **straordinaria** aiuta ulteriormente a giustificare la quantità e/o il tipo di ricambi che sono stati utilizzati. Infine i ricambi possono essere convervati in diversi magazzini per permettere maggiore flessibilità di caso di ampliamento dell'officina (basti pensare a un magazzino interno per ricambi generici utilizzati quasi giornalmente e un magazzino esterno per ricambi specifici).
 
-![ER](imgs/rifinitoR.png "Schema rifinito")
+
 
 ## Schema concettuale finale
 
-!(_x100%)[ER](imgs/finaleV.png)
+!(95%x_)[ER](imgs/finaleV.png)
 
 
 # Progettazione logica
@@ -184,6 +186,8 @@ Questa operazione permette la registrazione di nuovi utenti nel sistema. La regi
 .center
     **Totale costo**: 4 letture -> 40 accessi al mese
 
+<<<
+
 #####! OP 2 - Inserimento di una nuova motocicletta nel garage
 Operazione che consente ai clienti di aggiungere le proprie motociclette al garage virtuale specificando targa, anno di immatricolazione, numero di telaio (VIN) e note personali. Include controlli di unicità per NumTelaio e Targa e verifica dell'esistenza del modello selezionato.
 
@@ -229,6 +233,8 @@ Operazione che permette l'assegnazione di uno o più meccanici agli interventi p
 .center
     **Totale costo**: 4 letture -> 40 accessi al giorno
 
+<<<
+
 #####! OP 5 - Visualizzazione inventario con soglie di riordino
 Operazione che permette la consultazione dell'inventario corrente con evidenziazione dei ricambi sotto soglia minima. Per una verifica completa delle soglie, deve accedere a tutti i ricambi del sistema e le relative relazioni di stoccaggio.
 
@@ -257,7 +263,7 @@ Gestisce il processo di rifornimento dell'inventario con ricambi dai fornitori. 
 .center
     **Totale costo**: 7 letture -> 14 accessi al giorno
 
-![ER](imgs/navigazione6.png "Schema di navigazione per il restoccaggio")
+!(300x_)[ER](imgs/navigazione6.png "Schema di navigazione per il restoccaggio")
 
 
 #####! OP 7 - Generazione fattura per intervento completato
@@ -281,7 +287,7 @@ Operazione per generare fatture per interventi completati. Naviga attraverso le 
 .center
     **Totale costo**: 18 letture -> 1800 accessi al mese
 
-![ER](imgs/navigazione7.png "Schema di navigazione per la gestione delle fatture")
+!(350x_)[ER](imgs/navigazione7.png "Schema di navigazione per la gestione delle fatture")
 
 
 #####! OP 8 - Visualizzazione dashboard con indicatori di performance
@@ -330,6 +336,9 @@ Operazione che permette la consultazione completa dello storico degli interventi
 .center
     **Totale costo**: 28 letture -> 2800 accessi al mese
 
+.html
+	<br>
+
 #####! OP 11 - Visualizzare lo stato di un intervento sulla propria moto
 Operazione che permette ai clienti di consultare in autonomia lo stato corrente degli interventi sulle proprie motociclette. Lo stato dell'intervento è contenuto nell'entità INTERVENTO, quindi non sono necessari accessi ai meccanici.
 
@@ -354,6 +363,8 @@ Operazione che permette la consultazione di una fattura esistente. Utilizzata pe
 .center
     **Totale costo**: 1 lettura -> 100 accessi al mese
 
+
+<<<
 
 ## Raffinamento dello schema
 
@@ -381,6 +392,8 @@ Partendo dallo schema ER sono state modificate le seguenti relazioni:
 - **Utilizzo**, reificata importando _CodiceIntervento_ da **Intervento** e _CodiceRicambio_ da **Ricambio**, mantenendo gli attributi _quantità_ e _prezzo_
 - **Stoccaggio**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceMagazzino_ da **Magazzino**
 - **Appartenenza**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceModello_ da **Modello**
+
+<<<
 
 ## Analisi delle ridondanze
 
@@ -419,7 +432,7 @@ Senza l'attributo `Importo`, ogni visualizzazione richiederebbe il ricalcolo del
 .center
     **Totale costo**: 7 letture -> 700 accessi al mese
 
-**Conclusione**: Mantenere l'importo ridondante riduce significativamente il costo delle operazioni di lettura, giustificando la scelta progettuale a fronte di un leggero aumento del costo in fase di scrittura (calcolo effettuato una sola volta durante l'operazione OP 7).
+**Conclusione**: Mantenere l'importo ridondante riduce significativamente il costo delle operazioni di lettura, a fronte di un leggero aumento del costo in fase di scrittura.
 
 ---
 
@@ -546,8 +559,8 @@ UNIQUE(Targa)
 )  
 **STOCCAGGI** (
   .text {CodiceMagazzino} decoration:{underline}: MAGAZZINI,
-  .text {CodiceRicambio} decoration:{underline}: RICAMBI
-  Quantità
+  .text {CodiceRicambio} decoration:{underline}: RICAMBI,
+  Quantità,
   QuantitàMinima
 )  
 **APPARTENENZE** (
@@ -561,10 +574,11 @@ UNIQUE(Targa)
   Prezzo
 )
 
+<<<
 
 ## Schema relazionale finale
 
-![RL](imgs/relazionale.png "Schema relazionale finale")
+!(75%x_)[RL](imgs/relazionale.png "Schema relazionale finale")
 
 ## Traduzione delle operazioni in query SQL
 
@@ -852,6 +866,8 @@ Premento il relativo pulsante o navigando nell'apposita sezione è possibile pre
 Verrà mostrata una schermata in cui il cliente potrà esprimere in maniera intuitiva le sue preferenze.
 
 !(300x_)[screenshot](imgs/app/user/appointment.png "Prenotazione appuntamento")
+
+<<<
 
 #### Amministratore
 
