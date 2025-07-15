@@ -1,0 +1,77 @@
+name: Deploy Report to GitHub Pages
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Cache Quarkdown
+        id: cache-quarkdown
+        uses: actions/cache@v3
+        with:
+          path: quarkdown.zip
+          key: ${{ runner.os }}-quarkdown-v1.6.3
+
+      - name: Download Quarkdown
+        run: |
+          if [[ "${{ steps.cache-quarkdown.outputs.cache-hit }}" != 'true' ]]; then
+            wget -O quarkdown.zip https://github.com/iamgio/quarkdown/releases/download/v1.6.3/quarkdown.zip
+          fi
+          unzip quarkdown.zip
+          chmod +x quarkdown/bin/quarkdown
+          echo "$GITHUB_WORKSPACE/quarkdown/bin" >> $GITHUB_PATH
+
+      - name: Verify Quarkdown installation
+        run: |
+          quarkdown --help | head -5
+
+      - name: Compile report
+        run: |
+          cd report
+          quarkdown c report.qmd -o ../output --clean
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Prepare deployment files
+        run: |
+          mkdir -p deploy
+          if [ -d "output/report" ]; then
+            cp -r output/report/* deploy/
+          else
+            echo "Error: Could not find compiled output directory"
+            exit 1
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: deploy
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
