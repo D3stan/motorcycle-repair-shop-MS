@@ -538,14 +538,16 @@ Inserimento di un nuovo cliente nel sistema. La CF funge da chiave primaria e pe
 Il cliente associa una moto già presente nel catalogo dei modelli al proprio garage.
 
 .code {sql}
-    INSERT INTO MOTO (NumTelaio, Targa, AnnoImmatricolazione, Note, CodiceModello, CF)
+    INSERT INTO MOTO
+	(NumTelaio, Targa, AnnoImmatricolazione, Note, CodiceModello, CF)
     VALUES (?, ?, ?, ?, ?, ?);
 
 
 ##### OP 3 - Prenotazione, conferma e cancellazione appuntamenti
 
 .code {sql}
-    INSERT INTO APPUNTAMENTI (CodiceAppuntamento, DataAppuntamento, Descrizione, Stato, Tipo, CF)
+    INSERT INTO APPUNTAMENTI
+		(CodiceAppuntamento, DataAppuntamento, Descrizione, Stato, Tipo, CF)
     VALUES (?, ?, ?, 'attesa', ?, ?);
 
 ##### OP 4 - Assegnazione tecnici ad un intervento
@@ -615,7 +617,8 @@ Inserisce la fattura per un intervento completato collegandola al cliente tramit
     FROM UTILIZZI u
     WHERE u.CodiceIntervento = ?;
 
-    INSERT INTO FATTURE (CodiceFattura, Importo, Data, Note, CF, CodiceIntervento)
+    INSERT INTO FATTURE
+			(CodiceFattura, Importo, Data, Note, CF, CodiceIntervento)
     VALUES (?, ?, CURRENT_DATE, ?, ?, ?);
 
 
@@ -661,10 +664,14 @@ Esempi di query semplici per popolare la dashboard.
     ORDER BY r.CodiceRicambio;
 
     SELECT 
-        (SELECT COUNT(*) FROM APPUNTAMENTI WHERE DataAppuntamento >= CURDATE()) as AppuntamentiOggi,
-        (SELECT COUNT(*) FROM INTERVENTI WHERE DataFine IS NULL) as InterventiAperti,
-        (SELECT COUNT(*) FROM SESSIONI WHERE Stato = 'in_corso') as SessioniInCorso,
-        (SELECT SUM(Importo) FROM FATTURE WHERE Data >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as RicaviMensili;
+        (SELECT COUNT(*) FROM APPUNTAMENTI 
+				WHERE DataAppuntamento >= CURDATE()) as AppuntamentiOggi,
+        (SELECT COUNT(*) FROM INTERVENTI 
+				WHERE DataFine IS NULL) as InterventiAperti,
+        (SELECT COUNT(*) FROM SESSIONI 
+				WHERE Stato = 'in_corso') as SessioniInCorso,
+        (SELECT SUM(Importo) FROM FATTURE 
+				WHERE Data >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as RicaviMensili;
 
 
 ##### OP 9 - Gestione ruoli e permessi del personale
