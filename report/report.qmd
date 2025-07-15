@@ -561,13 +561,23 @@ Elenco dei ricambi con quantità sotto la soglia impostata.
 
 .code {sql}
     SELECT r.CodiceRicambio,
-           r.Nome,
-           SUM(s.`Quantita`) AS disponibilita,
-           r.SogliaMinima
-    FROM RICAMBI r
-    JOIN STOCCAGGI s ON s.CodiceRicambio = r.CodiceRicambio
-    GROUP BY r.CodiceRicambio, r.Nome, r.SogliaMinima
-    HAVING disponibilita < r.SogliaMinima;
+        r.Nome,
+        r.Marca,
+        r.Categoria,
+        f.Nome AS Fornitore,
+        f.Telefono AS TelefonoFornitore,
+        m.CodiceMagazzino,
+        s.Quantita,
+        s.QuantitaMinima,
+        CASE 
+            WHEN s.Quantita < s.QuantitaMinima THEN 'SOTTO SOGLIA'
+            ELSE 'OK'
+        END AS StatoScorte
+    FROM RICAMBI r, FORNITORI f, STOCCAGGI s, MAGAZZINI m
+    WHERE r.CodiceFornitore = f.CodiceFornitore
+    AND r.CodiceRicambio = s.CodiceRicambio
+    AND s.CodiceMagazzino = m.CodiceMagazzino
+    ORDER BY r.CodiceRicambio, m.CodiceMagazzino;
 
 
 ##### OP 6 - Rifornimento ricambi in magazzino
@@ -583,6 +593,28 @@ Aggiunge le unità di ricambi acquistate nel magazzino specificato aggiornando l
 Inserisce la fattura per un intervento completato collegandola al cliente tramite relazione INTESTAZIONE.
 
 .code {sql}
+    SELECT NumTelaio FROM INTERVENTI WHERE CodiceIntervento = ?;
+
+    SELECT m.CodiceModello, m.Marca, m.Nome
+    FROM MOTO mo, MODELLI m
+    WHERE mo.CodiceModello = m.CodiceModello
+    AND mo.NumTelaio = ?;
+
+    SELECT p.CF, p.Nome, p.Cognome
+    FROM MOTO mo, PERSONE p
+    WHERE mo.CF = p.CF
+    AND mo.NumTelaio = ?;
+
+    SELECT r.CodiceRicambio, r.Nome, r.Marca, u.Quantita, u.Prezzo,
+           (u.Quantita * u.Prezzo) AS TotaleParte
+    FROM UTILIZZI u, RICAMBI r
+    WHERE u.CodiceRicambio = r.CodiceRicambio
+    AND u.CodiceIntervento = ?;
+
+    SELECT SUM(u.Quantita * u.Prezzo) AS TotalePezzi
+    FROM UTILIZZI u
+    WHERE u.CodiceIntervento = ?;
+
     INSERT INTO FATTURE (CodiceFattura, Importo, Data, Note, CF, CodiceIntervento)
     VALUES (?, ?, CURRENT_DATE, ?, ?, ?);
 
@@ -591,38 +623,48 @@ Inserisce la fattura per un intervento completato collegandola al cliente tramit
 Esempi di query semplici per popolare la dashboard.
 
 .code {sql}
-    -- Appuntamenti nelle prossime 24h
-    SELECT *
+    SELECT COUNT(*) as AppuntamentiProssimi
     FROM APPUNTAMENTI
-    WHERE DataAppuntamento BETWEEN NOW() AND NOW() + INTERVAL 1 DAY;
+    WHERE DataAppuntamento BETWEEN NOW() AND NOW() + INTERVAL 7 DAY
+      AND Stato = 'confermato';
 
-    -- Interventi ancora aperti
-    SELECT *
+    SELECT COUNT(*) as InterventiAttivi
     FROM INTERVENTI
     WHERE DataFine IS NULL;
 
-    -- Ricavo degli ultimi 6 mesi (anno-mese)
-    SELECT YEAR(Data)  AS anno,
-           MONTH(Data) AS mese,
-           SUM(Importo) AS ricavi
-    FROM FATTURE
-    GROUP BY anno, mese
-    ORDER BY anno DESC, mese DESC
-    LIMIT 6;
+    SELECT COUNT(*) as SessioniAttive
+    FROM SESSIONI
+    WHERE Stato = 'in_corso';
 
-    -- Ricambi sotto soglia
-    SELECT CodiceRicambio, Nome
-    FROM RICAMBI
-    WHERE CodiceRicambio IN (
-        SELECT CodiceRicambio
-        FROM STOCCAGGI
-        GROUP BY CodiceRicambio
-        HAVING SUM(Quantita) < (
-            SELECT SogliaMinima
-            FROM RICAMBI
-            WHERE CodiceRicambio = STOCCAGGI.CodiceRicambio
-        )
-    );
+    SELECT YEAR(Data) AS anno,
+           MONTH(Data) AS mese,
+           SUM(Importo) AS ricavi,
+           COUNT(*) AS NumeroFatture
+    FROM FATTURE
+    WHERE Data >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+    GROUP BY anno, mese
+    ORDER BY anno DESC, mese DESC;
+
+    SELECT r.CodiceRicambio, 
+           r.Nome,
+           r.Marca,
+           f.Nome AS Fornitore,
+           SUM(s.Quantita) AS QuantitaTotale,
+           s.QuantitaMinima AS Soglia,
+           m.CodiceMagazzino
+    FROM RICAMBI r, STOCCAGGI s, MAGAZZINI m, FORNITORI f
+    WHERE r.CodiceRicambio = s.CodiceRicambio
+      AND s.CodiceMagazzino = m.CodiceMagazzino
+      AND r.CodiceFornitore = f.CodiceFornitore
+    GROUP BY r.CodiceRicambio, s.QuantitaMinima, m.CodiceMagazzino
+    HAVING SUM(s.Quantita) < s.QuantitaMinima
+    ORDER BY r.CodiceRicambio;
+
+    SELECT 
+        (SELECT COUNT(*) FROM APPUNTAMENTI WHERE DataAppuntamento >= CURDATE()) as AppuntamentiOggi,
+        (SELECT COUNT(*) FROM INTERVENTI WHERE DataFine IS NULL) as InterventiAperti,
+        (SELECT COUNT(*) FROM SESSIONI WHERE Stato = 'in_corso') as SessioniInCorso,
+        (SELECT SUM(Importo) FROM FATTURE WHERE Data >= DATE_SUB(NOW(), INTERVAL 30 DAY)) as RicaviMensili;
 
 
 ##### OP 9 - Gestione ruoli e permessi del personale
@@ -642,15 +684,56 @@ Restituisce la lista completa degli interventi, meccanici e ricambi utilizzati s
            i.DataInizio,
            i.DataFine,
            i.OreImpiegate,
-           i.Note,
-           GROUP_CONCAT(DISTINCT sv.CF) AS meccanici,
-           SUM(u.Quantità * u.Prezzo) AS costo_ricambi
+           i.Stato,
+           i.Note
     FROM INTERVENTI i
-    LEFT JOIN SVOLGIMENTI sv USING (CodiceIntervento)
-    LEFT JOIN UTILIZZI u USING (CodiceIntervento)
     WHERE i.NumTelaio = ?
-    GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine, i.OreImpiegate, i.Note
     ORDER BY i.DataInizio DESC;
+
+    SELECT sv.CodiceIntervento,
+           p.Nome,
+           p.Cognome
+    FROM SVOLGIMENTI sv, PERSONE p
+    WHERE sv.CF = p.CF
+      AND sv.CodiceIntervento IN (
+        SELECT CodiceIntervento 
+        FROM INTERVENTI 
+        WHERE NumTelaio = ?
+      );
+
+    SELECT s.CodiceSessione,
+           s.Data,
+           s.OreImpiegate,
+           s.Stato,
+           s.Note
+    FROM SESSIONI s
+    WHERE s.NumTelaio = ?
+    ORDER BY s.Data DESC;
+
+    SELECT a.CodiceSessione,
+           p.Nome,
+           p.Cognome
+    FROM AFFIANCAMENTI a, PERSONE p
+    WHERE a.CF = p.CF
+      AND a.CodiceSessione IN (
+        SELECT CodiceSessione 
+        FROM SESSIONI 
+        WHERE NumTelaio = ?
+      );
+
+    SELECT r.CodiceRicambio,
+           r.Nome,
+           r.Marca,
+           u.Quantita,
+           u.Prezzo,
+           (u.Quantita * u.Prezzo) AS TotaleParte,
+           i.CodiceIntervento,
+           i.DataInizio
+    FROM UTILIZZI u, RICAMBI r, INTERVENTI i
+    WHERE u.CodiceRicambio = r.CodiceRicambio
+      AND u.CodiceIntervento = i.CodiceIntervento
+      AND i.NumTelaio = ?
+    ORDER BY i.DataInizio DESC, r.Nome;
 
 
 ##### OP 11 - Stato intervento visibile al cliente
@@ -658,17 +741,21 @@ Mostra al proprietario l’avanzamento degli interventi sulla propria moto.
 
 .code {sql}
     SELECT i.CodiceIntervento,
-           i.DataInizio,
-           i.DataFine,
-           CASE WHEN i.DataFine IS NULL THEN 'in corso' ELSE 'completato' END AS stato,
-           GROUP_CONCAT(DISTINCT sv.CF) AS meccanici
-    FROM INTERVENTI i
-    JOIN MOTO m USING (NumTelaio)
-    JOIN PERSONE p USING (CF)
-    LEFT JOIN SVOLGIMENTI sv USING (CodiceIntervento)
-    WHERE p.CF = ?
+        i.DataInizio,
+        i.DataFine,
+        i.Stato,
+        i.Note,
+        CASE 
+            WHEN i.DataFine IS NULL THEN 'In corso'
+            WHEN i.Stato = 'completato' THEN 'Completato'
+            ELSE i.Stato
+        END AS StatoDescrizione
+    FROM INTERVENTI i, MOTO m
+    WHERE i.NumTelaio = m.NumTelaio
+    AND m.CF = ?
     AND i.NumTelaio = ?
-    GROUP BY i.CodiceIntervento, i.DataInizio, i.DataFine;
+    ORDER BY i.DataInizio DESC;
+
 
 
 # Progettazione dell'applicazione
