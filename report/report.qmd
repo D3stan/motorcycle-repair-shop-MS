@@ -168,7 +168,7 @@ La divisione di un lavoro in **intervento** e **sessione** permette di mettere i
 
 Vengono di seguito riportate le operazioni descritte in precedenza con una stima realistica della loro frequenza di esecuzione
 
-.csv {tables/operations.csv} caption:{frequenza operazioni.}
+.csv {tables/operations.csv} caption:{frequenza operazioni}
 
 ## Schemi di navigazione e tabelle degli accessi
 
