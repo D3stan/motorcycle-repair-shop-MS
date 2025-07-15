@@ -375,55 +375,49 @@ Partendo dallo schema ER sono state modificate le seguenti relazioni:
 
 Si vogliono prendere in esame le seguenti ridondanze, identificate come le principali:
 
-1. **Costo totale dei ricambi utilizzati in un intervento**: aggiungere l'attributo `CostoTotaleRicambi` alla tabella INTERVENTI per evitare di calcolare ogni volta la somma dei costi dei ricambi utilizzati.
+1. **Memorizzazione dell'importo totale nella fattura**: l'attributo `Importo` nella tabella `FATTURE` potrebbe essere considerato ridondante poiché calcolabile dinamicamente sommando i costi dei ricambi utilizzati (`UTILIZZI`) e della manodopera associata all'intervento.
 
 2. **Quantità totale di ricambi disponibili**: aggiungere l'attributo `QuantitaTotale` alla tabella RICAMBI per evitare di sommare le quantità presenti in tutti i magazzini.
 
-### RIDONDANZA 1 - Costo totale ricambi per intervento
+####! Ridondanza 1: Memorizzazione dell'importo totale nella fattura
 
-#####! OP 7 - Generazione fattura per intervento completato (CON ridondanza)
-Con l'aggiunta dell'attributo `CostoTotaleRicambi` nella tabella INTERVENTI, il calcolo del costo totale dei ricambi diventa immediato.
+#####! OP 12 - Visualizzazione Fattura
 
-| Concetto | Tipo | Accessi | Operazione 
+**Con Ridondanza (Schema Attuale)**
+
+Per visualizzare una fattura, è sufficiente leggere il record corrispondente, poiché l'importo totale è già memorizzato.
+
+| Concetto | Tipo | Accessi | Operazione
 |----------|------|---------|------------
-| INTERVENTO | E | 1 | L
-| EFFETTUAZIONE | R | 1 | L
-| MOTO | E | 1 | L
-| REALIZZAZIONE | R | 1 | L
-| MODELLO | E | 1 | L
-| POSSESSIONE | R | 1 | L 
-| CLIENTE | E | 1 | L
-| FATTURA | E | 1 | S
-| EMISSIONE | R | 1 | S 
-| INTESTAZIONE | R | 1 | S 
+| FATTURA | E | 1 | L
 
-**Totale costo con ridondanza**: 12 letture -> 1200 accessi al mese
+.center
+    **Totale costo**: 1 lettura -> 100 accessi al mese
 
-#####! OP 7 - Generazione fattura per intervento completato (SENZA ridondanza)
-Senza la ridondanza, è necessario accedere alla tabella UTILIZZI per calcolare il costo totale dei ricambi.
+**Senza Ridondanza**
 
-| Concetto | Tipo | Accessi | Operazione 
+Senza l'attributo `Importo`, ogni visualizzazione richiederebbe il ricalcolo del totale, accedendo a tutte le entità correlate per sommare i costi dei ricambi e della manodopera (qui non quantificata ma che richiederebbe ulteriori accessi).
+
+| Concetto | Tipo | Accessi | Operazione
 |----------|------|---------|------------
+| FATTURA | E | 1 | L
 | INTERVENTO | E | 1 | L
-| EFFETTUAZIONE | R | 1 | L
-| MOTO | E | 1 | L
-| REALIZZAZIONE | R | 1 | L
-| MODELLO | E | 1 | L
-| POSSESSIONE | R | 1 | L 
-| CLIENTE | E | 1 | L
 | UTILIZZO | R | 2.5 | L
 | RICAMBIO | E | 2.5 | L
-| FATTURA | E | 1 | S
-| EMISSIONE | R | 1 | S 
-| INTESTAZIONE | R | 1 | S 
 
-**Totale costo senza ridondanza**: 18 letture -> 1800 accessi al mese
+.center
+    **Totale costo**: 7 letture -> 700 accessi al mese
 
-**Risparmio**: 600 accessi al mese
+**Conclusione**: Mantenere l'importo ridondante riduce significativamente il costo delle operazioni di lettura, giustificando la scelta progettuale a fronte di un leggero aumento del costo in fase di scrittura (calcolo effettuato una sola volta durante l'operazione OP 7).
 
-### RIDONDANZA 2 - Quantità totale ricambi disponibili
+---
 
-#####! OP 5 - Visualizzazione inventario con soglie di riordino (CON ridondanza)
+#####! Ridondanza 2: Quantità totale ricambi disponibili
+
+#####! OP 5 - Visualizzazione inventario con soglie di riordino
+
+**Con Ridondanza**
+
 Con l'aggiunta dell'attributo `QuantitaTotale` nella tabella RICAMBI, non è necessario sommare le quantità dei diversi magazzini.
 
 | Concetto | Tipo | Accessi | Operazione 
@@ -431,9 +425,11 @@ Con l'aggiunta dell'attributo `QuantitaTotale` nella tabella RICAMBI, non è nec
 | RICAMBIO | E | 1200 | L
 | FORNITORE | E | 25 | L
 
-**Totale costo con ridondanza**: 1225 letture -> 49000 accessi al mese
+.center
+    **Totale costo**: 1225 letture -> 49000 accessi al mese
 
-#####! OP 5 - Visualizzazione inventario con soglie di riordino (SENZA ridondanza)
+**Senza Ridondanza (Schema Attuale)**
+
 Senza la ridondanza, è necessario accedere alle tabelle STOCCAGGIO e MAGAZZINO per calcolare le quantità totali.
 
 | Concetto | Tipo | Accessi | Operazione 
@@ -443,51 +439,10 @@ Senza la ridondanza, è necessario accedere alle tabelle STOCCAGGIO e MAGAZZINO 
 | MAGAZZINO | E | 3 | L
 | FORNITORE | E | 25 | L
 
-**Totale costo senza ridondanza**: 1258 letture -> 50320 accessi al mese
-
-**Risparmio**: 1320 accessi al mese
-
-### Conclusioni
-
-Le ridondanze offrono vantaggi significativi in termini di prestazioni, tuttavia introducono una leggera complessità di mantenimento dei dati. In aggiunta si perde parte della flessibilità desiderata.
-
-#####! OP 1 - Operazione 1
-[Inserire qui descrizione della ridondanza nell'operazione 1 (contando le ridondanze)]
-| Concetto | Tipo | Accessi | Operazione 
-|----------|------|---------|------------
-| Concetto1 | E | 1 | L
-| Concetto2 | R | 2 | S
-
 .center
-    [Totale costo operazione 1]
+    **Totale costo**: 1258 letture -> 50320 accessi al mese
 
-[Inserire qui descrizione della ridondanza nell'operazione 1 (senza le ridondanze)]
-| Concetto | Tipo | Accessi | Operazione 
-|----------|------|---------|------------
-| Concetto1 | E | 1 | L
-| Concetto2 | R | 2 | S
-
-.center
-    [Totale costo operazione 1]
-
-#####! OP 2 - Operazione 2
-[Inserire qui descrizione operazione 2 (contando le ridondanze)]
-| Concetto | Tipo | Accessi | Operazione 
-|----------|------|---------|------------
-| Concetto1 | E | 1 | L
-| Concetto2 | R | 2 | S
-
-.center
-    [Totale costo operazione 2]
-
-[Inserire qui descrizione operazione 2 (senza le ridondanze)]
-| Concetto | Tipo | Accessi | Operazione 
-|----------|------|---------|------------
-| Concetto1 | E | 1 | L
-| Concetto2 | R | 2 | S
-
-.center
-    [Totale costo operazione 2]
+**Conclusione**: La ridondanza comporterebbe un risparmio di 1320 accessi al mese, tuttavia riduce la flessibilità del sistema nella gestione di magazzini multipli e si sceglie di non implementarla nello schema attuale.
 
 ## Traduzione di entità e associazioni in relazioni
 
