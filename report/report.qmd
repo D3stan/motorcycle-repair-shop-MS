@@ -106,13 +106,13 @@ Si nota fin da subito la necessità di dividere l'entità **persona** in in due 
 
 ### Schema scheletro
 
-La prima iterazione nella modellizzazione delle moto per il garage virtuale e i relativi lavori si traduce nel seguete schema:
+La prima iterazione nella modellazione delle moto per il garage virtuale e i relativi lavori si traduce nel seguente schema:
 
 ![ER](imgs/scheletroM.png "Scheletro per la modellazione delle moto")
 
 ### Raffinamenti proposti
 
-Mettere in relazione un **ricambio** direttamente con la **motocicletta** di proprietà di una **persona** risulta essere una scelta poco conveniente: potrebbe capitare che due (o più) persone abbiano lo stesso modello e verrebbe introdotta una ridondaza inutile.  
+Mettere in relazione un **ricambio** direttamente con la **motocicletta** di proprietà di una **persona** risulta essere una scelta poco conveniente: potrebbe capitare che due (o più) persone abbiano lo stesso modello e verrebbe introdotta una ridondanza inutile.  
 Per questo motivo si è deciso di separare le due entità di **moto** e **modello**, in quanto una rappresenta la motocicletta fisica posseduta da una persona e l'altra rappresenta il modello prodotto dalla casa madre. Così facendo, per motivi analoghi, si evitano problemi con le associazioni riguardo un lavoro effettuato su di una particolare moto.
 
 !(350x_)[ER](imgs/rifinitoM.png "Schema rifinito")
@@ -130,7 +130,7 @@ A seguito di una prima analisi del dominio si sviluppa il seguente schema per mo
 .float {start}
 	!(300x_)[ER](imgs/rifinitoR.png "Schema rifinito")
 
-La divisione di un lavoro in **intervento** e **sessione** permette di mettere in relazione un **ricambio** solo dove risulta davvero necessario. Inoltre specificare qualora un intervento si tratti di manutenzione **ordinaria** o **straordinaria** aiuta ulteriormente a giustificare la quantità e/o il tipo di ricambi che sono stati utilizzati. Infine i ricambi possono essere convervati in diversi magazzini per permettere maggiore flessibilità di caso di ampliamento dell'officina (basti pensare a un magazzino interno per ricambi generici utilizzati quasi giornalmente e un magazzino esterno per ricambi specifici).
+La divisione di un lavoro in **intervento** e **sessione** permette di mettere in relazione un **ricambio** solo dove risulta davvero necessario. Inoltre specificare qualora un intervento si tratti di manutenzione **ordinaria** o **straordinaria** aiuta ulteriormente a giustificare la quantità e/o il tipo di ricambi che sono stati utilizzati. Infine i ricambi possono essere conservati in diversi magazzini per permettere maggiore flessibilità di caso di ampliamento dell'officina (basti pensare a un magazzino interno per ricambi generici utilizzati quasi giornalmente e un magazzino esterno per ricambi specifici).
 
 
 
@@ -291,7 +291,7 @@ Operazione per generare fatture per interventi completati. Naviga attraverso le 
 
 
 #####! OP 8 - Visualizzazione dashboard con indicatori di performance
-Operazione che fornisce una vista d'insieme completa delle attività dell'officina attraverso indicatori chiave di performance. Per fornire informazioni accurate, deve accedere a dati recenti da tutte le entità principali inclusi tutti i ricambi per gli avvisi di scorta.
+Operazione che fornisce una vista d'insieme completa delle attività dell'officina attraverso indicatori chiave di performance. Per fornire informazioni accurate, deve accedere a dati recenti da tutte le entità principali, inclusi tutti i ricambi per gli avvisi relative alle scorte.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
@@ -354,7 +354,7 @@ Operazione che permette ai clienti di consultare in autonomia lo stato corrente 
     **Totale costo**: 5 letture -> 125 accessi al giorno
 
 #####! OP 12 - Visualizzazione fattura
-Operazione che permette la consultazione di una fattura esistente. Utilizzata per l'analisi delle ridondanze, confronta l'accesso diretto all'importo memorizzato con il ricalcolo dinamico dai ricambi utilizzati.
+Operazione che permette la consultazione di una fattura esistente da parte del cliente.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
@@ -375,7 +375,7 @@ Nello [schema ER](#raffinamenti-proposti-2) è presente un attributo composto _C
 Sono presenti diverse gerarchie nello schema ed ognuna è stata trattata relativamente alle sue specifiche. In particolare per gestire la gerarchia **persona** e **intervento** è stato effettuato un collasso verso l'alto in quanto i sotto-tipi non contenevano informazioni aggiuntive. Per la gerarchia **lavoro**, invece, si è preferito un collasso verso il basso in modo da mantenere una differenziazione forte.
 
 #### Scelta delle chiavi 
-Nello schema sono evidenziate le chiavi primarie utilizzate. Per l'entità **moto** si poteva far ricorso alla *targa* (piuttosto che il _numero di telaio_) per l'identificazione ma si potrebbero verificare dei casi in cui la motocicletta viene reimmatricolata.
+Nello schema sono evidenziate le chiavi primarie utilizzate. Per l'entità **moto** si sarebbe potuto far ricorso alla *targa* (piuttosto che il _numero di telaio_) per l'identificazione ma si potrebbero verificare dei casi in cui la motocicletta viene reimmatricolata.
 
 #### Eliminazione di identificatori esterni
 Partendo dallo schema ER sono state modificate le seguenti relazioni:
@@ -389,8 +389,8 @@ Partendo dallo schema ER sono state modificate le seguenti relazioni:
 - **Sviluppo**, eliminata importando il _NumTelaio_ in **Sessione**
 - **Svolgimento**, reificata importando _CodiceIntervento_ da **Intervento** e _CodiceFiscale_ da **Persona**
 - **Affiancamento**, reificata importando _CodiceSessione_ da **Sessione** e _CodiceFiscale_ da **Persona**
-- **Utilizzo**, reificata importando _CodiceIntervento_ da **Intervento** e _CodiceRicambio_ da **Ricambio**, mantenendo gli attributi _quantità_ e _prezzo_
-- **Stoccaggio**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceMagazzino_ da **Magazzino**
+- **Utilizzo**, reificata importando _CodiceIntervento_ da **Intervento** e _CodiceRicambio_ da **Ricambio**, mantenendo gli attributi _Quantità_ e _Prezzo_
+- **Stoccaggio**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceMagazzino_ da **Magazzino**, mantenendo gli attributi _Quantità_ e _QuantitàMinima_
 - **Appartenenza**, reificata importando _CodiceRicambio_ da **Ricambio** e _CodiceModello_ da **Modello**
 
 <<<
@@ -399,9 +399,9 @@ Partendo dallo schema ER sono state modificate le seguenti relazioni:
 
 Si vogliono prendere in esame le seguenti ridondanze, identificate come le principali:
 
-1. **Memorizzazione dell'importo totale nella fattura**: l'attributo `Importo` nella tabella `FATTURE` potrebbe essere considerato ridondante poiché calcolabile dinamicamente sommando i costi dei ricambi utilizzati (`UTILIZZI`) e della manodopera associata all'intervento.
+1. **Memorizzazione dell'importo totale nella fattura**: l'attributo _Importo_ nella tabella `FATTURE` potrebbe essere considerato ridondante poiché calcolabile dinamicamente sommando i costi dei ricambi utilizzati e della manodopera associata all'intervento.
 
-2. **Quantità totale di ricambi disponibili**: aggiungere l'attributo `QuantitaTotale` alla tabella RICAMBI per evitare di sommare le quantità presenti in tutti i magazzini.
+2. **Quantità totale di ricambi disponibili**: aggiungere l'attributo _QuantitaTotale_ alla tabella `RICAMBI` per evitare di sommare le quantità presenti in tutti i magazzini.
 
 ####! Ridondanza 1: Memorizzazione dell'importo totale nella fattura
 
@@ -420,7 +420,7 @@ Per visualizzare una fattura, è sufficiente leggere il record corrispondente, p
 
 **Senza Ridondanza**
 
-Senza l'attributo `Importo`, ogni visualizzazione richiederebbe il ricalcolo del totale, accedendo a tutte le entità correlate per sommare i costi dei ricambi e della manodopera (qui non quantificata ma che richiederebbe ulteriori accessi).
+Senza l'attributo _Importo_, ogni visualizzazione richiederebbe il ricalcolo del totale, accedendo a tutte le entità correlate per sommare i costi dei ricambi e della manodopera (qui non quantificata ma che richiederebbe ulteriori accessi).
 
 | Concetto | Tipo | Accessi | Operazione
 |----------|------|---------|------------
@@ -442,7 +442,7 @@ Senza l'attributo `Importo`, ogni visualizzazione richiederebbe il ricalcolo del
 
 **Con Ridondanza**
 
-Con l'aggiunta dell'attributo `QuantitaTotale` nella tabella RICAMBI, non è necessario sommare le quantità dei diversi magazzini.
+Con l'aggiunta dell'attributo _QuantitaTotale_ nella tabella `RICAMBI`, non è necessario sommare le quantità dei diversi magazzini.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
@@ -454,7 +454,7 @@ Con l'aggiunta dell'attributo `QuantitaTotale` nella tabella RICAMBI, non è nec
 
 **Senza Ridondanza (Schema Attuale)**
 
-Senza la ridondanza, è necessario accedere alle tabelle STOCCAGGIO e MAGAZZINO per calcolare le quantità totali.
+Senza la ridondanza, è necessario accedere alle tabelle `STOCCAGGIO` e `MAGAZZINO` per calcolare le quantità totali.
 
 | Concetto | Tipo | Accessi | Operazione 
 |----------|------|---------|------------
@@ -583,7 +583,7 @@ UNIQUE(Targa)
 ## Traduzione delle operazioni in query SQL
 
 ##### OP 1 - Registrazione di nuovi clienti
-Inserimento di un nuovo cliente nel sistema. La CF funge da chiave primaria e permette di verificare l’univocità dell’utente.
+Inserimento di un nuovo cliente nel sistema. Il _CF_ funge da chiave primaria e permette di verificare l’univocità dell’utente.
 
 .code {sql}
     INSERT INTO PERSONE (CF, Nome, Cognome, Cellulare, Email, Tipo)
@@ -599,7 +599,7 @@ Il cliente associa una moto già presente nel catalogo dei modelli al proprio ga
     VALUES (?, ?, ?, ?, ?, ?);
 
 
-##### OP 3 - Prenotazione, conferma e cancellazione appuntamenti
+##### OP 3 - Prenotazione appuntamenti
 
 .code {sql}
     INSERT INTO APPUNTAMENTI
@@ -679,7 +679,6 @@ Inserisce la fattura per un intervento completato collegandola al cliente tramit
 
 
 ##### OP 8 - Visualizzazione dashboard con indicatori di performance
-Esempi di query semplici per popolare la dashboard.
 
 .code {sql}
     SELECT COUNT(*) as AppuntamentiProssimi
@@ -856,19 +855,6 @@ Infine, in base al tipo di utente, si potranno effettuare operazioni specifiche.
 
 <<<
 
-#### Cliente
-
-Di seguito viene mostrata la dashboard personale di un cliente tipo dell'officina, subito dopo aver effettuato l'operazione di login.
-
-![screenshot](imgs/app/user/dashboardW.png "Dashboard cliente")
-
-Premento il relativo pulsante o navigando nell'apposita sezione è possibile prenotare un appuntamento.
-Verrà mostrata una schermata in cui il cliente potrà esprimere in maniera intuitiva le sue preferenze.
-
-!(300x_)[screenshot](imgs/app/user/appointment.png "Prenotazione appuntamento")
-
-<<<
-
 #### Amministratore
 
 La dashboard per l'amministratore risulta essere completa e allo stesso tempo intuitiva, senza effetti grafici o figure complesse.
@@ -879,3 +865,16 @@ Si è mantenuto uno stile _minimal_ anche nel resto dell'applicazione per facili
 L'amministratore, dal suo punto di vista, può confermare o disdire gli appuntamenti creati dai clienti e visualizzarne le informazioni di base a colpo d'occhio, per poi poter accedere ai dettagli di ogni appuntamento singolo.
 
 ![screenshot](imgs/app/admin/appointments.png "Lista appuntamenti")
+
+<<<
+
+#### Cliente
+
+Di seguito viene mostrata la dashboard personale di un cliente tipo dell'officina, subito dopo aver effettuato l'operazione di login.
+
+![screenshot](imgs/app/user/dashboardW.png "Dashboard cliente")
+
+Premento il relativo pulsante o navigando nell'apposita sezione è possibile prenotare un appuntamento.
+Verrà mostrata una schermata in cui il cliente potrà esprimere in maniera intuitiva le sue preferenze.
+
+!(300x_)[screenshot](imgs/app/user/appointment.png "Prenotazione appuntamento")

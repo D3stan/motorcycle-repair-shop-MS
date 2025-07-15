@@ -22,14 +22,5 @@
 /shop/.nova
 /shop/.vscode
 /shop/.zed
-/shop/instructions.md
-proposta.txt
-/shop/shop.txt
-/shop/shop.ddl
-/docs
 /output
-*DE.md
-*report.md
-*I.md
-.c*
 .~lock*
