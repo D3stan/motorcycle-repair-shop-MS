@@ -372,10 +372,6 @@ class ScheduleController extends Controller
      */
     public function destroy(Appointment $appointment): RedirectResponse
     {
-        // Check if appointment has associated work orders
-        if ($appointment->workOrders()->exists()) {
-            return back()->with('error', 'Cannot delete appointment with associated work orders.');
-        }
 
         $appointment->delete();
 
